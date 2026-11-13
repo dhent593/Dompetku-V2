@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, User, ChevronDown, Car, Landmark, Utensils, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { CHART_DATA } from '@/lib/dummyData';
 import { TimeFilter, AnalyticType } from '@/types';
@@ -11,6 +12,7 @@ import { TimeFilter, AnalyticType } from '@/types';
 export const AnalyticsView: React.FC = () => {
   const { user } = useAuth();
   const { setActiveTab, setActiveModal } = useFinance();
+  const { language, t } = useLanguage();
   const [activeType, setActiveType] = useState<AnalyticType>('expenses');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('monthly');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -41,7 +43,7 @@ export const AnalyticsView: React.FC = () => {
       {/* 2. Total Balance Card */}
       <div className="flex items-center justify-between p-5 rounded-[22px] bg-[#141824] border border-[#1E2435] shadow-sm">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">Total Balance</span>
+          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('total_balance')}</span>
           <div className="text-2xl sm:text-[26px] font-bold text-white tracking-tight mt-0.5">
             {formatCurrency(user.totalBalance)}
           </div>
@@ -51,7 +53,7 @@ export const AnalyticsView: React.FC = () => {
           onClick={() => setActiveModal('withdraw')}
           className="py-2.5 px-5 rounded-[14px] bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-semibold tracking-wide active:scale-95 transition-all cursor-pointer shadow-sm"
         >
-          Withdraw
+          {t('withdraw')}
         </button>
       </div>
 
@@ -65,7 +67,7 @@ export const AnalyticsView: React.FC = () => {
               : 'text-[#677491] hover:text-white'
           }`}
         >
-          Expenses
+          {t('expenses')}
         </button>
         <button
           onClick={() => setActiveType('savings')}
@@ -75,14 +77,18 @@ export const AnalyticsView: React.FC = () => {
               : 'text-[#677491] hover:text-white'
           }`}
         >
-          Savings
+          {t('savings')}
         </button>
       </div>
 
       {/* 4. Month Header & Period Selector */}
       <div className="flex items-center justify-between pt-1 relative">
         <h2 className="text-base font-bold text-white tracking-tight">
-          {timeFilter === 'monthly' ? 'March, 2023' : timeFilter === 'weekly' ? 'This Week' : 'Year 2023'}
+          {timeFilter === 'monthly'
+            ? (language === 'id' ? 'Maret, 2023' : 'March, 2023')
+            : timeFilter === 'weekly'
+            ? (language === 'id' ? 'Minggu Ini' : 'This Week')
+            : (language === 'id' ? 'Tahun 2023' : 'Year 2023')}
         </h2>
 
         <div className="relative">
@@ -90,7 +96,7 @@ export const AnalyticsView: React.FC = () => {
             onClick={() => setShowDropdown(!showDropdown)}
             className="flex items-center space-x-1.5 text-xs text-[#7A87A5] hover:text-white font-medium bg-[#141824] px-3 py-1.5 rounded-full border border-[#1E2435] transition-colors cursor-pointer"
           >
-            <span className="capitalize">{timeFilter}</span>
+            <span>{timeFilter === 'monthly' ? t('monthly') : timeFilter === 'weekly' ? t('weekly') : t('yearly')}</span>
             <ChevronDown className="w-3.5 h-3.5 stroke-[2]" />
           </button>
 
@@ -105,7 +111,7 @@ export const AnalyticsView: React.FC = () => {
                   }}
                   className="w-full flex items-center justify-between px-3 py-2 text-xs text-left text-white/90 hover:bg-[#232B3E] capitalize cursor-pointer"
                 >
-                  <span>{filter}</span>
+                  <span>{filter === 'monthly' ? t('monthly') : filter === 'weekly' ? t('weekly') : t('yearly')}</span>
                   {timeFilter === filter && <Check className="w-3.5 h-3.5 text-[#635BFF]" />}
                 </button>
               ))}
@@ -114,7 +120,7 @@ export const AnalyticsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. Clean, Professional Spline Chart (No Blurry Glow Filter) */}
+      {/* 5. Clean Spline Chart */}
       <div className="relative w-full h-[180px] flex flex-col justify-end pt-4">
         <div className="relative w-full h-[140px]">
           <svg className="w-full h-full overflow-visible" viewBox="0 0 340 140" preserveAspectRatio="none">
@@ -125,11 +131,9 @@ export const AnalyticsView: React.FC = () => {
               </linearGradient>
             </defs>
 
-            {/* Crisp clean reference grid lines */}
             <line x1="0" y1="35" x2="340" y2="35" stroke="#181E2E" strokeWidth="1" strokeDasharray="3 3" />
             <line x1="0" y1="85" x2="340" y2="85" stroke="#181E2E" strokeWidth="1" strokeDasharray="3 3" />
 
-            {/* Subtle Clean Area Fill */}
             <path
               d={
                 activeType === 'expenses'
@@ -139,7 +143,6 @@ export const AnalyticsView: React.FC = () => {
               fill="url(#chartGradient)"
             />
 
-            {/* Crisp Solid Line */}
             <path
               d={
                 activeType === 'expenses'
@@ -152,7 +155,6 @@ export const AnalyticsView: React.FC = () => {
               strokeLinecap="round"
             />
 
-            {/* Solid Peak Point Indicator */}
             {activeType === 'expenses' && (
               <g>
                 <circle cx="95" cy="25" r="5" fill="#635BFF" stroke="#FFFFFF" strokeWidth="2" />
@@ -160,7 +162,6 @@ export const AnalyticsView: React.FC = () => {
             )}
           </svg>
 
-          {/* Solid Tooltip Badge */}
           {activeType === 'expenses' && (
             <div className="absolute left-[28%] top-[-8px] -translate-x-1/2 bg-[#635BFF] text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none">
               <span>$1,350</span>
@@ -185,12 +186,12 @@ export const AnalyticsView: React.FC = () => {
       {/* 6. History Section */}
       <div className="flex flex-col space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white tracking-tight">History</h2>
+          <h2 className="text-base font-bold text-white tracking-tight">{t('history')}</h2>
           <button
             onClick={() => setActiveTab('transactions')}
             className="text-xs text-[#7B88A6] hover:text-white transition-colors cursor-pointer font-medium"
           >
-            See all
+            {t('see_all')}
           </button>
         </div>
 
@@ -199,7 +200,7 @@ export const AnalyticsView: React.FC = () => {
             <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
               <Car className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">Travel</span>
+            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('travel')}</span>
             <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$125.70</span>
           </div>
 
@@ -207,7 +208,7 @@ export const AnalyticsView: React.FC = () => {
             <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
               <Landmark className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">Investment</span>
+            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('investment')}</span>
             <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$115.00</span>
           </div>
 
@@ -215,7 +216,7 @@ export const AnalyticsView: React.FC = () => {
             <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
               <Utensils className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">Food</span>
+            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('food')}</span>
             <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$156.75</span>
           </div>
         </div>

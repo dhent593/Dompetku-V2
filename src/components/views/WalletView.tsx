@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export const WalletView: React.FC = () => {
   const {
@@ -25,16 +26,17 @@ export const WalletView: React.FC = () => {
     handleKeypadBackspace,
     unlockWithBiometrics,
   } = useAuth();
+  const { t } = useLanguage();
   const { setActiveModal } = useFinance();
   const [showKeypad, setShowKeypad] = useState(false);
   const [activeProductToast, setActiveProductToast] = useState<string | null>(null);
 
-  const handleProductClick = (productName: string) => {
-    if (productName === 'Scan QR') {
+  const handleProductClick = (productId: string, productName: string) => {
+    if (productId === 'scan_qr') {
       setActiveModal('scanQr');
       return;
     }
-    if (productName === 'Fund transfer') {
+    if (productId === 'fund_transfer') {
       setActiveModal('transfer');
       return;
     }
@@ -46,12 +48,12 @@ export const WalletView: React.FC = () => {
   };
 
   const products = [
-    { id: 'tap_to_pay', name: 'Tap to pay', icon: Wifi },
-    { id: 'credit_cards', name: 'Credit cards', icon: CreditCard },
-    { id: 'scan_qr', name: 'Scan QR', icon: QrCode },
-    { id: 'mobile_banking', name: 'Mobile banking', icon: Smartphone },
-    { id: 'loans', name: 'Loans', icon: Banknote },
-    { id: 'fund_transfer', name: 'Fund transfer', icon: ArrowLeftRight },
+    { id: 'tap_to_pay' as const, name: t('tap_to_pay'), icon: Wifi },
+    { id: 'credit_cards' as const, name: t('credit_cards'), icon: CreditCard },
+    { id: 'scan_qr' as const, name: t('scan_qr'), icon: QrCode },
+    { id: 'mobile_banking' as const, name: t('mobile_banking'), icon: Smartphone },
+    { id: 'loans' as const, name: t('loans'), icon: Banknote },
+    { id: 'fund_transfer' as const, name: t('fund_transfer'), icon: ArrowLeftRight },
   ];
 
   return (
@@ -59,7 +61,7 @@ export const WalletView: React.FC = () => {
       {/* 1. Top Header */}
       <div className="flex items-center justify-between pt-1">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">Welcome back</span>
+          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
           <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
         </div>
       </div>
@@ -72,7 +74,7 @@ export const WalletView: React.FC = () => {
             onClick={unlockWithBiometrics}
             disabled={biometricLoading}
             className="flex items-center justify-center w-14 h-14 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all mb-3 focus:outline-none cursor-pointer"
-            aria-label="Unlock with fingerprint"
+            aria-label={t('unlock_fingerprint')}
           >
             {biometricLoading ? (
               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -81,9 +83,9 @@ export const WalletView: React.FC = () => {
             )}
           </button>
 
-          <span className="text-sm font-semibold text-white tracking-wide">Unlock with fingerprint</span>
-          <span className="text-xs text-white/75 font-normal my-1">or</span>
-          <span className="text-sm font-semibold text-white tracking-wide">Enter 4 Digit Login mPIN</span>
+          <span className="text-sm font-semibold text-white tracking-wide">{t('unlock_fingerprint')}</span>
+          <span className="text-xs text-white/75 font-normal my-1">{t('or')}</span>
+          <span className="text-sm font-semibold text-white tracking-wide">{t('enter_mpin')}</span>
 
           {/* 4 Digit PIN Dots */}
           <button
@@ -117,13 +119,13 @@ export const WalletView: React.FC = () => {
           onClick={() => setActiveModal('editProfile')}
           className="hover:text-white transition-colors cursor-pointer"
         >
-          Not you?
+          {t('not_you')}
         </button>
         <button
           onClick={() => setShowKeypad(true)}
           className="hover:text-white transition-colors cursor-pointer"
         >
-          Forgot PIN?
+          {t('forgot_pin')}
         </button>
       </div>
 
@@ -131,12 +133,12 @@ export const WalletView: React.FC = () => {
       {showKeypad && (
         <div className="bg-[#141824] border border-[#1E2435] rounded-[22px] p-4 flex flex-col items-center">
           <div className="w-full flex justify-between items-center px-2 pb-3 border-b border-[#1E2435]">
-            <span className="text-xs text-[#7B88A6] font-medium">Numeric Keypad (PIN: 1234)</span>
+            <span className="text-xs text-[#7B88A6] font-medium">{t('numeric_keypad')} (1234)</span>
             <button
               onClick={() => setShowKeypad(false)}
               className="text-xs text-[#635BFF] font-semibold hover:underline cursor-pointer"
             >
-              Hide
+              {t('hide')}
             </button>
           </div>
 
@@ -162,7 +164,7 @@ export const WalletView: React.FC = () => {
 
       {/* 3. Products Section */}
       <div className="flex flex-col space-y-3 pt-1">
-        <h2 className="text-base font-bold text-white tracking-tight">Products</h2>
+        <h2 className="text-base font-bold text-white tracking-tight">{t('products')}</h2>
 
         <div className="grid grid-cols-3 gap-3">
           {products.map((item) => {
@@ -170,7 +172,7 @@ export const WalletView: React.FC = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => handleProductClick(item.name)}
+                onClick={() => handleProductClick(item.id, item.name)}
                 className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] active:scale-95 transition-all group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center text-white/90 group-hover:text-white transition-colors">

@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Plus, Trash2 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const PaymentMethodsModal: React.FC = () => {
   const { activeModal, setActiveModal, cards, addCard, deleteCard, setDefaultCard } = useFinance();
+  const { t } = useLanguage();
   const [isAdding, setIsAdding] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
   const [cardHolder, setCardHolder] = useState('Smith Doe');
@@ -61,7 +63,7 @@ export const PaymentMethodsModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <CreditCard className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-base font-bold">Payment Methods</h3>
+                <h3 className="text-base font-bold">{t('payment_methods')}</h3>
               </div>
               <button
                 onClick={() => {
@@ -77,13 +79,13 @@ export const PaymentMethodsModal: React.FC = () => {
             {!isAdding ? (
               <div className="flex flex-col space-y-3.5 pt-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#7B88A6]">Saved Cards ({cards.length})</span>
+                  <span className="text-[#7B88A6]">{t('saved_cards')} ({cards.length})</span>
                   <button
                     onClick={() => setIsAdding(true)}
                     className="text-[#635BFF] hover:underline font-semibold flex items-center space-x-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Add Card</span>
+                    <span>{t('add_card')}</span>
                   </button>
                 </div>
 
@@ -107,11 +109,11 @@ export const PaymentMethodsModal: React.FC = () => {
                             <span className="font-mono text-sm font-bold text-white">{card.cardNumberMask}</span>
                             {card.isDefault && (
                               <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full font-semibold">
-                                Primary
+                                {t('primary_badge')}
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-[#7B88A6]">Expires {card.cardExpiry}</span>
+                          <span className="text-[11px] text-[#7B88A6]">{card.cardExpiry}</span>
                         </div>
                       </div>
 
@@ -120,16 +122,16 @@ export const PaymentMethodsModal: React.FC = () => {
                           <button
                             onClick={() => setDefaultCard(card.id)}
                             className="text-[11px] text-[#7B88A6] hover:text-white px-2 py-1 rounded bg-[#1C2233] cursor-pointer"
-                            title="Set as Default"
+                            title={t('set_default')}
                           >
-                            Set Default
+                            {t('set_default')}
                           </button>
                         )}
                         {cards.length > 1 && (
                           <button
                             onClick={() => deleteCard(card.id)}
                             className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 cursor-pointer"
-                            title="Delete Card"
+                            title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -143,7 +145,7 @@ export const PaymentMethodsModal: React.FC = () => {
               /* Add Card Form */
               <form onSubmit={handleAddCard} className="flex flex-col space-y-3.5 pt-4">
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Card Number</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_number')}</label>
                   <input
                     type="text"
                     value={cardNumber}
@@ -156,7 +158,7 @@ export const PaymentMethodsModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Cardholder Name</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_holder')}</label>
                   <input
                     type="text"
                     value={cardHolder}
@@ -169,7 +171,7 @@ export const PaymentMethodsModal: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Expiry (MM/YY)</label>
+                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('expiry')}</label>
                     <input
                       type="text"
                       value={expiry}
@@ -182,7 +184,7 @@ export const PaymentMethodsModal: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Card Brand</label>
+                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_brand')}</label>
                     <select
                       value={brand}
                       onChange={(e) => setBrand(e.target.value as any)}
@@ -202,14 +204,14 @@ export const PaymentMethodsModal: React.FC = () => {
                     type="submit"
                     className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
                   >
-                    Save Card
+                    {t('add_card')}
                   </motion.button>
                   <button
                     type="button"
                     onClick={() => setIsAdding(false)}
                     className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               </form>

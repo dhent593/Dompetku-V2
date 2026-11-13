@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, QrCode, CheckCircle2, Sparkles } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const ScanQRModal: React.FC = () => {
   const { activeModal, setActiveModal, addTransaction } = useFinance();
+  const { t } = useLanguage();
   const [scannedResult, setScannedResult] = useState<string | null>(null);
 
   const isOpen = activeModal === 'scanQr';
@@ -25,7 +27,7 @@ export const ScanQRModal: React.FC = () => {
       note: 'QR contactless merchant payment',
     });
 
-    setScannedResult(`Paid ${formatCurrency(amount)} to ${merchantName}`);
+    setScannedResult(`${t('qr_paid_to')} ${formatCurrency(amount)} ${t('to_recipient')} ${merchantName}`);
     setTimeout(() => {
       setScannedResult(null);
       setActiveModal(null);
@@ -58,8 +60,8 @@ export const ScanQRModal: React.FC = () => {
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className="text-base font-bold text-white mb-1">Scan QR Code</h3>
-            <p className="text-xs text-[#7B88A6] mb-6">Align the QR code within the viewfinder frame</p>
+            <h3 className="text-base font-bold text-white mb-1">{t('scan_title')}</h3>
+            <p className="text-xs text-[#7B88A6] mb-6">{t('scan_subtitle')}</p>
 
             {/* Viewfinder Frame */}
             <div className="relative w-56 h-56 rounded-2xl border-2 border-dashed border-[#635BFF]/70 bg-black/40 flex items-center justify-center overflow-hidden">
@@ -94,7 +96,7 @@ export const ScanQRModal: React.FC = () => {
                 className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-[#635BFF] text-xs font-semibold text-white mt-6 active:scale-95 transition-all cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#635BFF]" />
-                <span>Simulate Scan Payment ($8.50)</span>
+                <span>{t('simulate_scan')}</span>
               </motion.button>
             )}
           </motion.div>

@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Landmark, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const WithdrawModal: React.FC = () => {
   const { user } = useAuth();
   const { activeModal, setActiveModal, withdrawMoney } = useFinance();
+  const { t } = useLanguage();
   const [bank, setBank] = useState('Chase Bank (•••• 8912)');
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +24,11 @@ export const WithdrawModal: React.FC = () => {
     e.preventDefault();
     const num = parseFloat(amount);
     if (isNaN(num) || num <= 0) {
-      setError('Please enter a valid withdrawal amount');
+      setError('Nominal tidak valid / Invalid amount');
       return;
     }
     if (num > user.totalBalance) {
-      setError(`Cannot withdraw more than total balance: ${formatCurrency(user.totalBalance)}`);
+      setError(`Max: ${formatCurrency(user.totalBalance)}`);
       return;
     }
 
@@ -65,7 +67,7 @@ export const WithdrawModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <Landmark className="w-4 h-4 text-white stroke-[2]" />
                 </div>
-                <h3 className="text-base font-bold">Withdraw Funds</h3>
+                <h3 className="text-base font-bold">{t('withdraw_title')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -82,15 +84,15 @@ export const WithdrawModal: React.FC = () => {
                 className="flex flex-col items-center justify-center py-8 text-center"
               >
                 <CheckCircle2 className="w-16 h-16 text-[#10B981] mb-3" />
-                <h4 className="text-lg font-bold text-white">Withdrawal Processed!</h4>
+                <h4 className="text-lg font-bold text-white">{t('withdraw_success')}</h4>
                 <p className="text-xs text-[#7B88A6] mt-1">
-                  {formatCurrency(parseFloat(amount))} sent to {bank}
+                  {formatCurrency(parseFloat(amount))} {t('withdrawal_to')} {bank}
                 </p>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col space-y-4 pt-4">
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Destination Account</label>
+                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('dest_account')}</label>
                   <select
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
@@ -105,7 +107,7 @@ export const WithdrawModal: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-[#7B88A6] font-medium">Withdrawal Amount ($)</label>
+                    <label className="text-xs text-[#7B88A6] font-medium">{t('amount_label')}</label>
                     <span className="text-[11px] text-[#7B88A6]">Max: {formatCurrency(user.totalBalance)}</span>
                   </div>
                   <input
@@ -135,7 +137,7 @@ export const WithdrawModal: React.FC = () => {
                   type="submit"
                   className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
                 >
-                  Confirm Withdrawal
+                  {t('confirm_withdraw')}
                 </motion.button>
               </form>
             )}

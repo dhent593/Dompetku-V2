@@ -35,6 +35,25 @@ class DataService {
     }
   }
 
+  getAppLocked(): boolean {
+    if (!this.isBrowser()) return false;
+    try {
+      const state = sessionStorage.getItem(STORAGE_KEYS.IS_LOCKED);
+      return state === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  setAppLocked(isLocked: boolean): void {
+    if (!this.isBrowser()) return;
+    try {
+      sessionStorage.setItem(STORAGE_KEYS.IS_LOCKED, isLocked ? 'true' : 'false');
+    } catch (e) {
+      console.error('Failed to save locked state', e);
+    }
+  }
+
   // --- User Profile ---
   getUser(): UserProfile {
     if (!this.isBrowser()) return INITIAL_USER;

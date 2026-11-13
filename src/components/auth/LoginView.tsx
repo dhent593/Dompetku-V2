@@ -13,6 +13,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export const LoginView: React.FC = () => {
   const {
@@ -26,6 +27,7 @@ export const LoginView: React.FC = () => {
     pinError,
     biometricLoading,
   } = useAuth();
+  const { t } = useLanguage();
 
   const [authMode, setAuthMode] = useState<'mpin' | 'email' | 'register'>('email');
   const [email, setEmail] = useState('smith@example.com');
@@ -99,7 +101,7 @@ export const LoginView: React.FC = () => {
             <Wallet className="w-7 h-7 text-white stroke-[2]" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">MyPocket</h1>
-          <p className="text-xs text-[#7B88A6] mt-1">Smart, clean personal finance management</p>
+          <p className="text-xs text-[#7B88A6] mt-1">{t('welcome_sub')}</p>
         </motion.div>
 
         {/* Auth Mode Tabs */}
@@ -121,7 +123,7 @@ export const LoginView: React.FC = () => {
                 : 'text-[#677491] hover:text-white'
             }`}
           >
-            Email Login
+            {t('email_login_tab')}
           </button>
           <button
             type="button"
@@ -135,7 +137,7 @@ export const LoginView: React.FC = () => {
                 : 'text-[#677491] hover:text-white'
             }`}
           >
-            mPIN / Biometric
+            {t('mpin_login_tab')}
           </button>
         </motion.div>
 
@@ -152,7 +154,7 @@ export const LoginView: React.FC = () => {
               className="w-full flex flex-col space-y-4"
             >
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Email Address</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('email_label')}</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -167,7 +169,7 @@ export const LoginView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Password</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('password_label')}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -209,7 +211,7 @@ export const LoginView: React.FC = () => {
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Sign In</span>
+                    <span>{t('sign_in_btn')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -222,7 +224,7 @@ export const LoginView: React.FC = () => {
                 onClick={handleQuickDemoLogin}
                 className="w-full py-3 rounded-xl bg-[#141824] border border-[#1E2435] hover:border-[#635BFF] text-xs font-semibold text-white/90 hover:text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>Instant Demo Access (Smith)</span>
+                <span>{t('instant_demo')}</span>
               </motion.button>
 
               <div className="text-center pt-2">
@@ -231,7 +233,8 @@ export const LoginView: React.FC = () => {
                   onClick={() => setAuthMode('register')}
                   className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
                 >
-                  Don't have an account? <span className="font-semibold text-white">Create Account</span>
+                  {t('dont_have_account')}{' '}
+                  <span className="font-semibold text-white">{t('create_account')}</span>
                 </button>
               </div>
             </motion.form>
@@ -256,7 +259,7 @@ export const LoginView: React.FC = () => {
                   onClick={loginWithBiometrics}
                   disabled={biometricLoading}
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all mx-auto mb-2.5 cursor-pointer"
-                  aria-label="Unlock with fingerprint"
+                  aria-label={t('unlock_fingerprint')}
                 >
                   {biometricLoading ? (
                     <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -265,9 +268,9 @@ export const LoginView: React.FC = () => {
                   )}
                 </motion.button>
 
-                <span className="text-xs font-semibold text-white block">Tap fingerprint to quick login</span>
-                <span className="text-[11px] text-white/70 block my-0.5">or</span>
-                <span className="text-xs font-semibold text-white block">Enter 4-Digit mPIN</span>
+                <span className="text-xs font-semibold text-white block">{t('tap_fingerprint')}</span>
+                <span className="text-[11px] text-white/70 block my-0.5">{t('or')}</span>
+                <span className="text-xs font-semibold text-white block">{t('enter_mpin')}</span>
 
                 {/* 4 Digit Dots */}
                 <div className="flex items-center justify-center space-x-3 mt-3">
@@ -318,13 +321,13 @@ export const LoginView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between w-full max-w-[280px] mt-3 px-2 text-[11px] text-[#7B88A6]">
-                <span>Demo PIN: <strong className="text-white">1234</strong></span>
+                <span>{t('demo_pin_hint')}</span>
                 <button
                   type="button"
                   onClick={() => handleKeypadClear()}
                   className="hover:text-white cursor-pointer"
                 >
-                  Clear
+                  {t('clear')}
                 </button>
               </div>
             </motion.div>
@@ -342,7 +345,7 @@ export const LoginView: React.FC = () => {
               className="w-full flex flex-col space-y-3.5"
             >
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">Full Name</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('full_name')}</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -357,7 +360,7 @@ export const LoginView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">Email</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('email_label')}</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -372,7 +375,7 @@ export const LoginView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">Password</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('password_label')}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -399,7 +402,7 @@ export const LoginView: React.FC = () => {
                 disabled={isLoading}
                 className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2 shadow-sm"
               >
-                <span>Complete Registration</span>
+                <span>{t('complete_reg')}</span>
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
 
@@ -409,7 +412,8 @@ export const LoginView: React.FC = () => {
                   onClick={() => setAuthMode('email')}
                   className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
                 >
-                  Already registered? <span className="font-semibold text-white">Sign In</span>
+                  {t('already_registered')}{' '}
+                  <span className="font-semibold text-white">{t('sign_in_btn')}</span>
                 </button>
               </div>
             </motion.form>

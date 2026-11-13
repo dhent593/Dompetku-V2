@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, Fingerprint } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const AccountSecurityModal: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { activeModal, setActiveModal } = useFinance();
+  const { t } = useLanguage();
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -20,20 +22,20 @@ export const AccountSecurityModal: React.FC = () => {
   const handleChangePin = (e: React.FormEvent) => {
     e.preventDefault();
     if (oldPin !== user.mPinHash && oldPin !== '1234') {
-      setMsg({ text: 'Current mPIN is incorrect.', isError: true });
+      setMsg({ text: 'Current mPIN salah / Current mPIN is incorrect.', isError: true });
       return;
     }
     if (newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-      setMsg({ text: 'New mPIN must be exactly 4 digits.', isError: true });
+      setMsg({ text: 'PIN harus 4 digit angka / PIN must be 4 digits.', isError: true });
       return;
     }
     if (newPin !== confirmPin) {
-      setMsg({ text: 'New PINs do not match.', isError: true });
+      setMsg({ text: 'PIN baru tidak cocok / New PINs do not match.', isError: true });
       return;
     }
 
     updateUser({ mPinHash: newPin });
-    setMsg({ text: 'mPIN updated successfully!', isError: false });
+    setMsg({ text: 'mPIN berhasil diperbarui! / mPIN updated successfully!', isError: false });
     setTimeout(() => {
       setActiveModal(null);
       setOldPin('');
@@ -72,7 +74,7 @@ export const AccountSecurityModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-base font-bold">Account Security</h3>
+                <h3 className="text-base font-bold">{t('account_security')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -87,8 +89,8 @@ export const AccountSecurityModal: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Fingerprint className="w-5 h-5 text-[#635BFF]" />
                 <div>
-                  <span className="text-xs font-semibold text-white block">Biometric Unlock</span>
-                  <span className="text-[11px] text-[#7B88A6]">Quick access with fingerprint</span>
+                  <span className="text-xs font-semibold text-white block">{t('biometric_unlock')}</span>
+                  <span className="text-[11px] text-[#7B88A6]">{t('biometric_desc')}</span>
                 </div>
               </div>
               <button
@@ -108,10 +110,10 @@ export const AccountSecurityModal: React.FC = () => {
 
             {/* Change PIN Form */}
             <form onSubmit={handleChangePin} className="flex flex-col space-y-3 pt-3">
-              <span className="text-xs text-[#7B88A6] font-semibold">Change 4-Digit Login mPIN</span>
+              <span className="text-xs text-[#7B88A6] font-semibold">{t('change_mpin')}</span>
 
               <div>
-                <label className="text-[11px] text-[#7B88A6] block mb-1">Current mPIN</label>
+                <label className="text-[11px] text-[#7B88A6] block mb-1">{t('current_mpin')}</label>
                 <input
                   type="password"
                   maxLength={4}
@@ -125,7 +127,7 @@ export const AccountSecurityModal: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] block mb-1">New PIN</label>
+                  <label className="text-[11px] text-[#7B88A6] block mb-1">{t('new_mpin')}</label>
                   <input
                     type="password"
                     maxLength={4}
@@ -137,7 +139,7 @@ export const AccountSecurityModal: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] block mb-1">Confirm PIN</label>
+                  <label className="text-[11px] text-[#7B88A6] block mb-1">{t('confirm_mpin')}</label>
                   <input
                     type="password"
                     maxLength={4}
@@ -168,7 +170,7 @@ export const AccountSecurityModal: React.FC = () => {
                 type="submit"
                 className="w-full py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer mt-1 shadow-sm"
               >
-                Update mPIN
+                {t('update_mpin_btn')}
               </motion.button>
             </form>
           </motion.div>

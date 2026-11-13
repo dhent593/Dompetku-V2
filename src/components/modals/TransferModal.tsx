@@ -6,12 +6,14 @@ import { X, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const TransferModal: React.FC = () => {
   const { user } = useAuth();
   const { activeModal, setActiveModal, transferMoney } = useFinance();
+  const { t } = useLanguage();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -24,15 +26,15 @@ export const TransferModal: React.FC = () => {
     e.preventDefault();
     const num = parseFloat(amount);
     if (!recipient.trim()) {
-      setError('Please enter recipient name or account');
+      setError(t('recipient_label'));
       return;
     }
     if (isNaN(num) || num <= 0) {
-      setError('Please enter a valid amount');
+      setError('Nominal tidak valid / Invalid amount');
       return;
     }
     if (num > user.balance) {
-      setError(`Insufficient balance. Maximum available: ${formatCurrency(user.balance)}`);
+      setError(`${t('available_label')}: ${formatCurrency(user.balance)}`);
       return;
     }
 
@@ -79,7 +81,7 @@ export const TransferModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <Send className="w-4 h-4 text-white stroke-[2.2] -rotate-12" />
                 </div>
-                <h3 className="text-base font-bold">Transfer Money</h3>
+                <h3 className="text-base font-bold">{t('transfer_title')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -96,15 +98,15 @@ export const TransferModal: React.FC = () => {
                 className="flex flex-col items-center justify-center py-8 text-center"
               >
                 <CheckCircle2 className="w-16 h-16 text-[#10B981] mb-3" />
-                <h4 className="text-lg font-bold text-white">Transfer Successful!</h4>
+                <h4 className="text-lg font-bold text-white">{t('transfer_success')}</h4>
                 <p className="text-xs text-[#7B88A6] mt-1">
-                  Sent {formatCurrency(parseFloat(amount))} to {recipient}
+                  {t('transfer_amount_sent')} {formatCurrency(parseFloat(amount))} {t('to_recipient')} {recipient}
                 </p>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col space-y-4 pt-4">
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Recipient</label>
+                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('recipient_label')}</label>
                   <input
                     type="text"
                     value={recipient}
@@ -120,8 +122,8 @@ export const TransferModal: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-[#7B88A6] font-medium">Amount ($)</label>
-                    <span className="text-[11px] text-[#7B88A6]">Avail: {formatCurrency(user.balance)}</span>
+                    <label className="text-xs text-[#7B88A6] font-medium">{t('amount_label')}</label>
+                    <span className="text-[11px] text-[#7B88A6]">{t('available_label')}: {formatCurrency(user.balance)}</span>
                   </div>
                   <input
                     type="number"
@@ -152,7 +154,7 @@ export const TransferModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Note (Optional)</label>
+                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('note_label')}</label>
                   <input
                     type="text"
                     value={note}
@@ -175,7 +177,7 @@ export const TransferModal: React.FC = () => {
                   type="submit"
                   className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
                 >
-                  Confirm Transfer
+                  {t('confirm_transfer')}
                 </motion.button>
               </form>
             )}

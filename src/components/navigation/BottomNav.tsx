@@ -4,6 +4,7 @@ import React from 'react';
 import { Home, PieChart, Wallet, Settings, Plus } from 'lucide-react';
 import { NavTab } from '@/types';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BottomNavProps {
   currentTab: NavTab;
@@ -12,15 +13,16 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab }) => {
   const { setActiveModal } = useFinance();
+  const { t } = useLanguage();
 
   const leftTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'analytics', label: 'Analytics', icon: PieChart },
+    { id: 'home', label: t('nav_home'), icon: Home },
+    { id: 'analytics', label: t('nav_analytics'), icon: PieChart },
   ];
 
   const rightTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'wallet', label: 'Wallet', icon: Wallet },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'wallet', label: t('nav_wallet'), icon: Wallet },
+    { id: 'settings', label: t('nav_settings'), icon: Settings },
   ];
 
   const renderTab = (tab: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }) => {
@@ -66,7 +68,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             onClick={() => setActiveModal('addTx')}
             className="w-12 h-12 rounded-full bg-[#635BFF] hover:bg-[#564EE6] text-white flex items-center justify-center shadow-lg shadow-[#635BFF]/30 border-2 border-[#111520] active:scale-95 transition-all cursor-pointer"
             aria-label="Add Transaction"
-            title="Add Transaction"
+            title={t('new_record')}
           >
             <Plus className="w-6 h-6 stroke-[2.4]" />
           </button>

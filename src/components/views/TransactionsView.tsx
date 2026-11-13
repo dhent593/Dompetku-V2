@@ -16,6 +16,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage, TranslationKey } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { Transaction } from '@/types';
 
@@ -28,6 +29,7 @@ export const TransactionsView: React.FC = () => {
     searchQuery,
     setSearchQuery,
   } = useFinance();
+  const { t } = useLanguage();
   const [showSearchInput, setShowSearchInput] = useState(false);
 
   const renderIcon = (tx: Transaction) => {
@@ -57,6 +59,12 @@ export const TransactionsView: React.FC = () => {
   }, {} as Record<string, Transaction[]>);
 
   const groupOrder = ['TODAY', 'YESTERDAY', 'EARLIER THIS WEEK', 'OLDER'];
+  const groupLabelMap: Record<string, TranslationKey> = {
+    TODAY: 'today',
+    YESTERDAY: 'yesterday',
+    'EARLIER THIS WEEK': 'earlier_this_week',
+    OLDER: 'older',
+  };
 
   return (
     <div className="flex flex-col space-y-4 text-white w-full">
@@ -70,7 +78,7 @@ export const TransactionsView: React.FC = () => {
           <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
         </button>
 
-        <h1 className="text-base font-bold text-white tracking-tight">Transactions</h1>
+        <h1 className="text-base font-bold text-white tracking-tight">{t('tx_title')}</h1>
 
         <button
           onClick={() => setShowSearchInput(!showSearchInput)}
@@ -95,7 +103,7 @@ export const TransactionsView: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search transactions..."
+                placeholder={t('search_tx')}
                 className="w-full bg-[#161B29] border border-[#222B40] text-white text-xs rounded-xl py-3 pl-9 pr-8 focus:outline-none focus:border-[#5B4DF9] transition-all placeholder:text-[#64728E]"
                 autoFocus
               />
@@ -117,17 +125,19 @@ export const TransactionsView: React.FC = () => {
       <div className="flex flex-col space-y-5 pt-1">
         {Object.keys(grouped).length === 0 ? (
           <div className="text-center py-12 text-[#64728E] text-xs">
-            No transactions found matching your criteria.
+            {t('no_tx_found')}
           </div>
         ) : (
           groupOrder.map((grpName) => {
             const list = grouped[grpName];
             if (!list || list.length === 0) return null;
+            const labelKey = groupLabelMap[grpName];
+            const displayTitle = labelKey ? t(labelKey) : grpName;
 
             return (
               <div key={grpName} className="flex flex-col space-y-2.5">
                 <span className="text-[11px] font-bold text-[#7B88A6] uppercase tracking-wider px-1">
-                  {grpName}
+                  {displayTitle}
                 </span>
 
                 <div className="flex flex-col space-y-3">
@@ -171,7 +181,7 @@ export const TransactionsView: React.FC = () => {
           className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-[#161B29] border border-[#222B40] hover:border-[#5B4DF9] text-white text-xs font-semibold hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4 text-[#5B4DF9] stroke-[2.5]" />
-          <span>Add Custom Transaction</span>
+          <span>{t('add_custom_tx')}</span>
         </button>
       </div>
     </div>

@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const EditProfileModal: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { activeModal, setActiveModal } = useFinance();
+  const { t } = useLanguage();
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [saved, setSaved] = useState(false);
@@ -50,7 +52,7 @@ export const EditProfileModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <User className="w-4 h-4 text-white stroke-[2]" />
                 </div>
-                <h3 className="text-base font-bold">Edit Profile</h3>
+                <h3 className="text-base font-bold">{t('edit_profile')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -67,12 +69,12 @@ export const EditProfileModal: React.FC = () => {
                 className="flex flex-col items-center justify-center py-6"
               >
                 <Check className="w-12 h-12 text-[#10B981] mb-2" />
-                <span className="text-sm font-bold text-white">Profile Updated!</span>
+                <span className="text-sm font-bold text-white">{t('profile_updated')}</span>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col space-y-4 pt-4">
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1">Display Name</label>
+                  <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('display_name')}</label>
                   <input
                     type="text"
                     value={name}
@@ -83,7 +85,7 @@ export const EditProfileModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1">Email Address</label>
+                  <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('email_label')}</label>
                   <input
                     type="email"
                     value={email}
@@ -99,7 +101,7 @@ export const EditProfileModal: React.FC = () => {
                   type="submit"
                   className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
                 >
-                  Save Changes
+                  {t('save_changes')}
                 </motion.button>
               </form>
             )}

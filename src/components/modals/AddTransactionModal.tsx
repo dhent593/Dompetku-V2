@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, AlertCircle, ShoppingBag, Wifi, Car, Building2, Utensils, ArrowDownLeft } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const AddTransactionModal: React.FC = () => {
   const { activeModal, setActiveModal, addTransaction } = useFinance();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
@@ -22,11 +24,11 @@ export const AddTransactionModal: React.FC = () => {
     e.preventDefault();
     const num = parseFloat(amount);
     if (!title.trim()) {
-      setError('Please provide a title');
+      setError(t('title_label'));
       return;
     }
     if (isNaN(num) || num <= 0) {
-      setError('Please enter a valid amount');
+      setError('Nominal tidak valid / Invalid amount');
       return;
     }
 
@@ -45,12 +47,12 @@ export const AddTransactionModal: React.FC = () => {
   };
 
   const categories: { id: Transaction['category']; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'shopping', label: 'Shopping', icon: ShoppingBag },
-    { id: 'bill', label: 'Bill', icon: Wifi },
-    { id: 'salary', label: 'Salary', icon: ArrowDownLeft },
-    { id: 'food', label: 'Food', icon: Utensils },
-    { id: 'travel', label: 'Travel', icon: Car },
-    { id: 'investment', label: 'Investment', icon: Building2 },
+    { id: 'shopping', label: t('shopping'), icon: ShoppingBag },
+    { id: 'bill', label: t('bill'), icon: Wifi },
+    { id: 'salary', label: t('salary'), icon: ArrowDownLeft },
+    { id: 'food', label: t('food'), icon: Utensils },
+    { id: 'travel', label: t('travel'), icon: Car },
+    { id: 'investment', label: t('investment'), icon: Building2 },
   ];
 
   return (
@@ -77,7 +79,7 @@ export const AddTransactionModal: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
                   <Plus className="w-4 h-4 text-white stroke-[2.5]" />
                 </div>
-                <h3 className="text-base font-bold">New Record</h3>
+                <h3 className="text-base font-bold">{t('new_record')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -96,7 +98,7 @@ export const AddTransactionModal: React.FC = () => {
                     type === 'expense' ? 'bg-[#635BFF] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
                   }`}
                 >
-                  Expense (-)
+                  {t('expense_type')}
                 </button>
                 <button
                   type="button"
@@ -105,12 +107,12 @@ export const AddTransactionModal: React.FC = () => {
                     type === 'income' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
                   }`}
                 >
-                  Income (+)
+                  {t('income_type')}
                 </button>
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">Title</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('title_label')}</label>
                 <input
                   type="text"
                   value={title}
@@ -125,7 +127,7 @@ export const AddTransactionModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">Amount ($)</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('amount_label')}</label>
                 <input
                   type="number"
                   step="0.01"
@@ -141,7 +143,7 @@ export const AddTransactionModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">Category</label>
+                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('category_label')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {categories.map((c) => {
                     const Icon = c.icon;
@@ -178,7 +180,7 @@ export const AddTransactionModal: React.FC = () => {
                 type="submit"
                 className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
               >
-                Save Transaction
+                {t('save_tx')}
               </motion.button>
             </form>
           </motion.div>

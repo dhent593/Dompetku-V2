@@ -12,12 +12,14 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const TransactionDetailModal: React.FC = () => {
   const { selectedTransaction, setSelectedTransaction, updateTransaction, deleteTransaction } = useFinance();
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -68,14 +70,14 @@ export const TransactionDetailModal: React.FC = () => {
   };
 
   const categories: { id: Transaction['category']; label: string }[] = [
-    { id: 'shopping', label: 'Shopping' },
-    { id: 'bill', label: 'Bill' },
-    { id: 'salary', label: 'Salary' },
-    { id: 'food', label: 'Food' },
-    { id: 'travel', label: 'Travel' },
-    { id: 'investment', label: 'Investment' },
-    { id: 'transfer', label: 'Transfer' },
-    { id: 'other', label: 'Other' },
+    { id: 'shopping', label: t('shopping') },
+    { id: 'bill', label: t('bill') },
+    { id: 'salary', label: t('salary') },
+    { id: 'food', label: t('food') },
+    { id: 'travel', label: t('travel') },
+    { id: 'investment', label: t('investment') },
+    { id: 'transfer', label: t('transfer') },
+    { id: 'other', label: t('other') },
   ];
 
   return (
@@ -100,7 +102,7 @@ export const TransactionDetailModal: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
               <h3 className="text-base font-bold">
-                {isEditing ? 'Edit Transaction' : 'Transaction Details'}
+                {isEditing ? t('edit_tx') : t('tx_details')}
               </h3>
               <button
                 onClick={() => {
@@ -134,7 +136,7 @@ export const TransactionDetailModal: React.FC = () => {
                   <div className="flex items-center justify-between p-3 rounded-xl bg-[#1C2233]/60">
                     <span className="text-[#7B88A6] flex items-center space-x-2">
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>Date & Time</span>
+                      <span>{t('date_time')}</span>
                     </span>
                     <span className="font-medium text-white">{selectedTransaction.date}, {selectedTransaction.time}</span>
                   </div>
@@ -142,7 +144,7 @@ export const TransactionDetailModal: React.FC = () => {
                   <div className="flex items-center justify-between p-3 rounded-xl bg-[#1C2233]/60">
                     <span className="text-[#7B88A6] flex items-center space-x-2">
                       <CreditCard className="w-3.5 h-3.5" />
-                      <span>Card Used</span>
+                      <span>{t('card_used')}</span>
                     </span>
                     <span className="font-mono text-white">{selectedTransaction.cardNumber || '.... 3245'}</span>
                   </div>
@@ -151,7 +153,7 @@ export const TransactionDetailModal: React.FC = () => {
                     <div className="flex flex-col p-3 rounded-xl bg-[#1C2233]/60 space-y-1">
                       <span className="text-[#7B88A6] flex items-center space-x-2">
                         <FileText className="w-3.5 h-3.5" />
-                        <span>Note</span>
+                        <span>{t('note_label')}</span>
                       </span>
                       <span className="text-white/90">{selectedTransaction.note}</span>
                     </div>
@@ -166,23 +168,23 @@ export const TransactionDetailModal: React.FC = () => {
                   >
                     <div className="flex items-center space-x-2 text-xs text-red-300 font-semibold">
                       <AlertTriangle className="w-4 h-4 text-red-400" />
-                      <span>Delete this transaction?</span>
+                      <span>{t('delete_confirm_title')}</span>
                     </div>
                     <p className="text-[11px] text-red-300/80">
-                      Your balance will automatically adjust accordingly.
+                      {t('delete_confirm_desc')}
                     </p>
                     <div className="flex items-center space-x-2 pt-1">
                       <button
                         onClick={handleDelete}
                         className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer"
                       >
-                        Yes, Delete
+                        {t('yes_delete')}
                       </button>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
                         className="flex-1 py-2 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
                       >
-                        Cancel
+                        {t('cancel')}
                       </button>
                     </div>
                   </motion.div>
@@ -195,7 +197,7 @@ export const TransactionDetailModal: React.FC = () => {
                       className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-[#635BFF] text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-[#635BFF]" />
-                      <span>Edit Record</span>
+                      <span>{t('edit_tx')}</span>
                     </motion.button>
 
                     <motion.button
@@ -205,7 +207,7 @@ export const TransactionDetailModal: React.FC = () => {
                       className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-xs font-semibold active:scale-95 transition-all cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                      <span>Delete</span>
+                      <span>{t('delete_tx')}</span>
                     </motion.button>
                   </div>
                 )}
@@ -221,7 +223,7 @@ export const TransactionDetailModal: React.FC = () => {
                       type === 'expense' ? 'bg-[#635BFF] text-white' : 'text-[#7B88A6]'
                     }`}
                   >
-                    Expense (-)
+                    {t('expense_type')}
                   </button>
                   <button
                     type="button"
@@ -230,12 +232,12 @@ export const TransactionDetailModal: React.FC = () => {
                       type === 'income' ? 'bg-[#10B981] text-white' : 'text-[#7B88A6]'
                     }`}
                   >
-                    Income (+)
+                    {t('income_type')}
                   </button>
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Title</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('title_label')}</label>
                   <input
                     type="text"
                     value={title}
@@ -246,7 +248,7 @@ export const TransactionDetailModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Amount ($)</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('amount_label')}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -258,7 +260,7 @@ export const TransactionDetailModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Category</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('category_label')}</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as Transaction['category'])}
@@ -273,7 +275,7 @@ export const TransactionDetailModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">Note</label>
+                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('note_label')}</label>
                   <input
                     type="text"
                     value={note}
@@ -290,14 +292,14 @@ export const TransactionDetailModal: React.FC = () => {
                     type="submit"
                     className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
                   >
-                    Save Changes
+                    {t('save_changes')}
                   </motion.button>
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
                     className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               </form>

@@ -15,26 +15,27 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 export const HomeView: React.FC = () => {
   const { user } = useAuth();
   const { transactions, setActiveTab, setActiveModal, setSelectedTransaction } = useFinance();
+  const { language, t } = useLanguage();
   const [liveDate, setLiveDate] = useState<string>('');
 
   useEffect(() => {
     const now = new Date();
-    // Format live date: e.g. "13 Nov 2026"
-    const formatted = now.toLocaleDateString('id-ID', {
+    const formatted = now.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     });
     setLiveDate(formatted);
-  }, []);
+  }, [language]);
 
-  // Calculate dynamic monthly income and expense from transactions
+  // Dynamic monthly income and expense
   const thisMonthIncome = transactions
     .filter((tx) => tx.type === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);
@@ -62,6 +63,16 @@ export const HomeView: React.FC = () => {
     }
   };
 
+  const getTranslatedCategory = (cat: string) => {
+    if (cat === 'shopping') return t('shopping');
+    if (cat === 'bill') return t('bill');
+    if (cat === 'salary') return t('salary');
+    if (cat === 'travel') return t('travel');
+    if (cat === 'investment') return t('investment');
+    if (cat === 'food') return t('food');
+    return cat;
+  };
+
   const displayTransactions = transactions.slice(0, 3);
 
   return (
@@ -69,7 +80,7 @@ export const HomeView: React.FC = () => {
       {/* 1. Header */}
       <div className="flex items-center justify-between pt-1">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">Welcome back</span>
+          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
           <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
         </div>
 
@@ -88,10 +99,10 @@ export const HomeView: React.FC = () => {
           {/* Card Top: Label & Live Date */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/80 font-medium tracking-wide">
-              Total Saldo Tersedia
+              {t('total_balance_available')}
             </span>
             <span className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full">
-              {liveDate || 'Hari ini'}
+              {liveDate || (language === 'id' ? 'Hari ini' : 'Today')}
             </span>
           </div>
 
@@ -111,7 +122,7 @@ export const HomeView: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] text-white/70 block leading-tight font-medium">
-                  Pemasukan Bulan Ini
+                  {t('monthly_income')}
                 </span>
                 <span className="font-bold text-white text-[12px] sm:text-[13px] tracking-tight">
                   +{formatCurrency(thisMonthIncome)}
@@ -128,7 +139,7 @@ export const HomeView: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] text-white/70 block leading-tight font-medium">
-                  Pengeluaran Bulan Ini
+                  {t('monthly_expense')}
                 </span>
                 <span className="font-bold text-white text-[12px] sm:text-[13px] tracking-tight">
                   -{formatCurrency(thisMonthExpense)}
@@ -145,7 +156,7 @@ export const HomeView: React.FC = () => {
           onClick={() => setActiveModal('transfer')}
           className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#635BFF] hover:bg-[#564EE6] text-white font-semibold text-sm active:scale-[0.98] transition-all shadow-sm cursor-pointer"
         >
-          <span>Transfer</span>
+          <span>{t('transfer')}</span>
           <Send className="w-4 h-4 stroke-[2.2] -rotate-12" />
         </button>
 
@@ -153,7 +164,7 @@ export const HomeView: React.FC = () => {
           onClick={() => setActiveModal('scanQr')}
           className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#161B26] border border-[#23293A] hover:bg-[#1E2433] text-white font-semibold text-sm active:scale-[0.98] transition-all cursor-pointer"
         >
-          <span>Scan QR</span>
+          <span>{t('scan_qr')}</span>
           <QrCode className="w-4 h-4 text-white stroke-[2.2]" />
         </button>
       </div>
@@ -161,12 +172,12 @@ export const HomeView: React.FC = () => {
       {/* 4. Transactions Section */}
       <div className="flex flex-col space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white tracking-tight">Transactions</h2>
+          <h2 className="text-base font-bold text-white tracking-tight">{t('transactions')}</h2>
           <button
             onClick={() => setActiveTab('transactions')}
             className="text-xs text-[#7B88A6] hover:text-white transition-colors cursor-pointer font-medium"
           >
-            See all
+            {t('see_all')}
           </button>
         </div>
 
@@ -184,9 +195,15 @@ export const HomeView: React.FC = () => {
                   {renderTxIcon(tx)}
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white tracking-tight">{tx.title}</h3>
+                  <h3 className="text-sm font-semibold text-white tracking-tight">
+                    {tx.title}
+                  </h3>
                   <p className="text-xs text-[#6B7894] mt-0.5">
-                    {tx.date.includes('2023-04-19') ? '19 Apr' : tx.date.includes('2023-04-18') ? '18 Apr' : tx.dateGroup}, {tx.time}
+                    {tx.date.includes('2023-04-19')
+                      ? (language === 'id' ? '19 Apr' : 'Apr 19')
+                      : tx.date.includes('2023-04-18')
+                      ? (language === 'id' ? '18 Apr' : 'Apr 18')
+                      : tx.dateGroup}, {tx.time}
                   </p>
                 </div>
               </div>
