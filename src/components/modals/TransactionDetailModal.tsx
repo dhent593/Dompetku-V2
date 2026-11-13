@@ -277,7 +277,7 @@ export const TransactionDetailModal: React.FC = () => {
             <div className="flex items-center space-x-2 pt-2">
               <button
                 type="submit"
-                className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#5B4DF9] to-[#9C38FE] text-white text-xs font-bold shadow-[0_6px_20px_rgba(118,71,254,0.35)] cursor-pointer"
+                className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
               >
                 Save Changes
               </button>

@@ -64,32 +64,25 @@ export const WalletView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Hero Security / mPIN Gradient Card */}
-      <div className="relative overflow-hidden rounded-[26px] p-6 text-white bg-gradient-to-br from-[#5950FA] via-[#7547FE] to-[#9C38FE] shadow-[0_16px_36px_-6px_rgba(118,71,254,0.42)] border border-white/10">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
-
+      {/* 2. Hero Security / mPIN Solid Card (Clean, Minimalist, Matte Violet) */}
+      <div className="relative overflow-hidden rounded-[24px] p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15">
         <div className="flex flex-col items-center justify-center text-center py-2">
-          {/* Animated Fingerprint Button */}
+          {/* Fingerprint Button */}
           <button
             onClick={unlockWithBiometrics}
             disabled={biometricLoading}
-            className="group relative flex items-center justify-center w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all mb-3 focus:outline-none cursor-pointer"
+            className="flex items-center justify-center w-14 h-14 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all mb-3 focus:outline-none cursor-pointer"
             aria-label="Unlock with fingerprint"
           >
             {biometricLoading ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full"
-              />
+              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <Fingerprint className="w-9 h-9 text-white stroke-[1.8] group-hover:scale-105 transition-transform" />
+              <Fingerprint className="w-8 h-8 text-white stroke-[1.8]" />
             )}
-            <span className="absolute inset-0 rounded-full animate-ping bg-white/15 pointer-events-none" />
           </button>
 
           <span className="text-sm font-semibold text-white tracking-wide">Unlock with fingerprint</span>
-          <span className="text-xs text-purple-200/70 font-normal my-1">or</span>
+          <span className="text-xs text-white/75 font-normal my-1">or</span>
           <span className="text-sm font-semibold text-white tracking-wide">Enter 4 Digit Login mPIN</span>
 
           {/* 4 Digit PIN Dots */}
@@ -103,7 +96,7 @@ export const WalletView: React.FC = () => {
                 <div
                   key={idx}
                   className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                    isFilled ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] scale-110' : 'bg-white/40'
+                    isFilled ? 'bg-white shadow-sm scale-110' : 'bg-white/40'
                   }`}
                 />
               );
@@ -111,7 +104,7 @@ export const WalletView: React.FC = () => {
           </button>
 
           {pinError && (
-            <p className="text-[11px] text-red-200 mt-2 font-medium bg-red-900/40 py-1 px-3 rounded-full">
+            <p className="text-[11px] text-white mt-2 font-medium bg-black/30 py-1 px-3 rounded-full">
               {pinError}
             </p>
           )}
@@ -134,11 +127,11 @@ export const WalletView: React.FC = () => {
         </button>
       </div>
 
-      {/* Interactive In-line Keypad when clicked */}
+      {/* In-line Keypad */}
       {showKeypad && (
-        <div className="bg-[#161B29] border border-[#20273D] rounded-[24px] p-4 flex flex-col items-center overflow-hidden">
-          <div className="w-full flex justify-between items-center px-2 pb-3 border-b border-[#20273D]">
-            <span className="text-xs text-[#7B88A6] font-medium">Numeric Keypad (Demo PIN: 1234)</span>
+        <div className="bg-[#141824] border border-[#1E2435] rounded-[22px] p-4 flex flex-col items-center">
+          <div className="w-full flex justify-between items-center px-2 pb-3 border-b border-[#1E2435]">
+            <span className="text-xs text-[#7B88A6] font-medium">Numeric Keypad (PIN: 1234)</span>
             <button
               onClick={() => setShowKeypad(false)}
               className="text-xs text-[#635BFF] font-semibold hover:underline cursor-pointer"
@@ -158,7 +151,7 @@ export const WalletView: React.FC = () => {
                     handleKeypadPress(k);
                   }
                 }}
-                className="h-12 rounded-xl bg-[#21283D] hover:bg-[#2C3550] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer"
+                className="h-12 rounded-xl bg-[#1C2233] hover:bg-[#252E44] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer"
               >
                 {k}
               </button>
@@ -178,9 +171,9 @@ export const WalletView: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleProductClick(item.name)}
-                className="flex flex-col items-center justify-center p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] text-center hover:border-[#2D3856] active:scale-95 transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] active:scale-95 transition-all group cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center text-white/90 group-hover:text-white shadow-inner transition-colors">
+                <div className="w-12 h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center text-white/90 group-hover:text-white transition-colors">
                   <Icon className="w-5 h-5 stroke-[2]" />
                 </div>
                 <span className="text-xs text-[#7B88A6] font-medium mt-3 leading-tight group-hover:text-white transition-colors">
@@ -199,7 +192,7 @@ export const WalletView: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#222A3F] border border-[#303B56] text-white px-4 py-2 rounded-full text-xs font-medium shadow-2xl flex items-center space-x-2 z-50 pointer-events-none"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1C2233] border border-[#2B3550] text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl flex items-center space-x-2 z-50 pointer-events-none"
           >
             <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
             <span>{activeProductToast}</span>

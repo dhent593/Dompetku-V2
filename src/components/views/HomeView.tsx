@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, User, Send, QrCode, ShoppingBag, Wifi, ArrowDownLeft, Car, Building2, Utensils } from 'lucide-react';
+import { User, Send, QrCode, ShoppingBag, Wifi, ArrowDownLeft, Car, Building2, Utensils } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { formatCurrency } from '@/lib/utils';
@@ -14,19 +14,19 @@ export const HomeView: React.FC = () => {
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
       case 'shopping':
-        return <ShoppingBag className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <ShoppingBag className="w-5 h-5 text-white stroke-[2]" />;
       case 'bill':
-        return <Wifi className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <Wifi className="w-5 h-5 text-white stroke-[2]" />;
       case 'salary':
         return <ArrowDownLeft className="w-5 h-5 text-[#10B981] stroke-[2.2]" />;
       case 'travel':
-        return <Car className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <Car className="w-5 h-5 text-white stroke-[2]" />;
       case 'investment':
-        return <Building2 className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <Building2 className="w-5 h-5 text-white stroke-[2]" />;
       case 'food':
-        return <Utensils className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <Utensils className="w-5 h-5 text-white stroke-[2]" />;
       default:
-        return <ShoppingBag className="w-5 h-5 text-white/90 stroke-[2]" />;
+        return <ShoppingBag className="w-5 h-5 text-white stroke-[2]" />;
     }
   };
 
@@ -43,45 +43,42 @@ export const HomeView: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('settings')}
-          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+          className="w-10 h-10 rounded-full bg-[#161B26] border border-[#23293A] flex items-center justify-center text-white/90 hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
           aria-label="Profile"
         >
           <User className="w-5 h-5 stroke-[2]" />
         </button>
       </div>
 
-      {/* 2. Main Balance Gradient Card */}
-      <div className="relative overflow-hidden rounded-[26px] p-6 text-white bg-gradient-to-br from-[#5950FA] via-[#7547FE] to-[#9C38FE] shadow-[0_16px_36px_-6px_rgba(118,71,254,0.42)] border border-white/10">
-        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-12 w-48 h-48 rounded-full bg-black/10 blur-2xl pointer-events-none" />
-
+      {/* 2. Main Balance Solid Card (Clean, Minimalist, Matte Violet) */}
+      <div className="relative overflow-hidden rounded-[24px] p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15">
         <div className="relative z-10 flex flex-col justify-between h-[155px]">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-sm tracking-widest text-purple-100/90 font-medium">
+            <span className="font-mono text-sm tracking-widest text-white/90 font-medium">
               {user.cardNumberMask}
             </span>
           </div>
 
           <div>
-            <span className="text-xs text-purple-200/80 font-normal tracking-wide">Balance</span>
+            <span className="text-xs text-white/80 font-normal tracking-wide">Balance</span>
             <div className="text-3xl sm:text-[34px] font-extrabold text-white tracking-tight mt-0.5">
               {formatCurrency(user.balance)}
             </div>
           </div>
 
           <div className="flex justify-end items-center">
-            <span className="text-[11px] font-medium text-purple-200/90 tracking-wider">
+            <span className="text-[11px] font-medium text-white/85 tracking-wider">
               Valid Thru {user.cardExpiry}
             </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Action Buttons: Transfer & Scan QR */}
+      {/* 3. Action Buttons: Transfer & Scan QR (Solid, Crisp, No Garish Gradients) */}
       <div className="grid grid-cols-2 gap-3.5">
         <button
           onClick={() => setActiveModal('transfer')}
-          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[20px] bg-gradient-to-r from-[#5950FA] to-[#923AFE] text-white font-semibold text-sm hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_8px_22px_rgba(118,71,254,0.35)] cursor-pointer"
+          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#635BFF] hover:bg-[#564EE6] text-white font-semibold text-sm active:scale-[0.98] transition-all shadow-sm cursor-pointer"
         >
           <span>Transfer</span>
           <Send className="w-4 h-4 stroke-[2.2] -rotate-12" />
@@ -89,7 +86,7 @@ export const HomeView: React.FC = () => {
 
         <button
           onClick={() => setActiveModal('scanQr')}
-          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[20px] bg-[#161C2C] border border-[#232C42] text-white font-semibold text-sm hover:bg-[#1E253B] active:scale-[0.98] transition-all cursor-pointer"
+          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#161B26] border border-[#23293A] hover:bg-[#1E2433] text-white font-semibold text-sm active:scale-[0.98] transition-all cursor-pointer"
         >
           <span>Scan QR</span>
           <QrCode className="w-4 h-4 text-white stroke-[2.2]" />
@@ -102,28 +99,28 @@ export const HomeView: React.FC = () => {
           <h2 className="text-base font-bold text-white tracking-tight">Transactions</h2>
           <button
             onClick={() => setActiveTab('transactions')}
-            className="text-xs text-[#6A7898] hover:text-white transition-colors cursor-pointer font-medium"
+            className="text-xs text-[#7B88A6] hover:text-white transition-colors cursor-pointer font-medium"
           >
             See all
           </button>
         </div>
 
-        {/* Transaction Cards List - Clickable for details & edit/delete */}
+        {/* Transaction Cards List */}
         <div className="flex flex-col space-y-3">
           {displayTransactions.map((tx) => (
             <div
               key={tx.id}
               onClick={() => setSelectedTransaction(tx)}
-              className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#5B4DF9] hover:bg-[#1A2031] transition-all cursor-pointer group"
+              className="flex items-center justify-between p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer group"
               title="Click to view, edit, or delete"
             >
               <div className="flex items-center space-x-3.5">
-                <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center flex-shrink-0">
                   {renderTxIcon(tx)}
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-white tracking-tight">{tx.title}</h3>
-                  <p className="text-xs text-[#667390] mt-0.5">
+                  <p className="text-xs text-[#6B7894] mt-0.5">
                     {tx.date.includes('2023-04-19') ? '19 Apr' : tx.date.includes('2023-04-18') ? '18 Apr' : tx.dateGroup}, {tx.time}
                   </p>
                 </div>

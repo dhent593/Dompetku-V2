@@ -57,7 +57,7 @@ export const AccountSecurityModal: React.FC = () => {
       >
         <div className="flex items-center justify-between pb-4 border-b border-[#21293F]">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5B4DF9] to-[#9B45FE] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
               <ShieldCheck className="w-4 h-4 text-white" />
             </div>
             <h3 className="text-base font-bold">Account Security</h3>
@@ -152,7 +152,7 @@ export const AccountSecurityModal: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#5B4DF9] to-[#9C38FE] text-white text-xs font-bold shadow-[0_6px_20px_rgba(118,71,254,0.35)] cursor-pointer mt-1"
+            className="w-full py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer mt-1 shadow-sm"
           >
             Update mPIN
           </button>

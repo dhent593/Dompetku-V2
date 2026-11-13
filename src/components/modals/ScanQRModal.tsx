@@ -56,16 +56,16 @@ export const ScanQRModal: React.FC = () => {
           <motion.div
             animate={{ y: [-100, 100, -100] }}
             transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-            className="absolute w-full h-1 bg-gradient-to-r from-transparent via-[#9B45FE] to-transparent shadow-[0_0_12px_#9B45FE]"
+            className="absolute w-full h-0.5 bg-[#635BFF] shadow-[0_0_8px_#635BFF]"
           />
 
           <QrCode className="w-24 h-24 text-white/20 stroke-[1]" />
 
           {/* Corner highlights */}
-          <span className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#5B4DF9] rounded-tl" />
-          <span className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#5B4DF9] rounded-tr" />
-          <span className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#5B4DF9] rounded-bl" />
-          <span className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#5B4DF9] rounded-br" />
+          <span className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#635BFF] rounded-tl" />
+          <span className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#635BFF] rounded-tr" />
+          <span className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#635BFF] rounded-bl" />
+          <span className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#635BFF] rounded-br" />
         </div>
 
         {scannedResult ? (

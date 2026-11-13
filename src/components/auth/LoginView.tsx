@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Wallet,
   Fingerprint,
@@ -10,10 +9,7 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Sparkles,
   User,
-  ShieldCheck,
-  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -78,19 +74,19 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0D15] flex flex-col justify-center items-center px-5 py-12 text-white selection:bg-[#5B4DF9] selection:text-white">
+    <div className="min-h-screen bg-[#0A0D15] flex flex-col justify-center items-center px-5 py-12 text-white selection:bg-[#635BFF] selection:text-white">
       <div className="w-full max-w-sm flex flex-col items-center">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#5950FA] via-[#7547FE] to-[#9C38FE] flex items-center justify-center shadow-[0_10px_28px_rgba(118,71,254,0.4)] mb-3">
+          <div className="w-14 h-14 rounded-2xl bg-[#635BFF] flex items-center justify-center shadow-lg shadow-[#635BFF]/20 mb-3">
             <Wallet className="w-7 h-7 text-white stroke-[2]" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">MyPocket</h1>
-          <p className="text-xs text-[#7B88A6] mt-1">Smart, luxury personal finance management</p>
+          <p className="text-xs text-[#7B88A6] mt-1">Smart, clean personal finance management</p>
         </div>
 
         {/* Auth Mode Tabs */}
-        <div className="flex items-center w-full bg-[#131724] p-1.5 rounded-2xl border border-[#1E253A] mb-6">
+        <div className="flex items-center w-full bg-[#111520] p-1.5 rounded-2xl border border-[#1C2233] mb-6">
           <button
             type="button"
             onClick={() => {
@@ -99,7 +95,7 @@ export const LoginView: React.FC = () => {
             }}
             className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
               authMode === 'email'
-                ? 'bg-[#222A3F] text-white shadow-sm'
+                ? 'bg-[#1C2233] text-white shadow-sm'
                 : 'text-[#677491] hover:text-white'
             }`}
           >
@@ -113,7 +109,7 @@ export const LoginView: React.FC = () => {
             }}
             className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
               authMode === 'mpin'
-                ? 'bg-[#222A3F] text-white shadow-sm'
+                ? 'bg-[#1C2233] text-white shadow-sm'
                 : 'text-[#677491] hover:text-white'
             }`}
           >
@@ -132,7 +128,7 @@ export const LoginView: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-[#161B29] border border-[#232C42] rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#5B4DF9] transition-all"
+                  className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
                   required
                 />
                 <Mail className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
@@ -147,7 +143,7 @@ export const LoginView: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#161B29] border border-[#232C42] rounded-2xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#5B4DF9] transition-all"
+                  className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
                   required
                 />
                 <Lock className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
@@ -170,33 +166,31 @@ export const LoginView: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#5950FA] to-[#923AFE] text-white text-xs font-bold tracking-wide shadow-[0_8px_22px_rgba(118,71,254,0.35)] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2"
+              className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2 shadow-sm"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Sign In to MyPocket</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
 
-            {/* Quick Demo Login button */}
             <button
               type="button"
               onClick={handleQuickDemoLogin}
-              className="w-full py-3 rounded-2xl bg-[#161B29] border border-[#232C42] hover:border-[#5B4DF9] text-xs font-semibold text-white/90 hover:text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-[#141824] border border-[#1E2435] hover:border-[#635BFF] text-xs font-semibold text-white/90 hover:text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#5B4DF9]" />
-              <span>Instant Demo Access (Smith Doe)</span>
+              <span>Instant Demo Access (Smith)</span>
             </button>
 
             <div className="text-center pt-2">
               <button
                 type="button"
                 onClick={() => setAuthMode('register')}
-                className="text-xs text-[#7B88A6] hover:text-[#5B4DF9] transition-colors cursor-pointer"
+                className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
               >
                 Don't have an account? <span className="font-semibold text-white">Create Account</span>
               </button>
@@ -207,27 +201,24 @@ export const LoginView: React.FC = () => {
         {/* Tab 2: 4-Digit mPIN & Biometric Login */}
         {authMode === 'mpin' && (
           <div className="w-full flex flex-col items-center">
-            {/* Gradient Card matching Screen 3 */}
-            <div className="w-full rounded-[26px] p-6 text-white bg-gradient-to-br from-[#5950FA] via-[#7547FE] to-[#9C38FE] shadow-[0_16px_36px_-6px_rgba(118,71,254,0.42)] border border-white/10 mb-5 text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
-
+            {/* Solid Card */}
+            <div className="w-full rounded-[24px] p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15 mb-5 text-center relative overflow-hidden">
               <button
                 type="button"
                 onClick={loginWithBiometrics}
                 disabled={biometricLoading}
-                className="group relative flex items-center justify-center w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all mx-auto mb-2.5 cursor-pointer"
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all mx-auto mb-2.5 cursor-pointer"
                 aria-label="Unlock with fingerprint"
               >
                 {biometricLoading ? (
-                  <div className="w-7 h-7 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <Fingerprint className="w-8 h-8 text-white stroke-[1.8]" />
                 )}
-                <span className="absolute inset-0 rounded-full animate-ping bg-white/15 pointer-events-none" />
               </button>
 
               <span className="text-xs font-semibold text-white block">Tap fingerprint to quick login</span>
-              <span className="text-[11px] text-purple-200/70 block my-0.5">or</span>
+              <span className="text-[11px] text-white/70 block my-0.5">or</span>
               <span className="text-xs font-semibold text-white block">Enter 4-Digit mPIN</span>
 
               {/* 4 Digit Dots */}
@@ -238,7 +229,7 @@ export const LoginView: React.FC = () => {
                     <div
                       key={idx}
                       className={`w-3.5 h-3.5 rounded-full transition-all duration-200 ${
-                        isFilled ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)] scale-110' : 'bg-white/40'
+                        isFilled ? 'bg-white shadow-sm scale-110' : 'bg-white/40'
                       }`}
                     />
                   );
@@ -246,7 +237,7 @@ export const LoginView: React.FC = () => {
               </div>
 
               {pinError && (
-                <p className="text-[11px] text-red-200 mt-2.5 font-medium bg-red-950/60 py-1 px-3 rounded-full">
+                <p className="text-[11px] text-white mt-2.5 font-medium bg-black/30 py-1 px-3 rounded-full">
                   {pinError}
                 </p>
               )}
@@ -263,7 +254,7 @@ export const LoginView: React.FC = () => {
                     else if (val === '⌫') handleKeypadBackspace();
                     else handleKeypadPress(val);
                   }}
-                  className="h-12 rounded-xl bg-[#161B29] border border-[#20273D] hover:bg-[#20283E] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                  className="h-12 rounded-xl bg-[#141824] border border-[#1E2435] hover:bg-[#1E2435] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer shadow-sm"
                 >
                   {val}
                 </button>
@@ -294,7 +285,7 @@ export const LoginView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Alex Morgan"
-                  className="w-full bg-[#161B29] border border-[#232C42] rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#5B4DF9] transition-all"
+                  className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
                   required
                 />
                 <User className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
@@ -309,7 +300,7 @@ export const LoginView: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full bg-[#161B29] border border-[#232C42] rounded-2xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#5B4DF9] transition-all"
+                  className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
                   required
                 />
                 <Mail className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
@@ -324,7 +315,7 @@ export const LoginView: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full bg-[#161B29] border border-[#232C42] rounded-2xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#5B4DF9] transition-all"
+                  className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
                   required
                 />
                 <Lock className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
@@ -340,7 +331,7 @@ export const LoginView: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#5950FA] to-[#923AFE] text-white text-xs font-bold tracking-wide shadow-[0_8px_22px_rgba(118,71,254,0.35)] active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2"
+              className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2 shadow-sm"
             >
               <span>Complete Registration</span>
               <ArrowRight className="w-4 h-4" />
@@ -350,7 +341,7 @@ export const LoginView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setAuthMode('email')}
-                className="text-xs text-[#7B88A6] hover:text-[#5B4DF9] transition-colors cursor-pointer"
+                className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
               >
                 Already registered? <span className="font-semibold text-white">Sign In</span>
               </button>
@@ -361,4 +352,3 @@ export const LoginView: React.FC = () => {
     </div>
   );
 };
-

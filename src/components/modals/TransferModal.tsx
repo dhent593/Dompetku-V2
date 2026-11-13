@@ -64,7 +64,7 @@ export const TransferModal: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#21293F]">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5B4DF9] to-[#9B45FE] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
               <Send className="w-4 h-4 text-white stroke-[2.2] -rotate-12" />
             </div>
             <h3 className="text-base font-bold">Transfer Money</h3>
@@ -159,7 +159,7 @@ export const TransferModal: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#5B4DF9] to-[#9C38FE] text-white text-xs font-bold tracking-wide shadow-[0_6px_20px_rgba(118,71,254,0.35)] active:scale-95 transition-all mt-2"
+              className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
             >
               Confirm Transfer
             </button>
