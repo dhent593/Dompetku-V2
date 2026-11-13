@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, QrCode, CheckCircle2, Sparkles } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { formatCurrency } from '@/lib/utils';
+import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const ScanQRModal: React.FC = () => {
   const { activeModal, setActiveModal, addTransaction } = useFinance();
@@ -31,40 +32,20 @@ export const ScanQRModal: React.FC = () => {
     }, 2000);
   };
 
-  const gelVariants = {
-    initial: { opacity: 0, scale: 0.72, y: 35 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 380,
-        damping: 22,
-        mass: 0.75,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      y: 20,
-      transition: { duration: 0.18, ease: 'easeIn' },
-    },
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           key="scanqr-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={snappyBackdropVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
         >
           <motion.div
             key="scanqr-modal"
-            variants={gelVariants}
+            variants={snappyGelVariants}
             initial="initial"
             animate="animate"
             exit="exit"

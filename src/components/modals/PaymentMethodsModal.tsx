@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Plus, Trash2 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
+import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const PaymentMethodsModal: React.FC = () => {
   const { activeModal, setActiveModal, cards, addCard, deleteCard, setDefaultCard } = useFinance();
@@ -36,40 +37,20 @@ export const PaymentMethodsModal: React.FC = () => {
     setExpiry('');
   };
 
-  const gelVariants = {
-    initial: { opacity: 0, scale: 0.72, y: 35 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 380,
-        damping: 22,
-        mass: 0.75,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      y: 20,
-      transition: { duration: 0.18, ease: 'easeIn' },
-    },
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           key="cards-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={snappyBackdropVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
         >
           <motion.div
             key="cards-modal"
-            variants={gelVariants}
+            variants={snappyGelVariants}
             initial="initial"
             animate="animate"
             exit="exit"

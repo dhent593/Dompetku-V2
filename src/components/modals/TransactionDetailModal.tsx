@@ -14,6 +14,7 @@ import {
 import { useFinance } from '@/context/FinanceContext';
 import { formatCurrency } from '@/lib/utils';
 import { Transaction } from '@/types';
+import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const TransactionDetailModal: React.FC = () => {
   const { selectedTransaction, setSelectedTransaction, updateTransaction, deleteTransaction } = useFinance();
@@ -77,40 +78,20 @@ export const TransactionDetailModal: React.FC = () => {
     { id: 'other', label: 'Other' },
   ];
 
-  const gelVariants = {
-    initial: { opacity: 0, scale: 0.72, y: 35 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 380,
-        damping: 22,
-        mass: 0.75,
-      },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      y: 20,
-      transition: { duration: 0.18, ease: 'easeIn' },
-    },
-  };
-
   return (
     <AnimatePresence>
       {isOpen && selectedTransaction && (
         <motion.div
           key="detail-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={snappyBackdropVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
         >
           <motion.div
             key="detail-modal"
-            variants={gelVariants}
+            variants={snappyGelVariants}
             initial="initial"
             animate="animate"
             exit="exit"

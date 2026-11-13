@@ -25,16 +25,16 @@ export default function App() {
   const { isLoggedIn } = useAuth();
   const { activeTab, setActiveTab } = useFinance();
 
-  // If not authenticated, render Login Screen with bottom-up reveal
+  // If not authenticated, render Login Screen with fast smooth bottom-up reveal
   if (!isLoggedIn) {
     return (
       <AnimatePresence mode="wait">
         <motion.div
           key="login"
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -30 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
         >
           <LoginView />
         </motion.div>
@@ -42,22 +42,22 @@ export default function App() {
     );
   }
 
-  // Page slide-up transition variants
+  // Snappy, ultra-smooth page transition variants
   const pageVariants = {
-    initial: { opacity: 0, y: 35 },
+    initial: { opacity: 0, y: 18 },
     animate: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.35,
-        ease: [0.22, 1, 0.36, 1], // Smooth fluid easeOut
+        duration: 0.2,
+        ease: [0.16, 1, 0.3, 1], // Ultra-responsive Apple/iOS native feel
       },
     },
     exit: {
       opacity: 0,
-      y: -20,
+      y: -10,
       transition: {
-        duration: 0.2,
+        duration: 0.12,
         ease: 'easeIn',
       },
     },
@@ -65,7 +65,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0A0D15] text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white">
-      {/* Main Direct Content Container with Slide-up Animation */}
+      {/* Main Direct Content Container with Snappy Slide-up Animation */}
       <main className="w-full max-w-md mx-auto min-h-screen flex flex-col justify-start px-5 pt-6 pb-28 overflow-x-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -96,7 +96,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Interactive Feature & CRUD Modals with Smooth Gel Animation */}
+      {/* Fast, Snappy Gel Popups */}
       <TransferModal />
       <WithdrawModal />
       <ScanQRModal />
