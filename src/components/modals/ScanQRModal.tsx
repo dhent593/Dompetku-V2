@@ -17,7 +17,7 @@ export const ScanQRModal: React.FC = () => {
 
   const handleSimulateScan = () => {
     const merchantName = 'Starbucks Coffee - Downtown';
-    const amount = 8.50;
+    const amount = 8500;
 
     addTransaction({
       title: merchantName,

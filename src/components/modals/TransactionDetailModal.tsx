@@ -251,7 +251,8 @@ export const TransactionDetailModal: React.FC = () => {
                   <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('amount_label')}</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
+                    min="1"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-[#635BFF]"

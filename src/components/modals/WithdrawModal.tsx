@@ -112,13 +112,14 @@ export const WithdrawModal: React.FC = () => {
                   </div>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
+                    min="1"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
                       setError(null);
                     }}
-                    placeholder="0.00"
+                    placeholder="0"
                     className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
                     required
                   />

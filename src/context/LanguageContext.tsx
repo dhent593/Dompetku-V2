@@ -80,7 +80,7 @@ const translations = {
     // Modals
     transfer_title: 'Transfer Saldo',
     recipient_label: 'Nama atau Rekening Penerima',
-    amount_label: 'Nominal ($)',
+    amount_label: 'Nominal (Rp)',
     available_label: 'Tersedia',
     note_label: 'Catatan (Opsional)',
     confirm_transfer: 'Konfirmasi Transfer',
@@ -93,7 +93,7 @@ const translations = {
 
     scan_title: 'Pindai Kode QR',
     scan_subtitle: 'Arahkan kamera ke kode QR merchant',
-    simulate_scan: 'Simulasikan Pembayaran QR ($8.50)',
+    simulate_scan: 'Simulasikan Pembayaran QR (Rp8.500)',
 
     new_record: 'Catatan Baru',
     expense_type: 'Pengeluaran (-)',
@@ -229,7 +229,7 @@ const translations = {
     // Modals
     transfer_title: 'Transfer Money',
     recipient_label: 'Recipient Name or Account',
-    amount_label: 'Amount ($)',
+    amount_label: 'Amount (Rp)',
     available_label: 'Avail',
     note_label: 'Note (Optional)',
     confirm_transfer: 'Confirm Transfer',
@@ -242,7 +242,7 @@ const translations = {
 
     scan_title: 'Scan QR Code',
     scan_subtitle: 'Align the QR code within the viewfinder frame',
-    simulate_scan: 'Simulate Scan Payment ($8.50)',
+    simulate_scan: 'Simulate Scan Payment (Rp8.500)',
 
     new_record: 'New Record',
     expense_type: 'Expense (-)',

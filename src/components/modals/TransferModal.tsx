@@ -127,27 +127,27 @@ export const TransferModal: React.FC = () => {
                   </div>
                   <input
                     type="number"
-                    step="0.01"
-                    min="0.01"
+                    step="1"
+                    min="1"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
                       setError(null);
                     }}
-                    placeholder="0.00"
+                    placeholder="0"
                     className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
                     required
                   />
                   {/* Quick Pills */}
                   <div className="flex items-center space-x-2 mt-2">
-                    {[20, 50, 100, 500].map((val) => (
+                    {[50, 100, 500, 1000].map((val) => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => setAmount(val.toString())}
                         className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#8E9BB8] hover:text-white hover:border-[#635BFF] cursor-pointer"
                       >
-                        ${val}
+                        {formatCurrency(val)}
                       </button>
                     ))}
                   </div>

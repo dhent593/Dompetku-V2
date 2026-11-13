@@ -5,10 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, prefix: string = '$'): string {
-  const formatted = Math.abs(amount).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+export function formatCurrency(amount: number, prefix: string = 'Rp'): string {
+  const rounded = Math.round(Number(amount) || 0);
+  const formatted = Math.abs(rounded).toLocaleString('id-ID', {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
   });
   return `${prefix}${formatted}`;
 }

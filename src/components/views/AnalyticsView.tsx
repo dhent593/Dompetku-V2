@@ -164,7 +164,7 @@ export const AnalyticsView: React.FC = () => {
 
           {activeType === 'expenses' && (
             <div className="absolute left-[28%] top-[-8px] -translate-x-1/2 bg-[#635BFF] text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none">
-              <span>$1,350</span>
+              <span>{formatCurrency(currentChart.highlightValue)}</span>
             </div>
           )}
         </div>
@@ -201,7 +201,7 @@ export const AnalyticsView: React.FC = () => {
               <Car className="w-5 h-5 stroke-[2]" />
             </div>
             <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('travel')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$125.70</span>
+            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(126)}</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] transition-colors">
@@ -209,7 +209,7 @@ export const AnalyticsView: React.FC = () => {
               <Landmark className="w-5 h-5 stroke-[2]" />
             </div>
             <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('investment')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$115.00</span>
+            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(115)}</span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] transition-colors">
@@ -217,7 +217,7 @@ export const AnalyticsView: React.FC = () => {
               <Utensils className="w-5 h-5 stroke-[2]" />
             </div>
             <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('food')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">$156.75</span>
+            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(157)}</span>
           </div>
         </div>
       </div>
