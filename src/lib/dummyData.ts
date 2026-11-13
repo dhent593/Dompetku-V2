@@ -141,3 +141,4 @@ export const CHART_DATA = {
     highlightValue: 14482,
   },
 };
+

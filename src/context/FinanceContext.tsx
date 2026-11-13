@@ -32,16 +32,18 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user, updateUser } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    // Load initial transactions
+    // Sync with persistent local data
     const loaded = dataService.getTransactions();
-    setTransactions(loaded);
+    if (loaded && loaded.length > 0) {
+      setTransactions(loaded);
+    }
   }, []);
 
   const addTransaction = (tx: {
@@ -169,3 +171,4 @@ export function useFinance() {
   }
   return context;
 }
+

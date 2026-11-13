@@ -89,3 +89,4 @@ export const EditProfileModal: React.FC = () => {
     </div>
   );
 };
+

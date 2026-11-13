@@ -58,3 +58,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. **Supabase Database**: Provision PostgreSQL schema for `profiles`, `transactions`, and `categories`.
 2. **Supabase Auth**: Connect email/magic link and session tokens.
 3. **Vercel Deployment**: Link repository, configure environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`), and deploy with Edge optimization.
+

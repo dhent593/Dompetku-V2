@@ -125,3 +125,4 @@ export const WithdrawModal: React.FC = () => {
     </div>
   );
 };
+

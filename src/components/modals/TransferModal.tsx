@@ -169,3 +169,4 @@ export const TransferModal: React.FC = () => {
     </div>
   );
 };
+

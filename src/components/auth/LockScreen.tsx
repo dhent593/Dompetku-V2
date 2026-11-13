@@ -119,3 +119,4 @@ export const LockScreen: React.FC = () => {
     </div>
   );
 };
+

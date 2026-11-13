@@ -21,3 +21,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const isSupabaseConfigured = (): boolean => {
   return false; // Toggle to true once env variables are supplied in Phase 2
 };
+

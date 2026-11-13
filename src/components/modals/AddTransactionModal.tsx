@@ -172,3 +172,4 @@ export const AddTransactionModal: React.FC = () => {
     </div>
   );
 };
+

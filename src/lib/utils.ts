@@ -16,3 +16,4 @@ export function formatCurrency(amount: number, prefix: string = '$'): string {
 export function formatCardNumber(mask: string): string {
   return mask;
 }
+

@@ -4,7 +4,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Home, PieChart, Wallet, Settings } from 'lucide-react';
 import { NavTab } from '@/types';
-import { useFinance } from '@/context/FinanceContext';
 
 interface BottomNavProps {
   currentTab: NavTab;
@@ -20,7 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
   ];
 
   return (
-    <nav className="w-full bg-[#111522]/95 backdrop-blur-xl border-t border-[#1D253A] px-6 py-3 rounded-b-[40px] z-30">
+    <nav className="w-full bg-[#111522]/95 backdrop-blur-2xl border-t border-[#1D253A] px-6 py-3 z-30">
       <div className="flex items-center justify-around max-w-md mx-auto relative">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -30,7 +29,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             <button
               key={tab.id}
               onClick={() => onSelectTab(tab.id)}
-              className="group relative flex flex-col items-center justify-center p-2 transition-transform active:scale-90 focus:outline-none"
+              className="group relative flex flex-col items-center justify-center p-2 transition-transform active:scale-90 focus:outline-none cursor-pointer"
               aria-label={tab.label}
             >
               <div

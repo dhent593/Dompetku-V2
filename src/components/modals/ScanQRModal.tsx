@@ -90,3 +90,4 @@ export const ScanQRModal: React.FC = () => {
     </div>
   );
 };
+

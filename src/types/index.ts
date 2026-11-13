@@ -42,3 +42,4 @@ export type NavTab = 'home' | 'analytics' | 'wallet' | 'settings' | 'transaction
 
 export type TimeFilter = 'monthly' | 'weekly' | 'yearly';
 export type AnalyticType = 'expenses' | 'savings';
+

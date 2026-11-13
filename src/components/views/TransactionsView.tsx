@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronLeft,
   Search,
@@ -48,7 +48,6 @@ export const TransactionsView: React.FC = () => {
     }
   };
 
-  // Group transactions by dateGroup (TODAY, YESTERDAY, etc.)
   const grouped = filteredTransactions.reduce((acc, tx) => {
     const group = tx.dateGroup || 'OLDER';
     if (!acc[group]) acc[group] = [];
@@ -59,16 +58,12 @@ export const TransactionsView: React.FC = () => {
   const groupOrder = ['TODAY', 'YESTERDAY', 'EARLIER THIS WEEK', 'OLDER'];
 
   return (
-    <div className="flex flex-col space-y-4 pb-6 text-white">
+    <div className="flex flex-col space-y-4 text-white w-full">
       {/* 1. Top Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between pt-1"
-      >
+      <div className="flex items-center justify-between pt-1">
         <button
           onClick={() => setActiveTab('home')}
-          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm"
+          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm cursor-pointer"
           aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
@@ -78,12 +73,12 @@ export const TransactionsView: React.FC = () => {
 
         <button
           onClick={() => setShowSearchInput(!showSearchInput)}
-          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm"
+          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm cursor-pointer"
           aria-label="Search"
         >
           <Search className="w-4 h-4 stroke-[2.2]" />
         </button>
-      </motion.div>
+      </div>
 
       {/* Expandable Search Input */}
       <AnimatePresence>
@@ -107,7 +102,7 @@ export const TransactionsView: React.FC = () => {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-3 text-[#64728E] hover:text-white"
+                  className="absolute right-3 top-3 text-[#64728E] hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -136,9 +131,8 @@ export const TransactionsView: React.FC = () => {
 
                 <div className="flex flex-col space-y-3">
                   {list.map((tx) => (
-                    <motion.div
+                    <div
                       key={tx.id}
-                      whileTap={{ scale: 0.99 }}
                       className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2B3552] transition-colors"
                     >
                       <div className="flex items-center space-x-3.5">
@@ -158,7 +152,7 @@ export const TransactionsView: React.FC = () => {
                       >
                         {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -171,7 +165,7 @@ export const TransactionsView: React.FC = () => {
       <div className="pt-2">
         <button
           onClick={() => setActiveModal('addTx')}
-          className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-[#161B29] border border-[#222B40] hover:border-[#5B4DF9] text-white text-xs font-semibold hover:bg-[#1E253B] active:scale-[0.99] transition-all"
+          className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-[#161B29] border border-[#222B40] hover:border-[#5B4DF9] text-white text-xs font-semibold hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4 text-[#5B4DF9] stroke-[2.5]" />
           <span>Add Custom Transaction</span>
