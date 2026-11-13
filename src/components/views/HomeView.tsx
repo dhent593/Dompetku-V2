@@ -41,23 +41,13 @@ export const HomeView: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setActiveModal('addTx')}
-            className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm cursor-pointer"
-            aria-label="Add transaction"
-          >
-            <Plus className="w-5 h-5 stroke-[2.2]" />
-          </button>
-
-          <button
-            onClick={() => setActiveTab('settings')}
-            className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
-            aria-label="Profile"
-          >
-            <User className="w-5 h-5 stroke-[2]" />
-          </button>
-        </div>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className="w-10 h-10 rounded-full bg-[#181E2E] border border-[#242E46] flex items-center justify-center text-white/90 hover:bg-[#20283E] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+          aria-label="Profile"
+        >
+          <User className="w-5 h-5 stroke-[2]" />
+        </button>
       </div>
 
       {/* 2. Main Balance Gradient Card */}
