@@ -16,6 +16,16 @@ export interface Transaction {
   note?: string;
 }
 
+export interface PaymentCard {
+  id: string;
+  cardHolder: string;
+  cardNumberMask: string; // e.g. ".... 3245"
+  cardExpiry: string; // e.g. "08/30"
+  brand: 'visa' | 'mastercard' | 'amex';
+  isDefault: boolean;
+  colorGradient?: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -42,4 +52,3 @@ export type NavTab = 'home' | 'analytics' | 'wallet' | 'settings' | 'transaction
 
 export type TimeFilter = 'monthly' | 'weekly' | 'yearly';
 export type AnalyticType = 'expenses' | 'savings';
-

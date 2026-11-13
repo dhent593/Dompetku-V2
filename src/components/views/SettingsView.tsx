@@ -17,10 +17,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 
 export const SettingsView: React.FC = () => {
-  const { user, lockApp } = useAuth();
+  const { user, logout } = useAuth();
   const { setActiveModal } = useFinance();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -30,6 +31,11 @@ export const SettingsView: React.FC = () => {
   const handleToggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
     showToast(isDarkMode ? 'Preview: Ambient Mode' : 'Deep Dark Mode');
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
   };
 
   return (
@@ -66,10 +72,10 @@ export const SettingsView: React.FC = () => {
 
       {/* 3. Settings List */}
       <div className="flex flex-col space-y-3 pt-1">
-        {/* Account Security */}
+        {/* Account Security (Opens mPIN & Biometric Modal) */}
         <button
-          onClick={() => showToast('Account Security: mPIN & Biometric Active')}
-          className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2D3856] active:scale-[0.99] transition-all cursor-pointer"
+          onClick={() => setActiveModal('accountSecurity')}
+          className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#5B4DF9] active:scale-[0.99] transition-all cursor-pointer"
         >
           <div className="flex items-center space-x-3.5">
             <div className="w-10 h-10 rounded-[14px] bg-[#21283D] flex items-center justify-center text-white/90">
@@ -104,10 +110,10 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
 
-        {/* Payment Methods */}
+        {/* Payment Methods (Opens Card CRUD modal) */}
         <button
-          onClick={() => showToast('Card ending in 3245 is primary')}
-          className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2D3856] active:scale-[0.99] transition-all cursor-pointer"
+          onClick={() => setActiveModal('paymentMethods')}
+          className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#5B4DF9] active:scale-[0.99] transition-all cursor-pointer"
         >
           <div className="flex items-center space-x-3.5">
             <div className="w-10 h-10 rounded-[14px] bg-[#21283D] flex items-center justify-center text-white/90">
@@ -120,7 +126,7 @@ export const SettingsView: React.FC = () => {
 
         {/* Help & Support */}
         <button
-          onClick={() => showToast('Support is available 24/7')}
+          onClick={() => showToast('Customer support is active 24/7')}
           className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2D3856] active:scale-[0.99] transition-all cursor-pointer"
         >
           <div className="flex items-center space-x-3.5">
@@ -133,15 +139,38 @@ export const SettingsView: React.FC = () => {
         </button>
       </div>
 
-      {/* 4. Log Out Button */}
+      {/* 4. Log Out Section */}
       <div className="pt-2">
-        <button
-          onClick={lockApp}
-          className="w-full flex items-center justify-center space-x-2.5 py-4 rounded-[22px] border border-red-500/30 bg-[#26171E]/40 hover:bg-red-500/15 text-[#EF4444] font-semibold text-sm active:scale-[0.98] transition-all shadow-sm cursor-pointer"
-        >
-          <LogOut className="w-4 h-4 stroke-[2.2]" />
-          <span>Log Out</span>
-        </button>
+        {showLogoutConfirm ? (
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-900/60 flex flex-col space-y-2.5">
+            <span className="text-xs font-bold text-red-200">Are you sure you want to log out?</span>
+            <p className="text-[11px] text-red-300/80">
+              You will need to sign in or enter your mPIN to access MyPocket again.
+            </p>
+            <div className="flex items-center space-x-2 pt-1">
+              <button
+                onClick={handleConfirmLogout}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Yes, Log Out
+              </button>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl bg-[#21283D] text-[#7B88A6] hover:text-white text-xs font-semibold transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="w-full flex items-center justify-center space-x-2.5 py-4 rounded-[22px] border border-red-500/30 bg-[#26171E]/40 hover:bg-red-500/15 text-[#EF4444] font-semibold text-sm active:scale-[0.98] transition-all shadow-sm cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 stroke-[2.2]" />
+            <span>Log Out</span>
+          </button>
+        )}
       </div>
 
       {/* Toast Notification */}

@@ -9,9 +9,8 @@ import { Transaction } from '@/types';
 
 export const HomeView: React.FC = () => {
   const { user } = useAuth();
-  const { transactions, setActiveTab, setActiveModal } = useFinance();
+  const { transactions, setActiveTab, setActiveModal, setSelectedTransaction } = useFinance();
 
-  // Helper for transaction icon
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
       case 'shopping':
@@ -63,19 +62,16 @@ export const HomeView: React.FC = () => {
 
       {/* 2. Main Balance Gradient Card */}
       <div className="relative overflow-hidden rounded-[26px] p-6 text-white bg-gradient-to-br from-[#5950FA] via-[#7547FE] to-[#9C38FE] shadow-[0_16px_36px_-6px_rgba(118,71,254,0.42)] border border-white/10">
-        {/* Subtle holographic gradient overlay */}
         <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-12 w-48 h-48 rounded-full bg-black/10 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col justify-between h-[155px]">
-          {/* Card Top Row: Masked Number */}
           <div className="flex items-center justify-between">
             <span className="font-mono text-sm tracking-widest text-purple-100/90 font-medium">
               {user.cardNumberMask}
             </span>
           </div>
 
-          {/* Card Middle: Balance */}
           <div>
             <span className="text-xs text-purple-200/80 font-normal tracking-wide">Balance</span>
             <div className="text-3xl sm:text-[34px] font-extrabold text-white tracking-tight mt-0.5">
@@ -83,7 +79,6 @@ export const HomeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card Bottom: Expiry */}
           <div className="flex justify-end items-center">
             <span className="text-[11px] font-medium text-purple-200/90 tracking-wider">
               Valid Thru {user.cardExpiry}
@@ -94,7 +89,6 @@ export const HomeView: React.FC = () => {
 
       {/* 3. Action Buttons: Transfer & Scan QR */}
       <div className="grid grid-cols-2 gap-3.5">
-        {/* Transfer Button */}
         <button
           onClick={() => setActiveModal('transfer')}
           className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[20px] bg-gradient-to-r from-[#5950FA] to-[#923AFE] text-white font-semibold text-sm hover:opacity-95 active:scale-[0.98] transition-all shadow-[0_8px_22px_rgba(118,71,254,0.35)] cursor-pointer"
@@ -103,7 +97,6 @@ export const HomeView: React.FC = () => {
           <Send className="w-4 h-4 stroke-[2.2] -rotate-12" />
         </button>
 
-        {/* Scan QR Button */}
         <button
           onClick={() => setActiveModal('scanQr')}
           className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[20px] bg-[#161C2C] border border-[#232C42] text-white font-semibold text-sm hover:bg-[#1E253B] active:scale-[0.98] transition-all cursor-pointer"
@@ -125,15 +118,17 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        {/* Transaction Cards List */}
+        {/* Transaction Cards List - Clickable for details & edit/delete */}
         <div className="flex flex-col space-y-3">
           {displayTransactions.map((tx) => (
             <div
               key={tx.id}
-              className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2B3552] transition-colors"
+              onClick={() => setSelectedTransaction(tx)}
+              className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#5B4DF9] hover:bg-[#1A2031] transition-all cursor-pointer group"
+              title="Click to view, edit, or delete"
             >
               <div className="flex items-center space-x-3.5">
-                <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center flex-shrink-0 shadow-inner">
+                <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
                   {renderTxIcon(tx)}
                 </div>
                 <div>

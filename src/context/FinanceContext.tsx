@@ -1,18 +1,21 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Transaction, CategorySummary, NavTab } from '@/types';
+import { Transaction, CategorySummary, NavTab, PaymentCard } from '@/types';
 import { dataService } from '@/lib/dataService';
-import { CATEGORY_SUMMARIES, INITIAL_TRANSACTIONS } from '@/lib/dummyData';
+import { CATEGORY_SUMMARIES, INITIAL_TRANSACTIONS, INITIAL_CARDS } from '@/lib/dummyData';
 import { useAuth } from './AuthContext';
 
 interface FinanceContextType {
   transactions: Transaction[];
   categories: CategorySummary[];
+  cards: PaymentCard[];
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   activeModal: string | null;
   setActiveModal: (modal: string | null) => void;
+  selectedTransaction: Transaction | null;
+  setSelectedTransaction: (tx: Transaction | null) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   addTransaction: (tx: {
@@ -22,6 +25,14 @@ interface FinanceContextType {
     type: 'income' | 'expense';
     note?: string;
   }) => Transaction;
+  updateTransaction: (
+    id: string,
+    updates: Partial<Omit<Transaction, 'id' | 'timestamp'>>
+  ) => Transaction | null;
+  deleteTransaction: (id: string) => boolean;
+  addCard: (card: Omit<PaymentCard, 'id'>) => PaymentCard;
+  deleteCard: (id: string) => boolean;
+  setDefaultCard: (id: string) => void;
   transferMoney: (recipient: string, amount: number, note?: string) => boolean;
   withdrawMoney: (amount: number, bankName?: string) => boolean;
   filteredTransactions: Transaction[];
@@ -33,16 +44,22 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user, updateUser } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [cards, setCards] = useState<PaymentCard[]>(INITIAL_CARDS);
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     // Sync with persistent local data
-    const loaded = dataService.getTransactions();
-    if (loaded && loaded.length > 0) {
-      setTransactions(loaded);
+    const loadedTx = dataService.getTransactions();
+    if (loadedTx && loadedTx.length > 0) {
+      setTransactions(loadedTx);
+    }
+    const loadedCards = dataService.getCards();
+    if (loadedCards && loadedCards.length > 0) {
+      setCards(loadedCards);
     }
   }, []);
 
@@ -91,6 +108,49 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return newTx;
   };
 
+  const updateTransaction = (
+    id: string,
+    updates: Partial<Omit<Transaction, 'id' | 'timestamp'>>
+  ): Transaction | null => {
+    const updated = dataService.updateTransaction(id, updates);
+    if (updated) {
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+    }
+    return updated;
+  };
+
+  const deleteTransaction = (id: string): boolean => {
+    const ok = dataService.deleteTransaction(id);
+    if (ok) {
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+    }
+    return ok;
+  };
+
+  const addCard = (cardData: Omit<PaymentCard, 'id'>): PaymentCard => {
+    const newCard = dataService.addCard(cardData);
+    setCards(dataService.getCards());
+    updateUser(dataService.getUser());
+    return newCard;
+  };
+
+  const deleteCard = (id: string): boolean => {
+    const ok = dataService.deleteCard(id);
+    if (ok) {
+      setCards(dataService.getCards());
+      updateUser(dataService.getUser());
+    }
+    return ok;
+  };
+
+  const setDefaultCard = (id: string): void => {
+    dataService.setDefaultCard(id);
+    setCards(dataService.getCards());
+    updateUser(dataService.getUser());
+  };
+
   const transferMoney = (recipient: string, amount: number, note?: string): boolean => {
     if (amount <= 0 || amount > user.balance) {
       return false;
@@ -126,6 +186,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const resetData = () => {
     dataService.resetToDefaults();
     setTransactions(INITIAL_TRANSACTIONS);
+    setCards(INITIAL_CARDS);
     setCategories(CATEGORY_SUMMARIES);
     updateUser(dataService.getUser());
   };
@@ -146,13 +207,21 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       value={{
         transactions,
         categories,
+        cards,
         activeTab,
         setActiveTab,
         activeModal,
         setActiveModal,
+        selectedTransaction,
+        setSelectedTransaction,
         searchQuery,
         setSearchQuery,
         addTransaction,
+        updateTransaction,
+        deleteTransaction,
+        addCard,
+        deleteCard,
+        setDefaultCard,
         transferMoney,
         withdrawMoney,
         filteredTransactions,
@@ -171,4 +240,3 @@ export function useFinance() {
   }
   return context;
 }
-

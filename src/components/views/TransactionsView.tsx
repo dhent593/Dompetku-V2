@@ -24,6 +24,7 @@ export const TransactionsView: React.FC = () => {
     filteredTransactions,
     setActiveTab,
     setActiveModal,
+    setSelectedTransaction,
     searchQuery,
     setSearchQuery,
   } = useFinance();
@@ -133,10 +134,12 @@ export const TransactionsView: React.FC = () => {
                   {list.map((tx) => (
                     <div
                       key={tx.id}
-                      className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#2B3552] transition-colors"
+                      onClick={() => setSelectedTransaction(tx)}
+                      className="flex items-center justify-between p-4 rounded-[22px] bg-[#161B29] border border-[#20273D] hover:border-[#5B4DF9] hover:bg-[#1A2031] transition-all cursor-pointer group"
+                      title="Click to view, edit, or delete"
                     >
                       <div className="flex items-center space-x-3.5">
-                        <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <div className="w-12 h-12 rounded-[18px] bg-[#21283D] flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
                           {renderIcon(tx)}
                         </div>
                         <div>

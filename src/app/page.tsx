@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useFinance } from '@/context/FinanceContext';
+import { LoginView } from '@/components/auth/LoginView';
 import { HomeView } from '@/components/views/HomeView';
 import { AnalyticsView } from '@/components/views/AnalyticsView';
 import { WalletView } from '@/components/views/WalletView';
@@ -13,10 +16,18 @@ import { WithdrawModal } from '@/components/modals/WithdrawModal';
 import { ScanQRModal } from '@/components/modals/ScanQRModal';
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
 import { EditProfileModal } from '@/components/modals/EditProfileModal';
-import { useFinance } from '@/context/FinanceContext';
+import { TransactionDetailModal } from '@/components/modals/TransactionDetailModal';
+import { PaymentMethodsModal } from '@/components/modals/PaymentMethodsModal';
+import { AccountSecurityModal } from '@/components/modals/AccountSecurityModal';
 
 export default function App() {
+  const { isLoggedIn } = useAuth();
   const { activeTab, setActiveTab } = useFinance();
+
+  // If not authenticated, render Login Screen
+  if (!isLoggedIn) {
+    return <LoginView />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0D15] text-white flex flex-col justify-between selection:bg-[#5B4DF9] selection:text-white">
@@ -40,12 +51,15 @@ export default function App() {
         </div>
       </div>
 
-      {/* Interactive Feature Modals */}
+      {/* Interactive Feature & CRUD Modals */}
       <TransferModal />
       <WithdrawModal />
       <ScanQRModal />
       <AddTransactionModal />
       <EditProfileModal />
+      <TransactionDetailModal />
+      <PaymentMethodsModal />
+      <AccountSecurityModal />
 
       {/* Security Overlay / mPIN Lock Screen */}
       <LockScreen />

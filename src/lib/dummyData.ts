@@ -1,4 +1,4 @@
-import { Transaction, UserProfile, CategorySummary } from '@/types';
+import { Transaction, UserProfile, CategorySummary, PaymentCard } from '@/types';
 
 export const INITIAL_USER: UserProfile = {
   id: 'usr_01',
@@ -13,6 +13,27 @@ export const INITIAL_USER: UserProfile = {
   biometricEnabled: true,
   mPinHash: '1234', // default demo PIN
 };
+
+export const INITIAL_CARDS: PaymentCard[] = [
+  {
+    id: 'card_1',
+    cardHolder: 'Smith Doe',
+    cardNumberMask: '.... 3245',
+    cardExpiry: '08/30',
+    brand: 'visa',
+    isDefault: true,
+    colorGradient: 'from-[#5950FA] via-[#7547FE] to-[#9C38FE]',
+  },
+  {
+    id: 'card_2',
+    cardHolder: 'Smith Doe',
+    cardNumberMask: '.... 8912',
+    cardExpiry: '11/27',
+    brand: 'mastercard',
+    isDefault: false,
+    colorGradient: 'from-[#2563EB] to-[#1D4ED8]',
+  },
+];
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
@@ -123,7 +144,7 @@ export const CHART_DATA = {
     labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul'],
     expenses: [360, 1350, 480, 720, 510],
     savings: [800, 1100, 1400, 1600, 1950],
-    highlightIndex: 1, // 'Apr' -> $1,350
+    highlightIndex: 1,
     highlightValue: 1350,
   },
   weekly: {
@@ -141,4 +162,3 @@ export const CHART_DATA = {
     highlightValue: 14482,
   },
 };
-
