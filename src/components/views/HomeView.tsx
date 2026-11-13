@@ -1,7 +1,18 @@
 'use client';
 
-import React from 'react';
-import { User, Send, QrCode, ShoppingBag, Wifi, ArrowDownLeft, Car, Building2, Utensils } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  User,
+  Send,
+  QrCode,
+  ShoppingBag,
+  Wifi,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Car,
+  Building2,
+  Utensils,
+} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { formatCurrency } from '@/lib/utils';
@@ -10,6 +21,27 @@ import { Transaction } from '@/types';
 export const HomeView: React.FC = () => {
   const { user } = useAuth();
   const { transactions, setActiveTab, setActiveModal, setSelectedTransaction } = useFinance();
+  const [liveDate, setLiveDate] = useState<string>('');
+
+  useEffect(() => {
+    const now = new Date();
+    // Format live date: e.g. "13 Nov 2026"
+    const formatted = now.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    setLiveDate(formatted);
+  }, []);
+
+  // Calculate dynamic monthly income and expense from transactions
+  const thisMonthIncome = transactions
+    .filter((tx) => tx.type === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const thisMonthExpense = transactions
+    .filter((tx) => tx.type === 'expense')
+    .reduce((sum, tx) => sum + tx.amount, 0);
 
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
@@ -50,31 +82,64 @@ export const HomeView: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Main Balance Solid Card (Clean, Minimalist, Matte Violet) */}
+      {/* 2. Main Balance Solid Card */}
       <div className="relative overflow-hidden rounded-[24px] p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15">
-        <div className="relative z-10 flex flex-col justify-between h-[155px]">
+        <div className="relative z-10 flex flex-col justify-between space-y-3.5">
+          {/* Card Top: Label & Live Date */}
           <div className="flex items-center justify-between">
-            <span className="font-mono text-sm tracking-widest text-white/90 font-medium">
-              {user.cardNumberMask}
+            <span className="text-xs text-white/80 font-medium tracking-wide">
+              Total Saldo Tersedia
+            </span>
+            <span className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full">
+              {liveDate || 'Hari ini'}
             </span>
           </div>
 
+          {/* Card Middle: Big Balance */}
           <div>
-            <span className="text-xs text-white/80 font-normal tracking-wide">Balance</span>
-            <div className="text-3xl sm:text-[34px] font-extrabold text-white tracking-tight mt-0.5">
+            <div className="text-3xl sm:text-[36px] font-extrabold text-white tracking-tight">
               {formatCurrency(user.balance)}
             </div>
           </div>
 
-          <div className="flex justify-end items-center">
-            <span className="text-[11px] font-medium text-white/85 tracking-wider">
-              Valid Thru {user.cardExpiry}
-            </span>
+          {/* Card Bottom: Rincian Pemasukan & Pengeluaran Bulan Ini */}
+          <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs">
+            {/* Pemasukan */}
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+                <ArrowDownLeft className="w-3.5 h-3.5 text-[#34D399] stroke-[2.4]" />
+              </div>
+              <div>
+                <span className="text-[10px] text-white/70 block leading-tight font-medium">
+                  Pemasukan Bulan Ini
+                </span>
+                <span className="font-bold text-white text-[12px] sm:text-[13px] tracking-tight">
+                  +{formatCurrency(thisMonthIncome)}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-7 w-px bg-white/15" />
+
+            {/* Pengeluaran */}
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+                <ArrowUpRight className="w-3.5 h-3.5 text-red-200 stroke-[2.4]" />
+              </div>
+              <div>
+                <span className="text-[10px] text-white/70 block leading-tight font-medium">
+                  Pengeluaran Bulan Ini
+                </span>
+                <span className="font-bold text-white text-[12px] sm:text-[13px] tracking-tight">
+                  -{formatCurrency(thisMonthExpense)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Action Buttons: Transfer & Scan QR (Solid, Crisp, No Garish Gradients) */}
+      {/* 3. Action Buttons: Transfer & Scan QR */}
       <div className="grid grid-cols-2 gap-3.5">
         <button
           onClick={() => setActiveModal('transfer')}
