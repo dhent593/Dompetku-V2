@@ -1,0 +1,143 @@
+import { Transaction, UserProfile, CategorySummary } from '@/types';
+
+export const INITIAL_USER: UserProfile = {
+  id: 'usr_01',
+  name: 'Smith',
+  email: 'smith@example.com',
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+  cardNumberMask: '.... 3245',
+  cardExpiry: '08/30',
+  balance: 8482.00,
+  totalBalance: 14482.00,
+  isOnline: true,
+  biometricEnabled: true,
+  mPinHash: '1234', // default demo PIN
+};
+
+export const INITIAL_TRANSACTIONS: Transaction[] = [
+  {
+    id: 'tx_01',
+    title: 'Shopping',
+    category: 'shopping',
+    amount: 35.70,
+    type: 'expense',
+    date: '2023-04-19',
+    dateGroup: 'TODAY',
+    time: '01:15 PM',
+    timestamp: Date.now() - 3600000 * 3,
+    iconName: 'ShoppingBag',
+    cardNumber: '.... 3245',
+    note: 'Weekly essentials & grocery',
+  },
+  {
+    id: 'tx_02',
+    title: 'Salary Deposit',
+    category: 'salary',
+    amount: 2500.00,
+    type: 'income',
+    date: '2023-04-19',
+    dateGroup: 'TODAY',
+    time: '09:00 AM',
+    timestamp: Date.now() - 3600000 * 7,
+    iconName: 'ArrowDownLeft',
+    note: 'Monthly salary from TechCorp Inc.',
+  },
+  {
+    id: 'tx_03',
+    title: 'Wifi Bill',
+    category: 'bill',
+    amount: 43.87,
+    type: 'expense',
+    date: '2023-04-18',
+    dateGroup: 'YESTERDAY',
+    time: '11:30 AM',
+    timestamp: Date.now() - 3600000 * 28,
+    iconName: 'Wifi',
+    cardNumber: '.... 3245',
+    note: 'Fiber high-speed broadband monthly subscription',
+  },
+  {
+    id: 'tx_04',
+    title: 'Travel & Commute',
+    category: 'travel',
+    amount: 125.70,
+    type: 'expense',
+    date: '2023-04-17',
+    dateGroup: 'EARLIER THIS WEEK',
+    time: '04:20 PM',
+    timestamp: Date.now() - 3600000 * 52,
+    iconName: 'Car',
+    note: 'Uber rides & intercity train ticket',
+  },
+  {
+    id: 'tx_05',
+    title: 'Investment Portfolio',
+    category: 'investment',
+    amount: 115.00,
+    type: 'expense',
+    date: '2023-04-16',
+    dateGroup: 'EARLIER THIS WEEK',
+    time: '10:00 AM',
+    timestamp: Date.now() - 3600000 * 76,
+    iconName: 'Building2',
+    note: 'Index fund auto-debit',
+  },
+  {
+    id: 'tx_06',
+    title: 'Food & Dining',
+    category: 'food',
+    amount: 156.75,
+    type: 'expense',
+    date: '2023-04-15',
+    dateGroup: 'EARLIER THIS WEEK',
+    time: '07:45 PM',
+    timestamp: Date.now() - 3600000 * 100,
+    iconName: 'Utensils',
+    note: 'Weekend family bistro dinner',
+  },
+];
+
+export const CATEGORY_SUMMARIES: CategorySummary[] = [
+  {
+    id: 'cat_travel',
+    name: 'Travel',
+    amount: 125.70,
+    icon: 'Car',
+  },
+  {
+    id: 'cat_investment',
+    name: 'Investment',
+    amount: 115.00,
+    icon: 'Building2',
+  },
+  {
+    id: 'cat_food',
+    name: 'Food',
+    amount: 156.75,
+    icon: 'Burger',
+  },
+];
+
+export const CHART_DATA = {
+  monthly: {
+    labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    expenses: [360, 1350, 480, 720, 510],
+    savings: [800, 1100, 1400, 1600, 1950],
+    highlightIndex: 1, // 'Apr' -> $1,350
+    highlightValue: 1350,
+  },
+  weekly: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    expenses: [120, 240, 180, 420, 310, 560, 280],
+    savings: [200, 250, 300, 350, 400, 450, 500],
+    highlightIndex: 5,
+    highlightValue: 560,
+  },
+  yearly: {
+    labels: ['2021', '2022', '2023', '2024'],
+    expenses: [5200, 7800, 14482, 9200],
+    savings: [4000, 8500, 16000, 21000],
+    highlightIndex: 2,
+    highlightValue: 14482,
+  },
+};
