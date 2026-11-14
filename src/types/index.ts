@@ -52,3 +52,13 @@ export type NavTab = 'home' | 'analytics' | 'wallet' | 'settings' | 'transaction
 
 export type TimeFilter = 'monthly' | 'weekly' | 'yearly';
 export type AnalyticType = 'expenses' | 'savings';
+
+export interface Pocket {
+  id: string;
+  name: string;
+  balance: number;
+  targetAmount: number;
+  color: string;
+  iconName: string;
+  createdAt: number;
+}

@@ -1,15 +1,18 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Transaction, CategorySummary, NavTab, PaymentCard } from '@/types';
+import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket } from '@/types';
 import { dataService } from '@/lib/dataService';
-import { CATEGORY_SUMMARIES, INITIAL_TRANSACTIONS, INITIAL_CARDS } from '@/lib/dummyData';
+import { CATEGORY_SUMMARIES, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS } from '@/lib/dummyData';
 import { useAuth } from './AuthContext';
 
 interface FinanceContextType {
   transactions: Transaction[];
   categories: CategorySummary[];
   cards: PaymentCard[];
+  pockets: Pocket[];
+  selectedPocket: Pocket | null;
+  setSelectedPocket: (pocket: Pocket | null) => void;
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   activeModal: string | null;
@@ -33,6 +36,11 @@ interface FinanceContextType {
   addCard: (card: Omit<PaymentCard, 'id'>) => PaymentCard;
   deleteCard: (id: string) => boolean;
   setDefaultCard: (id: string) => void;
+  addPocket: (pocket: Omit<Pocket, 'id' | 'createdAt'>) => Pocket;
+  updatePocket: (id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>) => Pocket | null;
+  deletePocket: (id: string) => boolean;
+  transferToPocket: (pocketId: string, amount: number) => boolean;
+  withdrawFromPocket: (pocketId: string, amount: number) => boolean;
   transferMoney: (recipient: string, amount: number, note?: string) => boolean;
   withdrawMoney: (amount: number, bankName?: string) => boolean;
   filteredTransactions: Transaction[];
@@ -45,6 +53,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user, updateUser } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
   const [cards, setCards] = useState<PaymentCard[]>(INITIAL_CARDS);
+  const [pockets, setPockets] = useState<Pocket[]>(INITIAL_POCKETS);
+  const [selectedPocket, setSelectedPocket] = useState<Pocket | null>(null);
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -60,6 +70,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const loadedCards = dataService.getCards();
     if (loadedCards && loadedCards.length > 0) {
       setCards(loadedCards);
+    }
+    const loadedPockets = dataService.getPockets();
+    if (loadedPockets && loadedPockets.length > 0) {
+      setPockets(loadedPockets);
     }
   }, []);
 
@@ -151,6 +165,64 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     updateUser(dataService.getUser());
   };
 
+  const addPocket = (pocketData: Omit<Pocket, 'id' | 'createdAt'>): Pocket => {
+    const created = dataService.addPocket(pocketData);
+    setPockets(dataService.getPockets());
+    setTransactions(dataService.getTransactions());
+    updateUser(dataService.getUser());
+    return created;
+  };
+
+  const updatePocket = (id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>): Pocket | null => {
+    const updated = dataService.updatePocket(id, updates);
+    if (updated) {
+      setPockets(dataService.getPockets());
+      if (selectedPocket && selectedPocket.id === id) {
+        setSelectedPocket(updated);
+      }
+    }
+    return updated;
+  };
+
+  const deletePocket = (id: string): boolean => {
+    const ok = dataService.deletePocket(id);
+    if (ok) {
+      setPockets(dataService.getPockets());
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+      if (selectedPocket && selectedPocket.id === id) {
+        setSelectedPocket(null);
+      }
+    }
+    return ok;
+  };
+
+  const transferToPocket = (pocketId: string, amount: number): boolean => {
+    const ok = dataService.transferToPocket(pocketId, amount);
+    if (ok) {
+      const updatedPockets = dataService.getPockets();
+      setPockets(updatedPockets);
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+      const updatedSelected = updatedPockets.find((p) => p.id === pocketId) || null;
+      setSelectedPocket(updatedSelected);
+    }
+    return ok;
+  };
+
+  const withdrawFromPocket = (pocketId: string, amount: number): boolean => {
+    const ok = dataService.withdrawFromPocket(pocketId, amount);
+    if (ok) {
+      const updatedPockets = dataService.getPockets();
+      setPockets(updatedPockets);
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+      const updatedSelected = updatedPockets.find((p) => p.id === pocketId) || null;
+      setSelectedPocket(updatedSelected);
+    }
+    return ok;
+  };
+
   const transferMoney = (recipient: string, amount: number, note?: string): boolean => {
     if (amount <= 0 || amount > user.balance) {
       return false;
@@ -187,7 +259,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     dataService.resetToDefaults();
     setTransactions(INITIAL_TRANSACTIONS);
     setCards(INITIAL_CARDS);
+    setPockets(INITIAL_POCKETS);
     setCategories(CATEGORY_SUMMARIES);
+    setSelectedPocket(null);
     updateUser(dataService.getUser());
   };
 
@@ -208,6 +282,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         transactions,
         categories,
         cards,
+        pockets,
+        selectedPocket,
+        setSelectedPocket,
         activeTab,
         setActiveTab,
         activeModal,
@@ -222,6 +299,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         addCard,
         deleteCard,
         setDefaultCard,
+        addPocket,
+        updatePocket,
+        deletePocket,
+        transferToPocket,
+        withdrawFromPocket,
         transferMoney,
         withdrawMoney,
         filteredTransactions,

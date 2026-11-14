@@ -1,4 +1,4 @@
-import { Transaction, UserProfile, CategorySummary, PaymentCard } from '@/types';
+import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket } from '@/types';
 
 export const INITIAL_USER: UserProfile = {
   id: 'usr_01',
@@ -160,3 +160,41 @@ export const CHART_DATA = {
     highlightValue: 14482,
   },
 };
+
+export const POCKET_COLOR_PRESETS = [
+  { id: 'violet', hex: '#635BFF', name: 'Royal Violet' },
+  { id: 'emerald', hex: '#10B981', name: 'Emerald Mint' },
+  { id: 'sky', hex: '#0EA5E9', name: 'Electric Sky' },
+  { id: 'amber', hex: '#F59E0B', name: 'Warm Amber' },
+  { id: 'rose', hex: '#F43F5E', name: 'Coral Rose' },
+];
+
+export const INITIAL_POCKETS: Pocket[] = [
+  {
+    id: 'pkt_01',
+    name: 'Dana Darurat',
+    balance: 3500,
+    targetAmount: 10000,
+    color: '#10B981',
+    iconName: 'Shield',
+    createdAt: Date.now() - 86400000 * 30,
+  },
+  {
+    id: 'pkt_02',
+    name: 'Liburan Jepang',
+    balance: 2800,
+    targetAmount: 8000,
+    color: '#0EA5E9',
+    iconName: 'Plane',
+    createdAt: Date.now() - 86400000 * 15,
+  },
+  {
+    id: 'pkt_03',
+    name: 'Gadget Baru',
+    balance: 1200,
+    targetAmount: 5000,
+    color: '#F59E0B',
+    iconName: 'Smartphone',
+    createdAt: Date.now() - 86400000 * 5,
+  },
+];

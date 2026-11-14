@@ -3,15 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import {
   User,
-  Send,
-  QrCode,
+  Shield,
+  Plane,
+  Smartphone,
+  Heart,
   ShoppingBag,
+  Car,
+  Home as HomeIcon,
+  Briefcase,
   Wifi,
   ArrowDownLeft,
   ArrowUpRight,
-  Car,
   Building2,
   Utensils,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
@@ -21,7 +26,14 @@ import { Transaction } from '@/types';
 
 export const HomeView: React.FC = () => {
   const { user } = useAuth();
-  const { transactions, setActiveTab, setActiveModal, setSelectedTransaction } = useFinance();
+  const {
+    transactions,
+    pockets,
+    setSelectedPocket,
+    setActiveTab,
+    setActiveModal,
+    setSelectedTransaction,
+  } = useFinance();
   const { language, t } = useLanguage();
   const [liveDate, setLiveDate] = useState<string>('');
 
@@ -71,6 +83,27 @@ export const HomeView: React.FC = () => {
     if (cat === 'investment') return t('investment');
     if (cat === 'food') return t('food');
     return cat;
+  };
+
+  const renderPocketIcon = (name: string) => {
+    switch (name) {
+      case 'Plane':
+        return <Plane className="w-3.5 h-3.5" />;
+      case 'Smartphone':
+        return <Smartphone className="w-3.5 h-3.5" />;
+      case 'Heart':
+        return <Heart className="w-3.5 h-3.5" />;
+      case 'ShoppingBag':
+        return <ShoppingBag className="w-3.5 h-3.5" />;
+      case 'Car':
+        return <Car className="w-3.5 h-3.5" />;
+      case 'Home':
+        return <HomeIcon className="w-3.5 h-3.5" />;
+      case 'Briefcase':
+        return <Briefcase className="w-3.5 h-3.5" />;
+      default:
+        return <Shield className="w-3.5 h-3.5" />;
+    }
   };
 
   const displayTransactions = transactions.slice(0, 3);
@@ -150,23 +183,85 @@ export const HomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Action Buttons: Transfer & Scan QR */}
-      <div className="grid grid-cols-2 gap-3.5">
-        <button
-          onClick={() => setActiveModal('transfer')}
-          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#635BFF] hover:bg-[#564EE6] text-white font-semibold text-sm active:scale-[0.98] transition-all shadow-sm cursor-pointer"
-        >
-          <span>{t('transfer')}</span>
-          <Send className="w-4 h-4 stroke-[2.2] -rotate-12" />
-        </button>
+      {/* 3. Kantong Saya (My Pockets) */}
+      <div className="flex flex-col space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-white tracking-tight">{t('my_pockets')}</h2>
+          <button
+            onClick={() => setActiveModal('addPocket')}
+            className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer font-medium flex items-center space-x-1"
+          >
+            <span>{t('add_pocket_btn')}</span>
+          </button>
+        </div>
 
-        <button
-          onClick={() => setActiveModal('scanQr')}
-          className="flex items-center justify-center space-x-3 py-3.5 px-4 rounded-[18px] bg-[#161B26] border border-[#23293A] hover:bg-[#1E2433] text-white font-semibold text-sm active:scale-[0.98] transition-all cursor-pointer"
-        >
-          <span>{t('scan_qr')}</span>
-          <QrCode className="w-4 h-4 text-white stroke-[2.2]" />
-        </button>
+        {/* Horizontal Scrollable Pocket Cards */}
+        <div className="flex space-x-3 overflow-x-auto pb-1 scrollbar-none snap-x -mx-1 px-1">
+          {pockets.map((pocket) => {
+            const progressPercent = Math.min(
+              100,
+              Math.max(0, Math.round((pocket.balance / (pocket.targetAmount || 1)) * 100))
+            );
+            return (
+              <div
+                key={pocket.id}
+                onClick={() => setSelectedPocket(pocket)}
+                className="min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98]"
+                title={pocket.name}
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div
+                      className="w-7 h-7 rounded-[10px] flex items-center justify-center text-white"
+                      style={{ backgroundColor: pocket.color }}
+                    >
+                      {renderPocketIcon(pocket.iconName)}
+                    </div>
+                    <span
+                      className="text-[11px] font-bold"
+                      style={{ color: pocket.color }}
+                    >
+                      {progressPercent}%
+                    </span>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-white tracking-tight truncate mt-2.5">
+                    {pocket.name}
+                  </h3>
+                  <p className="text-sm font-bold text-white tracking-tight mt-0.5">
+                    {formatCurrency(pocket.balance)}
+                  </p>
+                  <p className="text-[11px] text-[#7B88A6] mt-0.5 truncate">
+                    {t('pocket_target_label')}: {formatCurrency(pocket.targetAmount)}
+                  </p>
+                </div>
+
+                {/* Mini progress bar */}
+                <div className="w-full h-1.5 rounded-full bg-[#1F2637] overflow-hidden mt-3">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${progressPercent}%`,
+                      backgroundColor: pocket.color,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          {pockets.length === 0 && (
+            <div
+              onClick={() => setActiveModal('addPocket')}
+              className="min-w-[200px] flex-shrink-0 p-4 rounded-[20px] border border-dashed border-[#23293A] hover:border-[#635BFF] flex items-center justify-center text-center cursor-pointer transition-colors"
+            >
+              <div className="flex flex-col items-center space-y-1">
+                <Plus className="w-5 h-5 text-[#7B88A6]" />
+                <span className="text-xs text-[#7B88A6] font-medium">{t('add_pocket_btn')}</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 4. Transactions Section */}

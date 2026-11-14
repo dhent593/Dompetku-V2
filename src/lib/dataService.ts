@@ -1,10 +1,11 @@
-import { Transaction, UserProfile, CategorySummary, PaymentCard } from '@/types';
-import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS } from './dummyData';
+import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket } from '@/types';
+import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS } from './dummyData';
 
 const STORAGE_KEYS = {
   USER: 'mypocket_user_v1',
   TRANSACTIONS: 'mypocket_transactions_v1',
   CARDS: 'mypocket_cards_v1',
+  POCKETS: 'mypocket_pockets_v1',
   IS_LOGGED_IN: 'mypocket_auth_status_v1',
   IS_LOCKED: 'mypocket_is_locked_v1',
 };
@@ -238,12 +239,148 @@ class DataService {
     this.saveCards(cards);
   }
 
+  // --- Pockets (Kantong Saya) CRUD ---
+  getPockets(): Pocket[] {
+    if (!this.isBrowser()) return INITIAL_POCKETS;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.POCKETS);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to load pockets', e);
+    }
+    return INITIAL_POCKETS;
+  }
+
+  savePockets(pockets: Pocket[]): void {
+    if (!this.isBrowser()) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.POCKETS, JSON.stringify(pockets));
+    } catch (e) {
+      console.error('Failed to save pockets', e);
+    }
+  }
+
+  addPocket(data: Omit<Pocket, 'id' | 'createdAt'>): Pocket {
+    const pockets = this.getPockets();
+    const newPocket: Pocket = {
+      ...data,
+      id: `pkt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: Date.now(),
+    };
+
+    // If an initial deposit was allocated, record it and adjust balance
+    if (newPocket.balance > 0) {
+      this.addTransaction({
+        title: `Setoran Awal ${newPocket.name}`,
+        category: 'other',
+        amount: newPocket.balance,
+        type: 'expense',
+        date: new Date().toISOString().split('T')[0],
+        dateGroup: 'TODAY',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        note: `Setoran awal kantong ${newPocket.name}`,
+      });
+    }
+
+    const updated = [...pockets, newPocket];
+    this.savePockets(updated);
+    return newPocket;
+  }
+
+  updatePocket(id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>): Pocket | null {
+    const pockets = this.getPockets();
+    const index = pockets.findIndex((p) => p.id === id);
+    if (index === -1) return null;
+
+    pockets[index] = {
+      ...pockets[index],
+      ...updates,
+    };
+
+    this.savePockets(pockets);
+    return pockets[index];
+  }
+
+  deletePocket(id: string): boolean {
+    const pockets = this.getPockets();
+    const target = pockets.find((p) => p.id === id);
+    if (!target) return false;
+
+    // Refund any remaining balance in this pocket back to user main balance
+    if (target.balance > 0) {
+      this.addTransaction({
+        title: `Pengembalian ${target.name}`,
+        category: 'other',
+        amount: target.balance,
+        type: 'income',
+        date: new Date().toISOString().split('T')[0],
+        dateGroup: 'TODAY',
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        note: `Penutupan kantong ${target.name}`,
+      });
+    }
+
+    const remaining = pockets.filter((p) => p.id !== id);
+    this.savePockets(remaining);
+    return true;
+  }
+
+  transferToPocket(pocketId: string, amount: number): boolean {
+    const user = this.getUser();
+    if (amount <= 0 || amount > user.balance) return false;
+
+    const pockets = this.getPockets();
+    const pocket = pockets.find((p) => p.id === pocketId);
+    if (!pocket) return false;
+
+    pocket.balance += amount;
+    this.savePockets(pockets);
+
+    // Create a transaction record for this allocation (addTransaction will adjust user balance)
+    this.addTransaction({
+      title: `Alokasi ke ${pocket.name}`,
+      category: 'other',
+      amount: amount,
+      type: 'expense',
+      date: new Date().toISOString().split('T')[0],
+      dateGroup: 'TODAY',
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      note: `Top Up Kantong ${pocket.name}`,
+    });
+
+    return true;
+  }
+
+  withdrawFromPocket(pocketId: string, amount: number): boolean {
+    const pockets = this.getPockets();
+    const pocket = pockets.find((p) => p.id === pocketId);
+    if (!pocket || amount <= 0 || amount > pocket.balance) return false;
+
+    pocket.balance -= amount;
+    this.savePockets(pockets);
+
+    // Create a transaction record for this withdrawal (addTransaction will adjust user balance)
+    this.addTransaction({
+      title: `Tarik dari ${pocket.name}`,
+      category: 'other',
+      amount: amount,
+      type: 'income',
+      date: new Date().toISOString().split('T')[0],
+      dateGroup: 'TODAY',
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      note: `Pencairan Kantong ${pocket.name}`,
+    });
+
+    return true;
+  }
+
   // --- Reset to default mock data ---
   resetToDefaults(): void {
     if (!this.isBrowser()) return;
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
     localStorage.removeItem(STORAGE_KEYS.CARDS);
+    localStorage.removeItem(STORAGE_KEYS.POCKETS);
     localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
     sessionStorage.removeItem(STORAGE_KEYS.IS_LOCKED);
   }
