@@ -7,7 +7,6 @@ import {
   Pencil,
   Shield,
   Moon,
-  CreditCard,
   Headphones,
   ChevronRight,
   LogOut,
@@ -159,20 +158,6 @@ export const SettingsView: React.FC = () => {
             />
           </button>
         </div>
-
-        {/* Payment Methods */}
-        <button
-          onClick={() => setActiveModal('paymentMethods')}
-          className="flex items-center justify-between p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] active:scale-[0.99] transition-all cursor-pointer"
-        >
-          <div className="flex items-center space-x-3.5">
-            <div className="w-10 h-10 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white/90">
-              <CreditCard className="w-5 h-5 stroke-[2]" />
-            </div>
-            <span className="text-sm font-semibold text-white tracking-tight">{t('payment_methods')}</span>
-          </div>
-          <ChevronRight className="w-4 h-4 text-[#687593] stroke-[2]" />
-        </button>
 
         {/* Help & Support */}
         <button
