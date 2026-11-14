@@ -41,6 +41,7 @@ interface FinanceContextType {
   deletePocket: (id: string) => boolean;
   transferToPocket: (pocketId: string, amount: number) => boolean;
   withdrawFromPocket: (pocketId: string, amount: number) => boolean;
+  transferBetweenPockets: (fromPocketId: string, toPocketId: string, amount: number) => boolean;
   transferMoney: (recipient: string, amount: number, note?: string) => boolean;
   withdrawMoney: (amount: number, bankName?: string) => boolean;
   filteredTransactions: Transaction[];
@@ -223,6 +224,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return ok;
   };
 
+  const transferBetweenPockets = (fromPocketId: string, toPocketId: string, amount: number): boolean => {
+    const ok = dataService.transferBetweenPockets(fromPocketId, toPocketId, amount);
+    if (ok) {
+      const updatedPockets = dataService.getPockets();
+      setPockets(updatedPockets);
+      const updatedSelected = updatedPockets.find((p) => p.id === fromPocketId) || null;
+      setSelectedPocket(updatedSelected);
+    }
+    return ok;
+  };
+
   const transferMoney = (recipient: string, amount: number, note?: string): boolean => {
     if (amount <= 0 || amount > user.balance) {
       return false;
@@ -304,6 +316,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         deletePocket,
         transferToPocket,
         withdrawFromPocket,
+        transferBetweenPockets,
         transferMoney,
         withdrawMoney,
         filteredTransactions,

@@ -14,8 +14,7 @@ import {
   Car,
   Home,
   Briefcase,
-  ArrowUpRight,
-  ArrowDownLeft,
+  ArrowRightLeft,
   Edit3,
   Trash2,
   AlertTriangle,
@@ -48,15 +47,16 @@ export const PocketDetailModal: React.FC = () => {
   const {
     selectedPocket,
     setSelectedPocket,
+    pockets,
     updatePocket,
     deletePocket,
-    transferToPocket,
-    withdrawFromPocket,
+    transferBetweenPockets,
   } = useFinance();
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  const [mode, setMode] = useState<'view' | 'topup' | 'withdraw' | 'edit'>('view');
+  const [mode, setMode] = useState<'view' | 'transfer' | 'edit'>('view');
+  const [targetPocketId, setTargetPocketId] = useState<string>('');
   const [amountInput, setAmountInput] = useState('');
   const [editName, setEditName] = useState('');
   const [editTarget, setEditTarget] = useState('');
@@ -75,8 +75,12 @@ export const PocketDetailModal: React.FC = () => {
       setShowDeleteConfirm(false);
       setFeedbackMsg(null);
       setAmountInput('');
+      const other = pockets.filter((p) => p.id !== selectedPocket.id);
+      if (other.length > 0) {
+        setTargetPocketId(other[0].id);
+      }
     }
-  }, [selectedPocket]);
+  }, [selectedPocket, pockets]);
 
   if (!selectedPocket) return null;
 
@@ -110,34 +114,9 @@ export const PocketDetailModal: React.FC = () => {
     }
   };
 
-  const handleTopUp = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = parseFloat(amountInput);
-    if (isNaN(num) || num <= 0) {
-      setFeedbackMsg({ text: 'Masukkan nominal yang valid', isError: true });
-      return;
-    }
-    if (num > user.balance) {
-      setFeedbackMsg({
-        text: `Saldo utama tidak mencukupi (${formatCurrency(user.balance)})`,
-        isError: true,
-      });
-      return;
-    }
+  const otherPockets = pockets.filter((p) => p.id !== selectedPocket.id);
 
-    const success = transferToPocket(selectedPocket.id, num);
-    if (success) {
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-      setFeedbackMsg({ text: 'Alokasi saldo berhasil!', isError: false });
-      setTimeout(() => {
-        setAmountInput('');
-        setMode('view');
-        setFeedbackMsg(null);
-      }, 1000);
-    }
-  };
-
-  const handleWithdraw = (e: React.FormEvent) => {
+  const handleTransferFunds = (e: React.FormEvent) => {
     e.preventDefault();
     const num = parseFloat(amountInput);
     if (isNaN(num) || num <= 0) {
@@ -146,20 +125,29 @@ export const PocketDetailModal: React.FC = () => {
     }
     if (num > selectedPocket.balance) {
       setFeedbackMsg({
-        text: `Saldo kantong tidak mencukupi (${formatCurrency(selectedPocket.balance)})`,
+        text: `${t('insufficient_pocket_balance')} (${formatCurrency(selectedPocket.balance)})`,
         isError: true,
       });
       return;
     }
+    if (!targetPocketId) {
+      setFeedbackMsg({ text: t('dest_pocket_label'), isError: true });
+      return;
+    }
 
-    const success = withdrawFromPocket(selectedPocket.id, num);
+    const targetPocket = pockets.find((p) => p.id === targetPocketId);
+    const success = transferBetweenPockets(selectedPocket.id, targetPocketId, num);
     if (success) {
-      setFeedbackMsg({ text: 'Saldo berhasil ditarik ke Saldo Utama!', isError: false });
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      setFeedbackMsg({
+        text: `Berhasil memindahkan ${formatCurrency(num)} ke ${targetPocket?.name || 'kantong tujuan'}!`,
+        isError: false,
+      });
       setTimeout(() => {
         setAmountInput('');
         setMode('view');
         setFeedbackMsg(null);
-      }, 1000);
+      }, 1200);
     }
   };
 
@@ -278,32 +266,22 @@ export const PocketDetailModal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Buttons: Top Up & Withdraw */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  onClick={() => {
-                    setMode('topup');
-                    setAmountInput('');
-                    setFeedbackMsg(null);
-                  }}
-                  className="flex items-center justify-center space-x-2 py-3 px-3 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-white/30 text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer"
-                >
-                  <ArrowDownLeft className="w-3.5 h-3.5 text-emerald-400 stroke-[2.5]" />
-                  <span>{t('top_up_pocket')}</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setMode('withdraw');
-                    setAmountInput('');
-                    setFeedbackMsg(null);
-                  }}
-                  className="flex items-center justify-center space-x-2 py-3 px-3 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-white/30 text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer"
-                >
-                  <ArrowUpRight className="w-3.5 h-3.5 text-amber-400 stroke-[2.5]" />
-                  <span>{t('withdraw_pocket')}</span>
-                </button>
-              </div>
+              {/* Action Button: Pindah Dana */}
+              <button
+                onClick={() => {
+                  const other = pockets.filter((p) => p.id !== selectedPocket.id);
+                  if (other.length > 0) {
+                    setTargetPocketId(other[0].id);
+                  }
+                  setMode('transfer');
+                  setAmountInput('');
+                  setFeedbackMsg(null);
+                }}
+                className="w-full flex items-center justify-center space-x-2.5 py-3.5 px-4 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-[#635BFF] hover:bg-[#202738] text-white text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer shadow-sm group"
+              >
+                <ArrowRightLeft className="w-4 h-4 text-[#635BFF] group-hover:scale-110 transition-transform stroke-[2.2]" />
+                <span className="tracking-wide">{t('move_funds_pocket')}</span>
+              </button>
 
               {/* Bottom Actions: Edit & Delete */}
               {showDeleteConfirm ? (
@@ -355,126 +333,154 @@ export const PocketDetailModal: React.FC = () => {
             </div>
           )}
 
-          {/* TOP UP FORM */}
-          {mode === 'topup' && (
-            <form onSubmit={handleTopUp} className="flex flex-col space-y-4 pt-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs text-[#7B88A6] font-medium">
-                    {t('enter_pocket_amount')}
-                  </label>
-                  <span className="text-[11px] text-[#7B88A6]">
-                    {t('available_label')}: {formatCurrency(user.balance)}
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  step="1"
-                  min="1"
-                  max={user.balance}
-                  value={amountInput}
-                  onChange={(e) => setAmountInput(e.target.value)}
-                  placeholder="0"
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-[#635BFF]"
-                  autoFocus
-                  required
-                />
+          {/* PINDAH DANA FORM */}
+          {mode === 'transfer' && (
+            <div className="flex flex-col space-y-4 pt-4">
+              <div className="flex items-center space-x-2 text-xs text-[#7B88A6] font-medium border-b border-[#1E2435] pb-2.5">
+                <ArrowRightLeft className="w-3.5 h-3.5 text-[#635BFF]" />
+                <span>{t('move_funds_title')}</span>
+              </div>
 
-                {/* Quick Pills */}
-                <div className="flex items-center space-x-2 mt-2">
-                  {[50, 100, 500, 1000].map((val) => (
+              {otherPockets.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-[#111520] border border-[#1E2435] text-center flex flex-col items-center space-y-3">
+                  <p className="text-xs text-[#7B88A6] leading-relaxed">
+                    {t('no_other_pockets')}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('view');
+                      setFeedbackMsg(null);
+                    }}
+                    className="py-2 px-4 rounded-xl bg-[#1C2233] text-white text-xs font-semibold hover:bg-[#242D42] cursor-pointer"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleTransferFunds} className="flex flex-col space-y-3.5">
+                  {/* Select Destination Pocket */}
+                  <div>
+                    <label className="text-xs text-[#7B88A6] font-medium block mb-2">
+                      {t('dest_pocket_label')}
+                    </label>
+                    <div className="flex flex-col space-y-2 max-h-40 overflow-y-auto pr-0.5">
+                      {otherPockets.map((p) => {
+                        const isTarget = targetPocketId === p.id;
+                        return (
+                          <div
+                            key={p.id}
+                            onClick={() => setTargetPocketId(p.id)}
+                            className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
+                              isTarget
+                                ? 'bg-[#1C2233] border-[#635BFF] ring-1 ring-[#635BFF]'
+                                : 'bg-[#111520] border-[#1E2435] hover:border-[#2D364D]'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-2.5">
+                              <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                                style={{ backgroundColor: p.color }}
+                              >
+                                {renderIcon(p.iconName)}
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-white tracking-tight">
+                                  {p.name}
+                                </p>
+                                <p className="text-[10px] text-[#7B88A6]">
+                                  {t('collected_label')}: {formatCurrency(p.balance)}
+                                </p>
+                              </div>
+                            </div>
+                            {isTarget && (
+                              <div className="w-5 h-5 rounded-full bg-[#635BFF] flex items-center justify-center text-white">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Transfer Amount Input */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs text-[#7B88A6] font-medium">
+                        {t('amount_label')}
+                      </label>
+                      <span className="text-[11px] text-[#7B88A6]">
+                        {t('available_label')}: {formatCurrency(selectedPocket.balance)}
+                      </span>
+                    </div>
+                    <input
+                      type="number"
+                      step="1"
+                      min="1"
+                      max={selectedPocket.balance}
+                      value={amountInput}
+                      onChange={(e) => setAmountInput(e.target.value)}
+                      placeholder="0"
+                      className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-[#635BFF]"
+                      autoFocus
+                      required
+                    />
+
+                    {/* Quick Percentage Chips */}
+                    <div className="flex items-center space-x-1.5 mt-2">
+                      {[0.25, 0.5, 0.75].map((fraction) => {
+                        const calculated = Math.floor(selectedPocket.balance * fraction);
+                        return (
+                          <button
+                            key={fraction}
+                            type="button"
+                            onClick={() =>
+                              setAmountInput(calculated > 0 ? calculated.toString() : '0')
+                            }
+                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#8E9BB8] hover:text-white hover:border-[#635BFF] cursor-pointer text-center"
+                          >
+                            {fraction * 100}%
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => setAmountInput(selectedPocket.balance.toString())}
+                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#635BFF] hover:text-white hover:bg-[#635BFF] hover:border-[#635BFF] cursor-pointer text-center transition-colors"
+                      >
+                        {t('all_balance')}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center space-x-2 pt-1">
                     <button
-                      key={val}
-                      type="button"
-                      onClick={() => setAmountInput(val.toString())}
-                      className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#8E9BB8] hover:text-white hover:border-[#635BFF] cursor-pointer"
+                      type="submit"
+                      disabled={selectedPocket.balance <= 0}
+                      className={`flex-1 py-3 rounded-xl text-white text-xs font-bold transition-all ${
+                        selectedPocket.balance > 0
+                          ? 'bg-[#635BFF] hover:bg-[#564EE6] cursor-pointer shadow-sm active:scale-95'
+                          : 'bg-[#273047] text-white/50 cursor-not-allowed'
+                      }`}
                     >
-                      {formatCurrency(val)}
+                      {t('confirm_move_funds')}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold transition-all cursor-pointer"
-                >
-                  {t('confirm_allocation')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('view');
-                    setFeedbackMsg(null);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
-                >
-                  {t('cancel')}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* WITHDRAW FORM */}
-          {mode === 'withdraw' && (
-            <form onSubmit={handleWithdraw} className="flex flex-col space-y-4 pt-4">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs text-[#7B88A6] font-medium">
-                    {t('enter_pocket_amount')}
-                  </label>
-                  <span className="text-[11px] text-[#7B88A6]">
-                    Saldo Kantong: {formatCurrency(selectedPocket.balance)}
-                  </span>
-                </div>
-                <input
-                  type="number"
-                  step="1"
-                  min="1"
-                  max={selectedPocket.balance}
-                  value={amountInput}
-                  onChange={(e) => setAmountInput(e.target.value)}
-                  placeholder="0"
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-[#635BFF]"
-                  autoFocus
-                  required
-                />
-
-                {/* Quick Pills */}
-                <div className="flex items-center space-x-2 mt-2">
-                  {[50, 100, 500, 1000].map((val) => (
                     <button
-                      key={val}
                       type="button"
-                      onClick={() => setAmountInput(val.toString())}
-                      className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#8E9BB8] hover:text-white hover:border-[#635BFF] cursor-pointer"
+                      onClick={() => {
+                        setMode('view');
+                        setFeedbackMsg(null);
+                      }}
+                      className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
                     >
-                      {formatCurrency(val)}
+                      {t('cancel')}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-1">
-                <button
-                  type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer"
-                >
-                  {t('confirm_withdraw_pocket')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('view');
-                    setFeedbackMsg(null);
-                  }}
-                  className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
-                >
-                  {t('cancel')}
-                </button>
-              </div>
-            </form>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
 
           {/* EDIT FORM */}

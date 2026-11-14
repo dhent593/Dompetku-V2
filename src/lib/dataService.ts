@@ -374,6 +374,22 @@ class DataService {
     return true;
   }
 
+  transferBetweenPockets(fromPocketId: string, toPocketId: string, amount: number): boolean {
+    if (fromPocketId === toPocketId || amount <= 0) return false;
+    const pockets = this.getPockets();
+    const sourcePocket = pockets.find((p) => p.id === fromPocketId);
+    const destPocket = pockets.find((p) => p.id === toPocketId);
+
+    if (!sourcePocket || !destPocket) return false;
+    if (sourcePocket.balance < amount) return false;
+
+    sourcePocket.balance -= amount;
+    destPocket.balance += amount;
+
+    this.savePockets(pockets);
+    return true;
+  }
+
   // --- Reset to default mock data ---
   resetToDefaults(): void {
     if (!this.isBrowser()) return;
