@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Shield,
+  Wallet,
+  Landmark,
   Plane,
   Smartphone,
   Heart,
@@ -18,6 +20,8 @@ import {
   Trash2,
   AlertTriangle,
   CheckCircle2,
+  Check,
+  Pipette,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useAuth } from '@/context/AuthContext';
@@ -26,6 +30,19 @@ import { POCKET_COLOR_PRESETS } from '@/lib/dummyData';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 import { formatCurrency } from '@/lib/utils';
 import confetti from 'canvas-confetti';
+
+const AVAILABLE_ICONS = [
+  { id: 'Wallet', icon: Wallet, label: 'Dompet' },
+  { id: 'Landmark', icon: Landmark, label: 'Bank' },
+  { id: 'Shield', icon: Shield, label: 'Darurat' },
+  { id: 'Plane', icon: Plane, label: 'Liburan' },
+  { id: 'Smartphone', icon: Smartphone, label: 'Gadget' },
+  { id: 'Heart', icon: Heart, label: 'Kesehatan' },
+  { id: 'ShoppingBag', icon: ShoppingBag, label: 'Belanja' },
+  { id: 'Car', icon: Car, label: 'Kendaraan' },
+  { id: 'Home', icon: Home, label: 'Rumah' },
+  { id: 'Briefcase', icon: Briefcase, label: 'Bisnis' },
+];
 
 export const PocketDetailModal: React.FC = () => {
   const {
@@ -44,6 +61,7 @@ export const PocketDetailModal: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editTarget, setEditTarget] = useState('');
   const [editColor, setEditColor] = useState('#635BFF');
+  const [editIcon, setEditIcon] = useState('Shield');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
@@ -52,6 +70,7 @@ export const PocketDetailModal: React.FC = () => {
       setEditName(selectedPocket.name);
       setEditTarget(selectedPocket.targetAmount.toString());
       setEditColor(selectedPocket.color);
+      setEditIcon(selectedPocket.iconName || 'Shield');
       setMode('view');
       setShowDeleteConfirm(false);
       setFeedbackMsg(null);
@@ -68,6 +87,10 @@ export const PocketDetailModal: React.FC = () => {
 
   const renderIcon = (name: string) => {
     switch (name) {
+      case 'Wallet':
+        return <Wallet className="w-5 h-5" />;
+      case 'Landmark':
+        return <Landmark className="w-5 h-5" />;
       case 'Plane':
         return <Plane className="w-5 h-5" />;
       case 'Smartphone':
@@ -152,6 +175,7 @@ export const PocketDetailModal: React.FC = () => {
       name: editName.trim(),
       targetAmount: targetNum,
       color: editColor,
+      iconName: editIcon,
     });
 
     setFeedbackMsg({ text: t('pocket_updated'), isError: false });
@@ -485,24 +509,111 @@ export const PocketDetailModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[11px] text-[#7B88A6] font-medium block mb-1.5">
-                  {t('pocket_color_label')}
-                </label>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] text-[#7B88A6] font-medium">
+                    {t('pocket_color_label')}
+                  </label>
+                  <div className="flex items-center space-x-1.5 bg-[#1C2233] px-2 py-0.5 rounded-lg border border-[#273047]">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: editColor }}
+                    />
+                    <span className="text-[11px] font-mono text-white/90 uppercase font-semibold">
+                      {editColor}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2.5">
                   {POCKET_COLOR_PRESETS.map((preset) => {
-                    const isSelected = editColor === preset.hex;
+                    const isSelected = editColor.toLowerCase() === preset.hex.toLowerCase();
                     return (
                       <button
                         key={preset.id}
                         type="button"
                         onClick={() => setEditColor(preset.hex)}
+                        title={preset.name}
                         className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                           isSelected
                             ? 'scale-110 ring-2 ring-white/80 ring-offset-2 ring-offset-[#141824]'
                             : 'opacity-70 hover:opacity-100'
                         }`}
                         style={{ backgroundColor: preset.hex }}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                      </button>
+                    );
+                  })}
+
+                  {/* Custom Color Button with Native Color Picker */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      title={t('custom_color')}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer relative overflow-hidden ${
+                        !POCKET_COLOR_PRESETS.some(
+                          (p) => p.hex.toLowerCase() === editColor.toLowerCase()
+                        )
+                          ? 'scale-110 ring-2 ring-white/80 ring-offset-2 ring-offset-[#141824]'
+                          : 'border border-dashed border-[#3E4A68] hover:border-white/60 bg-[#1C2233]'
+                      }`}
+                      style={{
+                        backgroundColor: !POCKET_COLOR_PRESETS.some(
+                          (p) => p.hex.toLowerCase() === editColor.toLowerCase()
+                        )
+                          ? editColor
+                          : undefined,
+                      }}
+                    >
+                      {!POCKET_COLOR_PRESETS.some(
+                        (p) => p.hex.toLowerCase() === editColor.toLowerCase()
+                      ) ? (
+                        <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-sm" />
+                      ) : (
+                        <Pipette className="w-3 h-3 text-[#A0AEC0] hover:text-white transition-colors" />
+                      )}
+                      <input
+                        type="color"
+                        value={
+                          editColor.startsWith('#') && editColor.length === 7
+                            ? editColor
+                            : '#8B5CF6'
+                        }
+                        onChange={(e) => setEditColor(e.target.value)}
+                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                        title={t('custom_color')}
                       />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Icon Selector */}
+              <div>
+                <label className="text-[11px] text-[#7B88A6] font-medium block mb-1.5">
+                  {t('pocket_icon_label')}
+                </label>
+                <div className="grid grid-cols-5 gap-2">
+                  {AVAILABLE_ICONS.map((item) => {
+                    const IconComp = item.icon;
+                    const isSelected = editIcon === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setEditIcon(item.id)}
+                        className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#1C2233] text-white border-white/40 shadow-sm'
+                            : 'bg-[#141824] border-[#1E2435] text-[#7B88A6] hover:text-white hover:border-[#2A344A]'
+                        }`}
+                        title={item.label}
+                      >
+                        <IconComp
+                          className="w-4 h-4 stroke-[2]"
+                          style={{ color: isSelected ? editColor : undefined }}
+                        />
+                      </button>
                     );
                   })}
                 </div>
@@ -530,3 +641,4 @@ export const PocketDetailModal: React.FC = () => {
     </AnimatePresence>
   );
 };
+

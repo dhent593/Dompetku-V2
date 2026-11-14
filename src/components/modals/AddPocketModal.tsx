@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Wallet,
+  Landmark,
   Shield,
   Plane,
   Smartphone,
@@ -15,6 +16,7 @@ import {
   Briefcase,
   Check,
   AlertCircle,
+  Pipette,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useAuth } from '@/context/AuthContext';
@@ -24,14 +26,16 @@ import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig
 import { formatCurrency } from '@/lib/utils';
 
 const AVAILABLE_ICONS = [
-  { id: 'Shield', icon: Shield, label: 'Proteksi / Darurat' },
+  { id: 'Wallet', icon: Wallet, label: 'Dompet' },
+  { id: 'Landmark', icon: Landmark, label: 'Bank' },
+  { id: 'Shield', icon: Shield, label: 'Darurat' },
   { id: 'Plane', icon: Plane, label: 'Liburan' },
   { id: 'Smartphone', icon: Smartphone, label: 'Gadget' },
-  { id: 'Heart', icon: Heart, label: 'Kesehatan / Keluarga' },
+  { id: 'Heart', icon: Heart, label: 'Kesehatan' },
   { id: 'ShoppingBag', icon: ShoppingBag, label: 'Belanja' },
   { id: 'Car', icon: Car, label: 'Kendaraan' },
   { id: 'Home', icon: Home, label: 'Rumah' },
-  { id: 'Briefcase', icon: Briefcase, label: 'Bisnis / Karir' },
+  { id: 'Briefcase', icon: Briefcase, label: 'Bisnis' },
 ];
 
 export const AddPocketModal: React.FC = () => {
@@ -194,14 +198,26 @@ export const AddPocketModal: React.FC = () => {
                 />
               </div>
 
-              {/* Color Preset Selector */}
+              {/* Color Preset & Custom Picker */}
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-2">
-                  {t('pocket_color_label')}
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-[#7B88A6] font-medium">
+                    {t('pocket_color_label')}
+                  </label>
+                  <div className="flex items-center space-x-1.5 bg-[#1C2233] px-2 py-0.5 rounded-lg border border-[#273047]">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: selectedColor }}
+                    />
+                    <span className="text-[11px] font-mono text-white/90 uppercase font-semibold">
+                      {selectedColor}
+                    </span>
+                  </div>
+                </div>
+
                 <div className="flex items-center space-x-2.5">
                   {POCKET_COLOR_PRESETS.map((preset) => {
-                    const isSelected = selectedColor === preset.hex;
+                    const isSelected = selectedColor.toLowerCase() === preset.hex.toLowerCase();
                     return (
                       <button
                         key={preset.id}
@@ -219,15 +235,56 @@ export const AddPocketModal: React.FC = () => {
                       </button>
                     );
                   })}
+
+                  {/* Custom Color Button with Native Pipette / Spectrum Picker */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      title={t('custom_color')}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer relative overflow-hidden ${
+                        !POCKET_COLOR_PRESETS.some(
+                          (p) => p.hex.toLowerCase() === selectedColor.toLowerCase()
+                        )
+                          ? 'scale-110 ring-2 ring-white/80 ring-offset-2 ring-offset-[#141824]'
+                          : 'border border-dashed border-[#3E4A68] hover:border-white/60 bg-[#1C2233]'
+                      }`}
+                      style={{
+                        backgroundColor: !POCKET_COLOR_PRESETS.some(
+                          (p) => p.hex.toLowerCase() === selectedColor.toLowerCase()
+                        )
+                          ? selectedColor
+                          : undefined,
+                      }}
+                    >
+                      {!POCKET_COLOR_PRESETS.some(
+                        (p) => p.hex.toLowerCase() === selectedColor.toLowerCase()
+                      ) ? (
+                        <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-sm" />
+                      ) : (
+                        <Pipette className="w-3.5 h-3.5 text-[#A0AEC0] hover:text-white transition-colors" />
+                      )}
+                      <input
+                        type="color"
+                        value={
+                          selectedColor.startsWith('#') && selectedColor.length === 7
+                            ? selectedColor
+                            : '#8B5CF6'
+                        }
+                        onChange={(e) => setSelectedColor(e.target.value)}
+                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10"
+                        title={t('custom_color')}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Icon Selector */}
+              {/* Icon Selector (10 Icons: Bank, Dompet, etc.) */}
               <div>
                 <label className="text-xs text-[#7B88A6] font-medium block mb-2">
                   {t('pocket_icon_label')}
                 </label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   {AVAILABLE_ICONS.map((item) => {
                     const IconComp = item.icon;
                     const isSelected = selectedIcon === item.id;
@@ -236,11 +293,12 @@ export const AddPocketModal: React.FC = () => {
                         key={item.id}
                         type="button"
                         onClick={() => setSelectedIcon(item.id)}
-                        className={`flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border transition-all cursor-pointer ${
+                        className={`flex flex-col items-center justify-center py-2.5 px-1.5 rounded-xl border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#1C2233] text-white border-white/40 shadow-sm'
                             : 'bg-[#141824] border-[#1E2435] text-[#7B88A6] hover:text-white hover:border-[#2A344A]'
                         }`}
+                        title={item.label}
                       >
                         <IconComp
                           className="w-4 h-4 stroke-[2]"
@@ -276,3 +334,4 @@ export const AddPocketModal: React.FC = () => {
     </AnimatePresence>
   );
 };
+

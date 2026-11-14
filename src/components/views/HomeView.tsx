@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import {
   User,
   Shield,
+  Wallet,
+  Landmark,
   Plane,
   Smartphone,
   Heart,
@@ -87,6 +89,10 @@ export const HomeView: React.FC = () => {
 
   const renderPocketIcon = (name: string) => {
     switch (name) {
+      case 'Wallet':
+        return <Wallet className="w-3.5 h-3.5" />;
+      case 'Landmark':
+        return <Landmark className="w-3.5 h-3.5" />;
       case 'Plane':
         return <Plane className="w-3.5 h-3.5" />;
       case 'Smartphone':
