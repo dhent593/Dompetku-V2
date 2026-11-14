@@ -108,6 +108,11 @@ const translations = {
     search_tx: 'Cari transaksi...',
     add_custom_tx: 'Tambah Catatan Transaksi',
     no_tx_found: 'Tidak ada transaksi yang cocok.',
+    filter_all: 'Semua',
+    filter_week: 'Minggu Ini',
+    filter_month: 'Bulan Ini',
+    filter_year: 'Tahun Ini',
+    filter_label: 'Filter Periode',
 
     // Modals
     transfer_title: 'Transfer Saldo',
@@ -289,6 +294,11 @@ const translations = {
     search_tx: 'Search transactions...',
     add_custom_tx: 'Add Custom Transaction',
     no_tx_found: 'No transactions found matching your criteria.',
+    filter_all: 'All',
+    filter_week: 'This Week',
+    filter_month: 'This Month',
+    filter_year: 'This Year',
+    filter_label: 'Time Period',
 
     // Modals
     transfer_title: 'Transfer Money',
