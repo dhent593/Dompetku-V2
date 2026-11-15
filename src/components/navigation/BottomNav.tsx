@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Home, Search, Wallet, Settings, Plus } from 'lucide-react';
+import { Home, Wallet, PieChart, Settings, Plus } from 'lucide-react';
 import { NavTab } from '@/types';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -18,11 +18,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
 
   const leftTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'home', label: t('nav_home'), icon: Home },
-    { id: 'transactions', label: t('transactions'), icon: Search },
+    { id: 'wallet', label: t('nav_wallet'), icon: Wallet },
   ];
 
   const rightTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'wallet', label: t('nav_wallet'), icon: Wallet },
+    { id: 'analytics', label: t('nav_analytics'), icon: PieChart },
     { id: 'settings', label: t('nav_settings'), icon: Settings },
   ];
 
