@@ -28,7 +28,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { POCKET_COLOR_PRESETS } from '@/lib/dummyData';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 import { formatCurrency } from '@/lib/utils';
-import confetti from 'canvas-confetti';
 
 const AVAILABLE_ICONS = [
   { id: 'Wallet', icon: Wallet, label: 'Dompet' },
@@ -134,13 +133,16 @@ export const PocketDetailModal: React.FC = () => {
 
     transferBetweenPockets(selectedPocket.id, targetPocketId, num);
 
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 },
-      });
-    } catch (err) {}
+    import('canvas-confetti')
+      .then((mod) => {
+        const confetti = mod.default;
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 },
+        });
+      })
+      .catch(() => {});
 
     setFeedbackMsg({ text: `Berhasil memindahkan ${formatCurrency(num)}`, isError: false });
     setAmountInput('');

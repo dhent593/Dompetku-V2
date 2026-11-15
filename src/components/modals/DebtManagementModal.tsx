@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
@@ -110,9 +109,12 @@ export const DebtManagementModal: React.FC = () => {
     const ok = payDebtInstallment(selectedDebtForPay.id, amountNum, selectedPocketId);
     if (ok) {
       if (amountNum >= selectedDebtForPay.remainingAmount) {
-        try {
-          confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-        } catch {}
+        import('canvas-confetti')
+          .then((mod) => {
+            const confetti = mod.default;
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+          })
+          .catch(() => {});
       }
       setFeedbackMsg({
         text: language === 'id' ? `Berhasil membayar ${formatCurrency(amountNum)} via ${pocket.name}` : `Payment of ${formatCurrency(amountNum)} successful via ${pocket.name}`,
