@@ -70,7 +70,7 @@ export default function App() {
       {/* Main Direct Content Container with Snappy Slide-up Animation */}
       <main
         className={`w-full max-w-md mx-auto flex flex-col justify-start px-5 pt-4 sm:pt-5 ${
-          activeTab === 'home'
+          activeTab === 'home' || activeTab === 'transactions'
             ? 'h-[100dvh] pb-[66px] overflow-hidden'
             : 'min-h-screen pb-28 overflow-x-hidden'
         }`}
@@ -82,7 +82,11 @@ export default function App() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className={activeTab === 'home' ? 'w-full h-full flex flex-col min-h-0' : 'w-full'}
+            className={
+              activeTab === 'home' || activeTab === 'transactions'
+                ? 'w-full h-full flex flex-col min-h-0'
+                : 'w-full'
+            }
           >
             {activeTab === 'home' && <HomeView />}
             {activeTab === 'analytics' && <AnalyticsView />}
