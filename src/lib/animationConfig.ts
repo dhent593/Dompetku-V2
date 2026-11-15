@@ -32,15 +32,15 @@ export const snappyBottomSheetVariants = {
     y: 0,
     transition: {
       type: 'spring',
-      stiffness: 450,
-      damping: 32,
-      mass: 0.8,
+      stiffness: 420,
+      damping: 30,
+      mass: 0.65,
     },
   },
   exit: {
     opacity: 0,
     y: '100%',
-    transition: { duration: 0.18, ease: 'easeIn' },
+    transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] },
   },
 };
 

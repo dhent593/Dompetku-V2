@@ -377,3 +377,4 @@ export const MovePocketFundsModal: React.FC = () => {
     </AnimatePresence>
   );
 };
+
