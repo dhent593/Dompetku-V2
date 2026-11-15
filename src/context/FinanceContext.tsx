@@ -115,6 +115,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           ? 'Building2'
           : tx.category === 'food'
           ? 'Burger'
+          : tx.category === 'transfer'
+          ? 'ArrowRightLeft'
+          : tx.type === 'income'
+          ? 'ArrowDownLeft'
           : 'ArrowUpRight',
     });
 

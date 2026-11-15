@@ -8,6 +8,8 @@ import {
   ShoppingBag,
   Wifi,
   ArrowDownLeft,
+  ArrowUpRight,
+  ArrowRightLeft,
   Car,
   Building2,
   Utensils,
@@ -41,7 +43,7 @@ export const TransactionsView: React.FC = () => {
       case 'shopping':
         return <ShoppingBag className="w-5 h-5 text-white/90 stroke-[2]" />;
       case 'salary':
-        return <ArrowDownLeft className="w-5 h-5 text-[#10B981] stroke-[2.2]" />;
+        return <ArrowDownLeft className="w-5 h-5 text-white/90 stroke-[2]" />;
       case 'bill':
         return <Wifi className="w-5 h-5 text-white/90 stroke-[2]" />;
       case 'travel':
@@ -50,7 +52,22 @@ export const TransactionsView: React.FC = () => {
         return <Building2 className="w-5 h-5 text-white/90 stroke-[2]" />;
       case 'food':
         return <Utensils className="w-5 h-5 text-white/90 stroke-[2]" />;
+      case 'transfer':
+        return <ArrowRightLeft className="w-5 h-5 text-white/90 stroke-[2]" />;
       default:
+        if (
+          tx.iconName === 'ArrowRightLeft' ||
+          tx.title?.toLowerCase().includes('transfer') ||
+          tx.title?.toLowerCase().includes('pindah')
+        ) {
+          return <ArrowRightLeft className="w-5 h-5 text-white/90 stroke-[2]" />;
+        }
+        if (tx.type === 'income' || tx.iconName === 'ArrowDownLeft') {
+          return <ArrowDownLeft className="w-5 h-5 text-white/90 stroke-[2]" />;
+        }
+        if (tx.type === 'expense' || tx.iconName === 'ArrowUpRight') {
+          return <ArrowUpRight className="w-5 h-5 text-white/90 stroke-[2]" />;
+        }
         return <CreditCard className="w-5 h-5 text-white/90 stroke-[2]" />;
     }
   };
