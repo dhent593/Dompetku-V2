@@ -161,11 +161,14 @@ export const HomeView: React.FC = () => {
             </span>
           </div>
 
-          {/* Card Middle: Big Balance */}
-          <div>
-            <div className="text-3xl sm:text-[36px] font-extrabold text-white tracking-tight">
-              {formatCurrency(user.balance)}
-            </div>
+          {/* Card Middle: Big Balance with Proportional Typography */}
+          <div className="flex items-baseline space-x-1.5 pt-1">
+            <span className="text-xl sm:text-2xl font-bold text-white/80 select-none">
+              Rp
+            </span>
+            <span className="text-3xl sm:text-[38px] font-extrabold text-white tracking-tight tabular-nums font-sans">
+              {Math.abs(Math.round(user.balance || 0)).toLocaleString('id-ID')}
+            </span>
           </div>
 
           {/* Card Bottom: Rincian Pemasukan & Pengeluaran Bulan Ini (Click to see Analytics) */}

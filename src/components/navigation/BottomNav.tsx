@@ -45,9 +45,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
         >
           <Icon
             className={`w-6 h-6 transition-all duration-200 ${
-              tab.id === 'home' && isActive
-                ? 'fill-white stroke-white'
-                : 'stroke-[2]'
+              isActive ? 'stroke-[2.2]' : 'stroke-[1.8]'
             }`}
           />
         </div>

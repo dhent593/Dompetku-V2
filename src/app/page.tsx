@@ -46,23 +46,21 @@ export default function App() {
     );
   }
 
-  // Snappy, ultra-smooth page transition variants
+  // Snappy, fluid page transition variants (zero-latency instant feel)
   const pageVariants = {
-    initial: { opacity: 0, y: 18 },
+    initial: { opacity: 0, y: 8 },
     animate: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.2,
+        duration: 0.16,
         ease: [0.16, 1, 0.3, 1], // Ultra-responsive Apple/iOS native feel
       },
     },
     exit: {
       opacity: 0,
-      y: -10,
       transition: {
-        duration: 0.12,
-        ease: 'easeIn',
+        duration: 0.08,
       },
     },
   };
@@ -71,7 +69,7 @@ export default function App() {
     <div className="min-h-screen bg-[#0A0D15] text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white">
       {/* Main Direct Content Container with Snappy Slide-up Animation */}
       <main className="w-full max-w-md mx-auto min-h-screen flex flex-col justify-start px-5 pt-6 pb-28 overflow-x-hidden">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           <motion.div
             key={activeTab}
             variants={pageVariants}

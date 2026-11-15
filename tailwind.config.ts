@@ -42,7 +42,9 @@ const config: Config = {
         "4xl": "2.25rem",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "'Poppins'", "system-ui", "-apple-system", "sans-serif"],
+        poppins: ["'Poppins'", "sans-serif"],
+        jakarta: ["'Plus Jakarta Sans'", "sans-serif"],
       },
     },
   },

@@ -44,8 +44,11 @@ export const AnalyticsView: React.FC = () => {
       <div className="flex items-center justify-between p-5 rounded-[22px] bg-[#141824] border border-[#1E2435] shadow-sm">
         <div>
           <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('total_balance')}</span>
-          <div className="text-2xl sm:text-[26px] font-bold text-white tracking-tight mt-0.5">
-            {formatCurrency(user.totalBalance)}
+          <div className="flex items-baseline space-x-1.5 mt-0.5">
+            <span className="text-base sm:text-lg font-bold text-white/80 select-none">Rp</span>
+            <span className="text-2xl sm:text-[28px] font-extrabold text-white tracking-tight tabular-nums font-sans">
+              {Math.abs(Math.round(user.totalBalance || 0)).toLocaleString('id-ID')}
+            </span>
           </div>
         </div>
 
