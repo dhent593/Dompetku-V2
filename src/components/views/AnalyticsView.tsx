@@ -20,12 +20,12 @@ export const AnalyticsView: React.FC = () => {
   const currentChart = CHART_DATA[timeFilter];
 
   return (
-    <div className="flex flex-col space-y-5 text-white w-full">
+    <div className="flex flex-col space-y-5 text-slate-900 dark:text-white w-full">
       {/* 1. Top Header */}
       <div className="flex items-center justify-between pt-1">
         <button
           onClick={() => setActiveTab('home')}
-          className="w-10 h-10 rounded-full bg-[#161B26] border border-[#23293A] flex items-center justify-center text-white/90 hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm cursor-pointer"
           aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
@@ -33,7 +33,7 @@ export const AnalyticsView: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('settings')}
-          className="w-10 h-10 rounded-full bg-[#161B26] border border-[#23293A] flex items-center justify-center text-white/90 hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
           aria-label="Profile"
         >
           <User className="w-5 h-5 stroke-[2]" />
@@ -41,12 +41,12 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       {/* 2. Total Balance Card */}
-      <div className="flex items-center justify-between p-5 rounded-[22px] bg-[#141824] border border-[#1E2435] shadow-sm">
+      <div className="flex items-center justify-between p-5 rounded-[22px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-sm">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('total_balance')}</span>
+          <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium tracking-wide">{t('total_balance')}</span>
           <div className="flex items-baseline space-x-1.5 mt-0.5">
-            <span className="text-base sm:text-lg font-bold text-white/80 select-none">Rp</span>
-            <span className="text-2xl sm:text-[28px] font-extrabold text-white tracking-tight tabular-nums font-sans">
+            <span className="text-base sm:text-lg font-bold text-slate-400 dark:text-white/80 select-none">Rp</span>
+            <span className="text-2xl sm:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums font-sans">
               {Math.abs(Math.round(user.totalBalance || 0)).toLocaleString('id-ID')}
             </span>
           </div>
@@ -61,13 +61,13 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       {/* 3. Expenses / Savings Tab Switcher */}
-      <div className="flex items-center bg-[#111520] p-1.5 rounded-[18px] border border-[#1B2130]">
+      <div className="flex items-center bg-slate-100 dark:bg-[#111520] p-1.5 rounded-[18px] border border-slate-200 dark:border-[#1B2130]">
         <button
           onClick={() => setActiveType('expenses')}
           className={`flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-[14px] transition-all cursor-pointer ${
             activeType === 'expenses'
-              ? 'text-white bg-[#1E2435] shadow-sm'
-              : 'text-[#677491] hover:text-white'
+              ? 'text-slate-900 dark:text-white bg-white dark:bg-[#1E2435] shadow-sm'
+              : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t('expenses')}
@@ -76,8 +76,8 @@ export const AnalyticsView: React.FC = () => {
           onClick={() => setActiveType('savings')}
           className={`flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-[14px] transition-all cursor-pointer ${
             activeType === 'savings'
-              ? 'text-white bg-[#1E2435] shadow-sm'
-              : 'text-[#677491] hover:text-white'
+              ? 'text-slate-900 dark:text-white bg-white dark:bg-[#1E2435] shadow-sm'
+              : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t('savings')}
@@ -86,7 +86,7 @@ export const AnalyticsView: React.FC = () => {
 
       {/* 4. Month Header & Period Selector */}
       <div className="flex items-center justify-between pt-1 relative">
-        <h2 className="text-base font-bold text-white tracking-tight">
+        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
           {timeFilter === 'monthly'
             ? (language === 'id' ? 'Maret, 2023' : 'March, 2023')
             : timeFilter === 'weekly'
@@ -97,14 +97,14 @@ export const AnalyticsView: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center space-x-1.5 text-xs text-[#7A87A5] hover:text-white font-medium bg-[#141824] px-3 py-1.5 rounded-full border border-[#1E2435] transition-colors cursor-pointer"
+            className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-[#7A87A5] hover:text-slate-900 dark:hover:text-white font-medium bg-white dark:bg-[#141824] px-3 py-1.5 rounded-full border border-slate-200 dark:border-[#1E2435] transition-colors cursor-pointer shadow-sm"
           >
             <span>{timeFilter === 'monthly' ? t('monthly') : timeFilter === 'weekly' ? t('weekly') : t('yearly')}</span>
             <ChevronDown className="w-3.5 h-3.5 stroke-[2]" />
           </button>
 
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-32 bg-[#1A2030] border border-[#273045] rounded-xl shadow-xl z-20 py-1 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#1A2030] border border-slate-200 dark:border-[#273045] rounded-xl shadow-xl z-20 py-1 overflow-hidden">
               {(['monthly', 'weekly', 'yearly'] as TimeFilter[]).map((filter) => (
                 <button
                   key={filter}
@@ -112,7 +112,7 @@ export const AnalyticsView: React.FC = () => {
                     setTimeFilter(filter);
                     setShowDropdown(false);
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-left text-white/90 hover:bg-[#232B3E] capitalize cursor-pointer"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-left text-slate-800 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#232B3E] capitalize cursor-pointer"
                 >
                   <span>{filter === 'monthly' ? t('monthly') : filter === 'weekly' ? t('weekly') : t('yearly')}</span>
                   {timeFilter === filter && <Check className="w-3.5 h-3.5 text-[#635BFF]" />}
@@ -134,8 +134,8 @@ export const AnalyticsView: React.FC = () => {
               </linearGradient>
             </defs>
 
-            <line x1="0" y1="35" x2="340" y2="35" stroke="#181E2E" strokeWidth="1" strokeDasharray="3 3" />
-            <line x1="0" y1="85" x2="340" y2="85" stroke="#181E2E" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="0" y1="35" x2="340" y2="35" stroke="currentColor" className="text-slate-200 dark:text-[#181E2E]" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1="0" y1="85" x2="340" y2="85" stroke="currentColor" className="text-slate-200 dark:text-[#181E2E]" strokeWidth="1" strokeDasharray="3 3" />
 
             <path
               d={
@@ -172,12 +172,12 @@ export const AnalyticsView: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-xs text-[#5D6B87] font-medium pt-3 px-1">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#5D6B87] font-medium pt-3 px-1">
           {currentChart.labels.map((lbl, idx) => (
             <span
               key={lbl}
               className={`transition-colors ${
-                idx === currentChart.highlightIndex ? 'text-white font-semibold' : ''
+                idx === currentChart.highlightIndex ? 'text-slate-900 dark:text-white font-semibold' : ''
               }`}
             >
               {lbl}
@@ -189,38 +189,38 @@ export const AnalyticsView: React.FC = () => {
       {/* 6. History Section */}
       <div className="flex flex-col space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white tracking-tight">{t('history')}</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('history')}</h2>
           <button
             onClick={() => setActiveTab('transactions')}
-            className="text-xs text-[#7B88A6] hover:text-white transition-colors cursor-pointer font-medium"
+            className="text-xs text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white transition-colors cursor-pointer font-medium"
           >
             {t('see_all')}
           </button>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] transition-colors">
-            <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
+          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-colors shadow-sm">
+            <div className="w-11 h-11 rounded-[14px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-slate-700 dark:text-white">
               <Car className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('travel')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(126)}</span>
+            <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium mt-3">{t('travel')}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">{formatCurrency(126)}</span>
           </div>
 
-          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] transition-colors">
-            <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
+          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-colors shadow-sm">
+            <div className="w-11 h-11 rounded-[14px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-slate-700 dark:text-white">
               <Landmark className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('investment')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(115)}</span>
+            <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium mt-3">{t('investment')}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">{formatCurrency(115)}</span>
           </div>
 
-          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] transition-colors">
-            <div className="w-11 h-11 rounded-[14px] bg-[#1C2233] flex items-center justify-center text-white">
+          <div className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-colors shadow-sm">
+            <div className="w-11 h-11 rounded-[14px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-slate-700 dark:text-white">
               <Utensils className="w-5 h-5 stroke-[2]" />
             </div>
-            <span className="text-xs text-[#7B88A6] font-medium mt-3">{t('food')}</span>
-            <span className="text-xs sm:text-sm font-bold text-white mt-0.5">{formatCurrency(157)}</span>
+            <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium mt-3">{t('food')}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5">{formatCurrency(157)}</span>
           </div>
         </div>
       </div>

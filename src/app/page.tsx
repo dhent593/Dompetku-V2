@@ -66,7 +66,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0D15] text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0D15] text-slate-900 dark:text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white transition-colors duration-200">
       {/* Main Direct Content Container with Snappy Slide-up Animation */}
       <main
         className={`w-full max-w-md mx-auto flex flex-col justify-start px-5 pt-4 sm:pt-5 ${
@@ -98,12 +98,12 @@ export default function App() {
       </main>
 
       {/* Direct Bottom Navigation Bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-[#111520]/95 backdrop-blur-2xl border-t border-[#1C2233]">
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200">
         <div className="max-w-md mx-auto">
           <BottomNav currentTab={activeTab} onSelectTab={setActiveTab} />
           {/* Subtle mobile indicator bar */}
-          <div className="w-full flex justify-center pb-2 bg-[#111520]/95">
-            <div className="w-28 h-1 bg-white/20 rounded-full" />
+          <div className="w-full flex justify-center pb-2 bg-transparent">
+            <div className="w-28 h-1 bg-slate-300 dark:bg-white/20 rounded-full transition-colors" />
           </div>
         </div>
       </div>

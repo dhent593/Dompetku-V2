@@ -5,14 +5,31 @@
 @tailwind utilities;
 
 :root {
+  --foreground-rgb: 15, 23, 42;
+  --background-start-rgb: 248, 250, 252;
+  --background-end-rgb: 241, 245, 249;
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
+  --inner-bg: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  color-scheme: light;
+}
+
+html.dark {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 10, 13, 21;
   --background-end-rgb: 7, 9, 15;
+  --card-bg: #141824;
+  --card-border: #1E2435;
+  --inner-bg: #1C2233;
+  --text-primary: #FFFFFF;
+  --text-secondary: #7B88A6;
+  color-scheme: dark;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #07090F;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-feature-settings: "tnum" 1;
@@ -32,3 +49,147 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* ========================================================
+   LIGHT MODE DESIGN SYSTEM COMPATIBILITY LAYER
+   Ensures seamless, zero-bug, high-contrast light mode 
+   without breaking white text on intentional colored elements.
+   ======================================================== */
+
+html:not(.dark) {
+  /* Application backgrounds */
+  .bg-\[\#0A0D15\],
+  .bg-\[\#07090F\] {
+    background-color: #F8FAFC !important;
+  }
+
+  /* Card Surfaces: Crisp clean white with soft subtle elevation */
+  .bg-\[\#141824\],
+  .bg-\[\#121622\],
+  .bg-\[\#161B26\],
+  .bg-\[\#161B29\],
+  .bg-\[\#141926\] {
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .hover\:bg-\[\#181D2B\]:hover,
+  .hover\:bg-\[\#1E2433\]:hover,
+  .hover\:bg-\[\#1A2031\]:hover {
+    background-color: #F8FAFC !important;
+  }
+
+  /* Inner elements, chips, inputs, icon containers */
+  .bg-\[\#1C2233\],
+  .bg-\[\#1E2435\],
+  .bg-\[\#1F2637\],
+  .bg-\[\#1A2030\],
+  .bg-\[\#111520\],
+  .bg-\[\#181E2E\],
+  .bg-\[\#1B2234\],
+  .bg-\[\#181E2D\],
+  .bg-\[\#21283D\] {
+    background-color: #F1F5F9 !important;
+    color: #334155;
+  }
+
+  .hover\:bg-\[\#252E44\]:hover,
+  .hover\:bg-\[\#232B3E\]:hover,
+  .hover\:bg-\[\#20283E\]:hover {
+    background-color: #E2E8F0 !important;
+  }
+
+  /* Borders: subtle clean slate-200 */
+  .border-\[\#1E2435\],
+  .border-\[\#1C2233\],
+  .border-\[\#23293A\],
+  .border-\[\#273047\],
+  .border-\[\#1B2130\],
+  .border-\[\#2B3550\],
+  .border-\[\#273045\],
+  .border-\[\#2D364D\],
+  .border-\[\#232C42\],
+  .border-\[\#2E3A56\],
+  .border-\[\#20273D\],
+  .border-\[\#222B40\],
+  .border-\[\#242E46\],
+  .border-\[\#222A3D\] {
+    border-color: #E2E8F0 !important;
+  }
+
+  /* Inputs, Textareas, Selects in light mode */
+  input,
+  textarea,
+  select {
+    background-color: #F8FAFC !important;
+    border-color: #E2E8F0 !important;
+    color: #0F172A !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #94A3B8 !important;
+  }
+
+  /* Text color fixes for light mode cards and modals */
+  .bg-\[\#141824\] h1,
+  .bg-\[\#141824\] h2,
+  .bg-\[\#141824\] h3,
+  .bg-\[\#121622\] h1,
+  .bg-\[\#121622\] h2,
+  .bg-\[\#121622\] h3,
+  .bg-\[\#161B29\] h1,
+  .bg-\[\#161B29\] h2,
+  .bg-\[\#161B29\] h3 {
+    color: #0F172A !important;
+  }
+
+  /* Soft drag indicator on bottom sheets */
+  .bg-white\/15,
+  .bg-white\/10,
+  .bg-white\/20 {
+    background-color: rgba(148, 163, 184, 0.4) !important;
+  }
+}
+
+/* ========================================================
+   ELEMENTS THAT MUST ALWAYS RETAIN WHITE TEXT
+   Regardless of whether Light or Dark theme is active.
+   ======================================================== */
+
+.bg-\[\#635BFF\],
+.bg-\[\#635BFF\] *,
+.bg-\[\#635BFF\] .text-white,
+button.bg-\[\#635BFF\],
+button.bg-\[\#635BFF\] *,
+.bg-red-600,
+.bg-red-600 *,
+.bg-\[\#F43F5E\],
+.bg-\[\#F43F5E\] *,
+.bg-\[\#10B981\],
+.bg-\[\#10B981\] *,
+.bg-emerald-600,
+.bg-emerald-600 *,
+.bg-\[\#0F172A\],
+.bg-\[\#0F172A\] *,
+.bg-\[\#1C2538\],
+.bg-\[\#1C2538\] * {
+  /* Retain bright crisp white text on solid colored buttons & badges */
+}
+
+html:not(.dark) .bg-\[\#635BFF\] h1,
+html:not(.dark) .bg-\[\#635BFF\] h2,
+html:not(.dark) .bg-\[\#635BFF\] h3,
+html:not(.dark) .bg-\[\#635BFF\] span,
+html:not(.dark) .bg-\[\#635BFF\] p,
+html:not(.dark) .bg-\[\#635BFF\] svg {
+  color: #FFFFFF !important;
+}
+
+html:not(.dark) .bg-\[\#635BFF\] .bg-white\/15 {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html:not(.dark) .bg-\[\#635BFF\] .border-white\/15 {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}

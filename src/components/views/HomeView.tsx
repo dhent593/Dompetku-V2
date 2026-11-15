@@ -62,34 +62,34 @@ export const HomeView: React.FC = () => {
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
       case 'shopping':
-        return <ShoppingBag className="w-5 h-5 text-white stroke-[2]" />;
+        return <ShoppingBag className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'bill':
-        return <Wifi className="w-5 h-5 text-white stroke-[2]" />;
+        return <Wifi className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'salary':
-        return <ArrowDownLeft className="w-5 h-5 text-white stroke-[2]" />;
+        return <ArrowDownLeft className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'travel':
-        return <Car className="w-5 h-5 text-white stroke-[2]" />;
+        return <Car className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'investment':
-        return <Building2 className="w-5 h-5 text-white stroke-[2]" />;
+        return <Building2 className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'food':
-        return <Utensils className="w-5 h-5 text-white stroke-[2]" />;
+        return <Utensils className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       case 'transfer':
-        return <ArrowRightLeft className="w-5 h-5 text-white stroke-[2]" />;
+        return <ArrowRightLeft className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
       default:
         if (
           tx.iconName === 'ArrowRightLeft' ||
           tx.title?.toLowerCase().includes('transfer') ||
           tx.title?.toLowerCase().includes('pindah')
         ) {
-          return <ArrowRightLeft className="w-5 h-5 text-white stroke-[2]" />;
+          return <ArrowRightLeft className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
         }
         if (tx.type === 'income' || tx.iconName === 'ArrowDownLeft') {
-          return <ArrowDownLeft className="w-5 h-5 text-white stroke-[2]" />;
+          return <ArrowDownLeft className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
         }
         if (tx.type === 'expense' || tx.iconName === 'ArrowUpRight') {
-          return <ArrowUpRight className="w-5 h-5 text-white stroke-[2]" />;
+          return <ArrowUpRight className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
         }
-        return <ShoppingBag className="w-5 h-5 text-white stroke-[2]" />;
+        return <ShoppingBag className="w-5 h-5 text-slate-700 dark:text-white stroke-[2]" />;
     }
   };
 
@@ -131,17 +131,17 @@ export const HomeView: React.FC = () => {
   const displayTransactions = transactions.slice(0, 3);
 
   return (
-    <div className="flex flex-col h-full text-white w-full min-h-0 space-y-4">
+    <div className="flex flex-col h-full text-slate-900 dark:text-white w-full min-h-0 space-y-4">
       {/* 1. Header (Fixed) */}
       <div className="flex items-center justify-between pt-1 flex-shrink-0">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
+          <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-0.5">{user.name}</h1>
         </div>
 
         <button
           onClick={() => setActiveTab('settings')}
-          className="w-10 h-10 rounded-full bg-[#161B26] border border-[#23293A] flex items-center justify-center text-white/90 hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
           aria-label="Profile"
         >
           <User className="w-5 h-5 stroke-[2]" />
@@ -215,10 +215,10 @@ export const HomeView: React.FC = () => {
       {/* 3. Kantong Saya (My Pockets - Fixed Vertical, Horizontal Scroll) */}
       <div className="flex flex-col space-y-2.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white tracking-tight">{t('my_pockets')}</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('my_pockets')}</h2>
           <button
             onClick={() => setActiveModal('addPocket')}
-            className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer font-medium flex items-center space-x-1"
+            className="text-xs text-slate-500 dark:text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer font-medium flex items-center space-x-1"
           >
             <span>{t('add_pocket_btn')}</span>
           </button>
@@ -235,7 +235,7 @@ export const HomeView: React.FC = () => {
               <div
                 key={pocket.id}
                 onClick={() => setSelectedPocket(pocket)}
-                className="min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98]"
+                className="min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98]"
                 title={pocket.name}
               >
                 <div>
@@ -254,19 +254,19 @@ export const HomeView: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-white tracking-tight truncate mt-2.5">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight truncate mt-2.5">
                     {pocket.name}
                   </h3>
-                  <p className="text-sm font-bold text-white tracking-tight mt-0.5">
+                  <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight mt-0.5">
                     {formatCurrency(pocket.balance)}
                   </p>
-                  <p className="text-[11px] text-[#7B88A6] mt-0.5 truncate">
+                  <p className="text-[11px] text-slate-500 dark:text-[#7B88A6] mt-0.5 truncate">
                     {t('pocket_target_label')}: {formatCurrency(pocket.targetAmount)}
                   </p>
                 </div>
 
                 {/* Mini progress bar */}
-                <div className="w-full h-1.5 rounded-full bg-[#1F2637] overflow-hidden mt-3">
+                <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#1F2637] overflow-hidden mt-3">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -282,11 +282,11 @@ export const HomeView: React.FC = () => {
           {pockets.length === 0 && (
             <div
               onClick={() => setActiveModal('addPocket')}
-              className="min-w-[200px] flex-shrink-0 p-4 rounded-[20px] border border-dashed border-[#23293A] hover:border-[#635BFF] flex items-center justify-center text-center cursor-pointer transition-colors"
+              className="min-w-[200px] flex-shrink-0 p-4 rounded-[20px] border border-dashed border-slate-300 dark:border-[#23293A] hover:border-[#635BFF] flex items-center justify-center text-center cursor-pointer transition-colors bg-white dark:bg-transparent"
             >
               <div className="flex flex-col items-center space-y-1">
-                <Plus className="w-5 h-5 text-[#7B88A6]" />
-                <span className="text-xs text-[#7B88A6] font-medium">{t('add_pocket_btn')}</span>
+                <Plus className="w-5 h-5 text-slate-400 dark:text-[#7B88A6]" />
+                <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium">{t('add_pocket_btn')}</span>
               </div>
             </div>
           )}
@@ -296,10 +296,10 @@ export const HomeView: React.FC = () => {
       {/* 4. Transactions Section (Scrollable Vertically) */}
       <div className="flex-1 flex flex-col min-h-0 pt-1">
         <div className="flex items-center justify-between pb-2 flex-shrink-0">
-          <h2 className="text-base font-bold text-white tracking-tight">{t('transactions')}</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('transactions')}</h2>
           <button
             onClick={() => setActiveTab('transactions')}
-            className="text-xs text-[#7B88A6] hover:text-white transition-colors cursor-pointer font-medium"
+            className="text-xs text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white transition-colors cursor-pointer font-medium"
           >
             {t('see_all')}
           </button>
@@ -311,18 +311,18 @@ export const HomeView: React.FC = () => {
             <div
               key={tx.id}
               onClick={() => setSelectedTransaction(tx)}
-              className="flex items-center justify-between p-3.5 sm:p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
+              className="flex items-center justify-between p-3.5 sm:p-4 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
               title="Click to view, edit, or delete"
             >
               <div className="flex items-center space-x-3.5">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[16px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center flex-shrink-0">
                   {renderTxIcon(tx)}
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white tracking-tight">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">
                     {tx.title}
                   </h3>
-                  <p className="text-xs text-[#6B7894] mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-[#6B7894] mt-0.5">
                     {tx.date.includes('2023-04-19')
                       ? (language === 'id' ? '19 Apr' : 'Apr 19')
                       : tx.date.includes('2023-04-18')
@@ -334,7 +334,7 @@ export const HomeView: React.FC = () => {
 
               <div
                 className={`text-sm font-bold tracking-tight ${
-                  tx.type === 'income' ? 'text-[#10B981]' : 'text-white'
+                  tx.type === 'income' ? 'text-[#10B981]' : 'text-slate-900 dark:text-white'
                 }`}
               >
                 {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}

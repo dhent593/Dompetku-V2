@@ -57,12 +57,12 @@ export const WalletView: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col space-y-6 text-white w-full">
+    <div className="flex flex-col space-y-6 text-slate-900 dark:text-white w-full">
       {/* 1. Top Header */}
       <div className="flex items-center justify-between pt-1">
         <div>
-          <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
+          <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-0.5">{user.name}</h1>
         </div>
       </div>
 
@@ -114,16 +114,16 @@ export const WalletView: React.FC = () => {
       </div>
 
       {/* Sublinks below card */}
-      <div className="flex items-center justify-between px-2 text-xs font-medium text-[#7B88A6]">
+      <div className="flex items-center justify-between px-2 text-xs font-medium text-slate-500 dark:text-[#7B88A6]">
         <button
           onClick={() => setActiveModal('editProfile')}
-          className="hover:text-white transition-colors cursor-pointer"
+          className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           {t('not_you')}
         </button>
         <button
           onClick={() => setShowKeypad(true)}
-          className="hover:text-white transition-colors cursor-pointer"
+          className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           {t('forgot_pin')}
         </button>
@@ -131,9 +131,9 @@ export const WalletView: React.FC = () => {
 
       {/* In-line Keypad */}
       {showKeypad && (
-        <div className="bg-[#141824] border border-[#1E2435] rounded-[22px] p-4 flex flex-col items-center">
-          <div className="w-full flex justify-between items-center px-2 pb-3 border-b border-[#1E2435]">
-            <span className="text-xs text-[#7B88A6] font-medium">{t('numeric_keypad')} (1234)</span>
+        <div className="bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-[22px] p-4 flex flex-col items-center shadow-sm">
+          <div className="w-full flex justify-between items-center px-2 pb-3 border-b border-slate-200 dark:border-[#1E2435]">
+            <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium">{t('numeric_keypad')} (1234)</span>
             <button
               onClick={() => setShowKeypad(false)}
               className="text-xs text-[#635BFF] font-semibold hover:underline cursor-pointer"
@@ -153,7 +153,7 @@ export const WalletView: React.FC = () => {
                     handleKeypadPress(k);
                   }
                 }}
-                className="h-12 rounded-xl bg-[#1C2233] hover:bg-[#252E44] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer"
+                className="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] active:scale-95 text-slate-900 dark:text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer"
               >
                 {k}
               </button>
@@ -164,7 +164,7 @@ export const WalletView: React.FC = () => {
 
       {/* 3. Products Section */}
       <div className="flex flex-col space-y-3 pt-1">
-        <h2 className="text-base font-bold text-white tracking-tight">{t('products')}</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('products')}</h2>
 
         <div className="grid grid-cols-3 gap-3">
           {products.map((item) => {
@@ -173,12 +173,12 @@ export const WalletView: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleProductClick(item.id, item.name)}
-                className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] text-center hover:border-[#2D364D] active:scale-95 transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] active:scale-95 transition-all group cursor-pointer shadow-sm"
               >
-                <div className="w-12 h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center text-white/90 group-hover:text-white transition-colors">
+                <div className="w-12 h-12 rounded-[16px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   <Icon className="w-5 h-5 stroke-[2]" />
                 </div>
-                <span className="text-xs text-[#7B88A6] font-medium mt-3 leading-tight group-hover:text-white transition-colors">
+                <span className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium mt-3 leading-tight group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   {item.name}
                 </span>
               </button>
@@ -194,7 +194,7 @@ export const WalletView: React.FC = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#1C2233] border border-[#2B3550] text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl flex items-center space-x-2 z-50 pointer-events-none"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-[#1C2233] border border-slate-700 dark:border-[#2B3550] text-white px-4 py-2 rounded-full text-xs font-medium shadow-xl flex items-center space-x-2 z-50 pointer-events-none"
           >
             <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
             <span>{activeProductToast}</span>

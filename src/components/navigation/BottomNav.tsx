@@ -40,7 +40,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
       >
         <div
           className={`transition-colors duration-200 ${
-            isActive ? 'text-white' : 'text-[#56627C] group-hover:text-[#8D9BB8]'
+            isActive
+              ? 'text-slate-900 dark:text-white'
+              : 'text-slate-400 group-hover:text-slate-600 dark:text-[#56627C] dark:group-hover:text-[#8D9BB8]'
           }`}
         >
           <Icon
@@ -55,7 +57,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
           {isActive ? (
             <motion.div
               layoutId="activeNavDot"
-              className="w-1.5 h-1.5 rounded-full bg-white shadow-sm"
+              className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-white shadow-sm"
               transition={{ type: 'spring', stiffness: 420, damping: 30 }}
             />
           ) : (
@@ -81,7 +83,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             whileHover={{ scale: 1.06, y: -2 }}
             whileTap={{ scale: 0.92 }}
             onClick={() => setActiveModal('recordActionSheet')}
-            className="w-[58px] h-[58px] rounded-full bg-[#1C2538] hover:bg-[#232F46] border border-white/10 text-white flex items-center justify-center shadow-[0_14px_30px_rgba(0,0,0,0.65),0_4px_12px_rgba(0,0,0,0.4)] cursor-pointer transition-all"
+            className="w-[58px] h-[58px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] dark:bg-[#1C2538] dark:hover:bg-[#232F46] border border-slate-200/60 dark:border-white/10 text-white flex items-center justify-center shadow-[0_12px_28px_rgba(15,23,42,0.22),0_4px_10px_rgba(15,23,42,0.12)] dark:shadow-[0_14px_30px_rgba(0,0,0,0.65),0_4px_12px_rgba(0,0,0,0.4)] cursor-pointer transition-all"
             aria-label="Add Transaction"
             title={t('new_record')}
           >
