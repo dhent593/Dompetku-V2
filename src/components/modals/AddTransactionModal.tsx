@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, AlertCircle, ShoppingBag, Wifi, Car, Building2, Utensils, ArrowDownLeft } from 'lucide-react';
+import { X, Plus, AlertCircle, ShoppingBag, Wifi, Car, Building2, Utensils, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Transaction } from '@/types';
@@ -18,7 +18,19 @@ export const AddTransactionModal: React.FC = () => {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const isOpen = activeModal === 'addTx';
+  const isOpen = activeModal === 'addTx' || activeModal === 'addIncome' || activeModal === 'addExpense';
+
+  useEffect(() => {
+    if (activeModal === 'addIncome') {
+      setType('income');
+      setCategory('salary');
+      setError(null);
+    } else if (activeModal === 'addExpense') {
+      setType('expense');
+      setCategory('shopping');
+      setError(null);
+    }
+  }, [activeModal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,10 +88,25 @@ export const AddTransactionModal: React.FC = () => {
           >
             <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
-                  <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${
+                    type === 'income' ? 'bg-[#10B981]' : 'bg-[#F43F5E]'
+                  }`}
+                >
+                  {type === 'income' ? (
+                    <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                  ) : (
+                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                  )}
                 </div>
-                <h3 className="text-base font-bold">{t('new_record')}</h3>
+                <div>
+                  <h3 className="text-base font-bold">
+                    {type === 'income' ? t('record_income_title') : t('record_expense_title')}
+                  </h3>
+                  <span className="text-[11px] text-[#7B88A6]">
+                    {type === 'income' ? 'Uang Masuk (+)' : 'Uang Keluar (-)'}
+                  </span>
+                </div>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
@@ -93,16 +120,22 @@ export const AddTransactionModal: React.FC = () => {
               <div className="flex bg-[#111520] p-1 rounded-xl border border-[#1C2233]">
                 <button
                   type="button"
-                  onClick={() => setType('expense')}
+                  onClick={() => {
+                    setType('expense');
+                    setCategory('shopping');
+                  }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    type === 'expense' ? 'bg-[#635BFF] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
+                    type === 'expense' ? 'bg-[#F43F5E] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
                   }`}
                 >
                   {t('expense_type')}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setType('income')}
+                  onClick={() => {
+                    setType('income');
+                    setCategory('salary');
+                  }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     type === 'income' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
                   }`}
@@ -156,7 +189,9 @@ export const AddTransactionModal: React.FC = () => {
                         onClick={() => setCategory(c.id)}
                         className={`flex items-center space-x-1.5 p-2 rounded-xl border text-[11px] font-medium transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#635BFF]/20 border-[#635BFF] text-white'
+                            ? type === 'income'
+                              ? 'bg-[#10B981]/20 border-[#10B981] text-white'
+                              : 'bg-[#F43F5E]/20 border-[#F43F5E] text-white'
                             : 'bg-[#1C2233] border-[#273047] text-[#7B88A6] hover:border-[#354160]'
                         }`}
                       >
@@ -179,7 +214,11 @@ export const AddTransactionModal: React.FC = () => {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.97 }}
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm"
+                className={`w-full py-3.5 rounded-xl text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm ${
+                  type === 'income'
+                    ? 'bg-[#10B981] hover:bg-[#059669]'
+                    : 'bg-[#F43F5E] hover:bg-[#E11D48]'
+                }`}
               >
                 {t('save_tx')}
               </motion.button>

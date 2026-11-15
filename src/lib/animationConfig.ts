@@ -25,3 +25,22 @@ export const snappyBackdropVariants = {
   exit: { opacity: 0, transition: { duration: 0.1 } },
 };
 
+export const snappyBottomSheetVariants = {
+  initial: { opacity: 0, y: '100%' },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 450,
+      damping: 32,
+      mass: 0.8,
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: '100%',
+    transition: { duration: 0.18, ease: 'easeIn' },
+  },
+};
+

@@ -319,10 +319,10 @@ export const TransactionsView: React.FC = () => {
       {/* Floating Add Transaction Button */}
       <div className="pt-2">
         <button
-          onClick={() => setActiveModal('addTx')}
-          className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-[#161B29] border border-[#222B40] hover:border-[#5B4DF9] text-white text-xs font-semibold hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer"
+          onClick={() => setActiveModal('recordActionSheet')}
+          className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-[#161B29] border border-[#222B40] hover:border-[#635BFF] text-white text-xs font-semibold hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-[#5B4DF9] stroke-[2.5]" />
+          <Plus className="w-4 h-4 text-[#635BFF] stroke-[2.5]" />
           <span>{t('add_custom_tx')}</span>
         </button>
       </div>

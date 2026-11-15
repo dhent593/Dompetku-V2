@@ -22,6 +22,8 @@ import { PaymentMethodsModal } from '@/components/modals/PaymentMethodsModal';
 import { AccountSecurityModal } from '@/components/modals/AccountSecurityModal';
 import { AddPocketModal } from '@/components/modals/AddPocketModal';
 import { PocketDetailModal } from '@/components/modals/PocketDetailModal';
+import { RecordActionSheet } from '@/components/modals/RecordActionSheet';
+import { MovePocketFundsModal } from '@/components/modals/MovePocketFundsModal';
 
 export default function App() {
   const { isLoggedIn } = useAuth();
@@ -109,6 +111,8 @@ export default function App() {
       <AccountSecurityModal />
       <AddPocketModal />
       <PocketDetailModal />
+      <RecordActionSheet />
+      <MovePocketFundsModal />
 
       {/* Security Overlay / mPIN Lock Screen */}
       <LockScreen />

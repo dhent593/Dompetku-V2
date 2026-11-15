@@ -65,7 +65,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
         {/* Center Solid Floating (+) Button */}
         <div className="flex items-center justify-center px-2 relative -top-3.5">
           <button
-            onClick={() => setActiveModal('addTx')}
+            onClick={() => setActiveModal('recordActionSheet')}
             className="w-12 h-12 rounded-full bg-[#635BFF] hover:bg-[#564EE6] text-white flex items-center justify-center shadow-lg shadow-[#635BFF]/30 border-2 border-[#111520] active:scale-95 transition-all cursor-pointer"
             aria-label="Add Transaction"
             title={t('new_record')}
