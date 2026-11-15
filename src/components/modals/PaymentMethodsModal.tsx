@@ -48,7 +48,7 @@ export const PaymentMethodsModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
             key="cards-modal"
@@ -56,21 +56,21 @@ export const PaymentMethodsModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-[#141824] border border-[#1E2435] p-6 shadow-2xl text-white relative"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center shadow-sm">
                   <CreditCard className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="text-base font-bold">{t('payment_methods')}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('payment_methods')}</h3>
               </div>
               <button
                 onClick={() => {
                   setActiveModal(null);
                   setIsAdding(false);
                 }}
-                className="w-8 h-8 rounded-full bg-[#1C2233] flex items-center justify-center text-[#7B88A6] hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -79,7 +79,7 @@ export const PaymentMethodsModal: React.FC = () => {
             {!isAdding ? (
               <div className="flex flex-col space-y-3.5 pt-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[#7B88A6]">{t('saved_cards')} ({cards.length})</span>
+                  <span className="text-slate-500 dark:text-[#7B88A6]">{t('saved_cards')} ({cards.length})</span>
                   <button
                     onClick={() => setIsAdding(true)}
                     className="text-[#635BFF] hover:underline font-semibold flex items-center space-x-1 cursor-pointer"
@@ -96,99 +96,89 @@ export const PaymentMethodsModal: React.FC = () => {
                       key={card.id}
                       className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
                         card.isDefault
-                          ? 'bg-[#1C2233] border-[#635BFF]'
-                          : 'bg-[#141824] border-[#1E2435] hover:border-[#2E374F]'
+                          ? 'bg-white dark:bg-[#1C2233] border-[#635BFF] shadow-sm'
+                          : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#141824] border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2E374F]'
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-8 rounded-lg bg-[#635BFF] flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-white">
+                        <div className="w-10 h-7 rounded-md bg-[#635BFF] flex items-center justify-center text-white text-[10px] font-black uppercase tracking-wider">
                           {card.brand}
                         </div>
                         <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono text-sm font-bold text-white">{card.cardNumberMask}</span>
-                            {card.isDefault && (
-                              <span className="text-[10px] bg-[#10B981]/20 text-[#10B981] px-2 py-0.5 rounded-full font-semibold">
-                                {t('primary_badge')}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[11px] text-[#7B88A6]">{card.cardExpiry}</span>
+                          <p className="text-xs font-semibold text-slate-900 dark:text-white font-mono">{card.cardNumberMask}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-[#7B88A6]">Exp: {card.cardExpiry}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        {!card.isDefault && (
+                        {card.isDefault ? (
+                          <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
+                            {t('primary_badge')}
+                          </span>
+                        ) : (
                           <button
                             onClick={() => setDefaultCard(card.id)}
-                            className="text-[11px] text-[#7B88A6] hover:text-white px-2 py-1 rounded bg-[#1C2233] cursor-pointer"
-                            title={t('set_default')}
+                            className="text-[11px] text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer"
                           >
                             {t('set_default')}
                           </button>
                         )}
-                        {cards.length > 1 && (
-                          <button
-                            onClick={() => deleteCard(card.id)}
-                            className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/15 cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => deleteCard(card.id)}
+                          className="w-7 h-7 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              /* Add Card Form */
               <form onSubmit={handleAddCard} className="flex flex-col space-y-3.5 pt-4">
                 <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_number')}</label>
-                  <input
-                    type="text"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="4242 •••• •••• 4242"
-                    maxLength={19}
-                    className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_holder')}</label>
+                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('card_holder')}</label>
                   <input
                     type="text"
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value)}
-                    placeholder="Smith Doe"
-                    className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#635BFF]"
+                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('card_number')}</label>
+                  <input
+                    type="text"
+                    maxLength={19}
+                    placeholder="4123 4567 8910 1112"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('expiry')}</label>
+                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('expiry')}</label>
                     <input
                       type="text"
+                      placeholder="MM/YY"
+                      maxLength={5}
                       value={expiry}
                       onChange={(e) => setExpiry(e.target.value)}
-                      placeholder="08/30"
-                      maxLength={5}
-                      className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#635BFF]"
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                       required
                     />
                   </div>
-
                   <div>
-                    <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">{t('card_brand')}</label>
+                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('card_brand')}</label>
                     <select
                       value={brand}
                       onChange={(e) => setBrand(e.target.value as any)}
-                      className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#635BFF]"
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     >
                       <option value="visa">Visa</option>
                       <option value="mastercard">Mastercard</option>
@@ -197,19 +187,17 @@ export const PaymentMethodsModal: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 pt-2">
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.97 }}
+                <div className="flex space-x-2 pt-2">
+                  <button
                     type="submit"
-                    className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+                    className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-sm"
                   >
-                    {t('add_card')}
-                  </motion.button>
+                    {t('save_changes')}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setIsAdding(false)}
-                    className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
+                    className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white text-xs font-semibold cursor-pointer transition-colors"
                   >
                     {t('cancel')}
                   </button>

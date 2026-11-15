@@ -52,7 +52,7 @@ export const WithdrawModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
             key="withdraw-modal"
@@ -60,18 +60,18 @@ export const WithdrawModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-[#141824] border border-[#1E2435] p-6 shadow-2xl text-white relative"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center shadow-sm">
                   <Landmark className="w-4 h-4 text-white stroke-[2]" />
                 </div>
-                <h3 className="text-base font-bold">{t('withdraw_title')}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('withdraw_title')}</h3>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-[#1C2233] flex items-center justify-center text-[#7B88A6] hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -84,31 +84,30 @@ export const WithdrawModal: React.FC = () => {
                 className="flex flex-col items-center justify-center py-8 text-center"
               >
                 <CheckCircle2 className="w-16 h-16 text-[#10B981] mb-3" />
-                <h4 className="text-lg font-bold text-white">{t('withdraw_success')}</h4>
-                <p className="text-xs text-[#7B88A6] mt-1">
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white">{t('withdraw_success')}</h4>
+                <p className="text-xs text-slate-500 dark:text-[#7B88A6] mt-1">
                   {formatCurrency(parseFloat(amount))} {t('withdrawal_to')} {bank}
                 </p>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col space-y-4 pt-4">
                 <div>
-                  <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('dest_account')}</label>
+                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">{t('dest_account')}</label>
                   <select
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#635BFF]"
+                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   >
                     <option value="Chase Bank (•••• 8912)">Chase Bank (•••• 8912)</option>
-                    <option value="Wells Fargo (•••• 4310)">Wells Fargo (•••• 4310)</option>
-                    <option value="BCA Direct (•••• 7729)">BCA Direct (•••• 7729)</option>
-                    <option value="PayPal Wallet">PayPal Wallet</option>
+                    <option value="Bank Central Asia (•••• 3390)">BCA - Bank Central Asia (•••• 3390)</option>
+                    <option value="Bank Mandiri (•••• 5521)">Bank Mandiri (•••• 5521)</option>
                   </select>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-[#7B88A6] font-medium">{t('amount_label')}</label>
-                    <span className="text-[11px] text-[#7B88A6]">Max: {formatCurrency(user.totalBalance)}</span>
+                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">{t('amount_label')}</label>
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">{t('available_label')}: {formatCurrency(user.totalBalance)}</span>
                   </div>
                   <input
                     type="number"
@@ -120,13 +119,33 @@ export const WithdrawModal: React.FC = () => {
                       setError(null);
                     }}
                     placeholder="0"
-                    className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
+                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     required
                   />
+                  {/* Quick Pills */}
+                  <div className="flex items-center space-x-2 mt-2">
+                    {[100, 500, 1000].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setAmount(val.toString())}
+                        className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white hover:border-[#635BFF] cursor-pointer transition-colors"
+                      >
+                        {formatCurrency(val)}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setAmount(user.totalBalance.toString())}
+                      className="text-[11px] font-semibold py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] border border-[#635BFF]/40 text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer transition-colors"
+                    >
+                      {t('all_balance')}
+                    </button>
+                  </div>
                 </div>
 
                 {error && (
-                  <div className="flex items-center space-x-2 text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-900/50">
+                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900/50">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>

@@ -2,7 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, AlertCircle, ShoppingBag, Wifi, Car, Building2, Utensils, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import {
+  X,
+  ShoppingBag,
+  Wifi,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Utensils,
+  Car,
+  Building2,
+  AlertCircle,
+} from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Transaction } from '@/types';
@@ -11,9 +21,10 @@ import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig
 export const AddTransactionModal: React.FC = () => {
   const { activeModal, setActiveModal, addTransaction } = useFinance();
   const { t } = useLanguage();
+
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
-  const [type, setType] = useState<'expense' | 'income'>('expense');
+  const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Transaction['category']>('shopping');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +87,7 @@ export const AddTransactionModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
             key="addtx-modal"
@@ -84,12 +95,13 @@ export const AddTransactionModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-[#141824] border border-[#1E2435] p-6 shadow-2xl text-white relative"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm ${
                     type === 'income' ? 'bg-[#10B981]' : 'bg-[#F43F5E]'
                   }`}
                 >
@@ -100,24 +112,25 @@ export const AddTransactionModal: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
                     {type === 'income' ? t('record_income_title') : t('record_expense_title')}
                   </h3>
-                  <span className="text-[11px] text-[#7B88A6]">
+                  <span className="text-[11px] text-slate-500 dark:text-[#7B88A6]">
                     {type === 'income' ? 'Uang Masuk (+)' : 'Uang Keluar (-)'}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-[#1C2233] flex items-center justify-center text-[#7B88A6] hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col space-y-3.5 pt-4">
-              <div className="flex bg-[#111520] p-1 rounded-xl border border-[#1C2233]">
+              {/* Type Switcher */}
+              <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl border border-slate-200 dark:border-[#1C2233]">
                 <button
                   type="button"
                   onClick={() => {
@@ -125,7 +138,9 @@ export const AddTransactionModal: React.FC = () => {
                     setCategory('shopping');
                   }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    type === 'expense' ? 'bg-[#F43F5E] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
+                    type === 'expense'
+                      ? 'bg-[#F43F5E] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
                   {t('expense_type')}
@@ -137,15 +152,20 @@ export const AddTransactionModal: React.FC = () => {
                     setCategory('salary');
                   }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    type === 'income' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#7B88A6] hover:text-white'
+                    type === 'income'
+                      ? 'bg-[#10B981] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
                   {t('income_type')}
                 </button>
               </div>
 
+              {/* Title Input */}
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('title_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                  {t('title_label')}
+                </label>
                 <input
                   type="text"
                   value={title}
@@ -154,13 +174,16 @@ export const AddTransactionModal: React.FC = () => {
                     setError(null);
                   }}
                   placeholder="e.g. Netflix Subscription"
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
+                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
+              {/* Amount Input */}
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('amount_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                  {t('amount_label')}
+                </label>
                 <input
                   type="number"
                   step="1"
@@ -171,13 +194,16 @@ export const AddTransactionModal: React.FC = () => {
                     setError(null);
                   }}
                   placeholder="0"
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF]"
+                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
+              {/* Category Grid */}
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('category_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
+                  {t('category_label')}
+                </label>
                 <div className="grid grid-cols-3 gap-2">
                   {categories.map((c) => {
                     const Icon = c.icon;
@@ -190,12 +216,12 @@ export const AddTransactionModal: React.FC = () => {
                         className={`flex items-center space-x-1.5 p-2 rounded-xl border text-[11px] font-medium transition-all cursor-pointer ${
                           isSelected
                             ? type === 'income'
-                              ? 'bg-[#10B981]/20 border-[#10B981] text-white'
-                              : 'bg-[#F43F5E]/20 border-[#F43F5E] text-white'
-                            : 'bg-[#1C2233] border-[#273047] text-[#7B88A6] hover:border-[#354160]'
+                              ? 'bg-[#10B981] border-[#10B981] text-white shadow-sm font-semibold'
+                              : 'bg-[#F43F5E] border-[#F43F5E] text-white shadow-sm font-semibold'
+                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
-                        <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-600 dark:text-[#7B88A6]'}`} />
                         <span className="truncate">{c.label}</span>
                       </button>
                     );
@@ -204,7 +230,7 @@ export const AddTransactionModal: React.FC = () => {
               </div>
 
               {error && (
-                <div className="flex items-center space-x-2 text-xs text-red-400 bg-red-950/40 p-2.5 rounded-xl border border-red-900/50">
+                <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900/50">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>

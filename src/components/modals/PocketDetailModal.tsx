@@ -120,42 +120,41 @@ export const PocketDetailModal: React.FC = () => {
     e.preventDefault();
     const num = parseFloat(amountInput);
     if (isNaN(num) || num <= 0) {
-      setFeedbackMsg({ text: 'Masukkan nominal yang valid', isError: true });
+      setFeedbackMsg({ text: 'Nominal transfer tidak valid', isError: true });
       return;
     }
     if (num > selectedPocket.balance) {
-      setFeedbackMsg({
-        text: `${t('insufficient_pocket_balance')} (${formatCurrency(selectedPocket.balance)})`,
-        isError: true,
-      });
+      setFeedbackMsg({ text: 'Saldo kantong tidak mencukupi', isError: true });
       return;
     }
     if (!targetPocketId) {
-      setFeedbackMsg({ text: t('dest_pocket_label'), isError: true });
+      setFeedbackMsg({ text: 'Pilih kantong tujuan', isError: true });
       return;
     }
 
-    const targetPocket = pockets.find((p) => p.id === targetPocketId);
-    const success = transferBetweenPockets(selectedPocket.id, targetPocketId, num);
-    if (success) {
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
-      setFeedbackMsg({
-        text: `Berhasil memindahkan ${formatCurrency(num)} ke ${targetPocket?.name || 'kantong tujuan'}!`,
-        isError: false,
+    transferBetweenPockets(selectedPocket.id, targetPocketId, num);
+
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 },
       });
-      setTimeout(() => {
-        setAmountInput('');
-        setMode('view');
-        setFeedbackMsg(null);
-      }, 1200);
-    }
+    } catch (err) {}
+
+    setFeedbackMsg({ text: `Berhasil memindahkan ${formatCurrency(num)}`, isError: false });
+    setAmountInput('');
+    setTimeout(() => {
+      setMode('view');
+      setFeedbackMsg(null);
+    }, 1500);
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     const targetNum = parseFloat(editTarget);
     if (!editName.trim() || isNaN(targetNum) || targetNum <= 0) {
-      setFeedbackMsg({ text: 'Lengkapi nama dan target saldo yang valid', isError: true });
+      setFeedbackMsg({ text: 'Nama atau target saldo tidak valid', isError: true });
       return;
     }
 
@@ -166,11 +165,11 @@ export const PocketDetailModal: React.FC = () => {
       iconName: editIcon,
     });
 
-    setFeedbackMsg({ text: t('pocket_updated'), isError: false });
+    setFeedbackMsg({ text: 'Perubahan kantong berhasil disimpan', isError: false });
     setTimeout(() => {
       setMode('view');
       setFeedbackMsg(null);
-    }, 1000);
+    }, 1200);
   };
 
   const handleDelete = () => {
@@ -186,7 +185,7 @@ export const PocketDetailModal: React.FC = () => {
         initial="initial"
         animate="animate"
         exit="exit"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
       >
         <motion.div
           key="pocketdetail-modal"
@@ -194,25 +193,29 @@ export const PocketDetailModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="w-full max-w-sm rounded-[24px] bg-[#141824] border border-[#1E2435] p-6 shadow-2xl text-white relative max-h-[92vh] overflow-y-auto"
+          className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#1E2435]">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
             <div className="flex items-center space-x-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm"
                 style={{ backgroundColor: selectedPocket.color }}
               >
                 {renderIcon(selectedPocket.iconName)}
               </div>
               <div>
-                <h3 className="text-base font-bold tracking-tight">{selectedPocket.name}</h3>
-                <span className="text-[11px] text-[#7B88A6]">{t('pocket_details_title')}</span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                  {selectedPocket.name}
+                </h3>
+                <span className="text-[11px] text-slate-500 dark:text-[#7B88A6]">
+                  {t('pocket_details_title')}
+                </span>
               </div>
             </div>
             <button
               onClick={() => setSelectedPocket(null)}
-              className="w-8 h-8 rounded-full bg-[#1C2233] flex items-center justify-center text-[#7B88A6] hover:text-white cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -223,8 +226,8 @@ export const PocketDetailModal: React.FC = () => {
             <div
               className={`text-xs p-2.5 rounded-xl border mt-3 flex items-center space-x-2 ${
                 feedbackMsg.isError
-                  ? 'text-red-400 bg-red-950/40 border-red-900/50'
-                  : 'text-emerald-400 bg-emerald-950/40 border-emerald-900/50'
+                  ? 'text-red-700 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/40 dark:border-red-900/50'
+                  : 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/50'
               }`}
             >
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
@@ -236,19 +239,19 @@ export const PocketDetailModal: React.FC = () => {
           {mode === 'view' && (
             <div className="flex flex-col space-y-4 pt-4">
               {/* Balance & Goal Card */}
-              <div className="p-4 rounded-2xl bg-[#111520] border border-[#1B2130]">
-                <div className="flex items-center justify-between text-xs text-[#7B88A6] mb-1">
-                  <span>{t('collected_label')}</span>
-                  <span>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-200 dark:border-[#1B2130]">
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#7B88A6] mb-1">
+                  <span className="font-medium">{t('collected_label')}</span>
+                  <span className="font-semibold text-slate-700 dark:text-white/90">
                     {progressPercent}% {t('pocket_target_label')}
                   </span>
                 </div>
-                <div className="text-2xl font-black text-white tracking-tight">
+                <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                   {formatCurrency(selectedPocket.balance)}
                 </div>
 
                 {/* Progress Bar */}
-                <div className="w-full h-2 rounded-full bg-[#1E2435] mt-3 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-[#1E2435] mt-3 overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
@@ -258,7 +261,7 @@ export const PocketDetailModal: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#7B88A6] mt-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7B88A6] mt-2 font-medium">
                   <span>Rp0</span>
                   <span>
                     {t('pocket_target_label')}: {formatCurrency(selectedPocket.targetAmount)}
@@ -277,7 +280,7 @@ export const PocketDetailModal: React.FC = () => {
                   setAmountInput('');
                   setFeedbackMsg(null);
                 }}
-                className="w-full flex items-center justify-center space-x-2.5 py-3.5 px-4 rounded-xl bg-[#1C2233] border border-[#273047] hover:border-[#635BFF] hover:bg-[#202738] text-white text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer shadow-sm group"
+                className="w-full flex items-center justify-center space-x-2.5 py-3.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] hover:border-[#635BFF] dark:hover:bg-[#202738] text-slate-900 dark:text-white text-xs font-semibold active:scale-[0.98] transition-all cursor-pointer shadow-sm group"
               >
                 <ArrowRightLeft className="w-4 h-4 text-[#635BFF] group-hover:scale-110 transition-transform stroke-[2.2]" />
                 <span className="tracking-wide">{t('move_funds_pocket')}</span>
@@ -285,24 +288,24 @@ export const PocketDetailModal: React.FC = () => {
 
               {/* Bottom Actions: Edit & Delete */}
               {showDeleteConfirm ? (
-                <div className="p-3.5 rounded-2xl bg-red-950/40 border border-red-900/60 flex flex-col space-y-2 mt-1">
-                  <div className="flex items-center space-x-2 text-xs text-red-300 font-semibold">
-                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex flex-col space-y-2 mt-1">
+                  <div className="flex items-center space-x-2 text-xs text-red-700 dark:text-red-300 font-semibold">
+                    <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
                     <span>{t('delete_pocket_confirm_title')}</span>
                   </div>
-                  <p className="text-[11px] text-red-300/80 leading-snug">
+                  <p className="text-[11px] text-red-600 dark:text-red-300/80 leading-snug">
                     {t('delete_pocket_confirm_desc')}
                   </p>
                   <div className="flex items-center space-x-2 pt-1">
                     <button
                       onClick={handleDelete}
-                      className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer"
+                      className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold cursor-pointer transition-colors shadow-sm"
                     >
                       {t('yes_delete')}
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 py-2 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
+                      className="flex-1 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-[#1C2233] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white text-xs font-semibold cursor-pointer transition-colors"
                     >
                       {t('cancel')}
                     </button>
@@ -315,18 +318,18 @@ export const PocketDetailModal: React.FC = () => {
                       setMode('edit');
                       setFeedbackMsg(null);
                     }}
-                    className="flex items-center space-x-1.5 text-[#7B88A6] hover:text-white transition-colors cursor-pointer py-1.5 px-2 rounded-lg"
+                    className="flex items-center space-x-1.5 text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white transition-colors cursor-pointer py-1.5 px-2 rounded-lg"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    <span>{t('edit_pocket')}</span>
+                    <span className="font-medium">{t('edit_pocket')}</span>
                   </button>
 
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center space-x-1.5 text-red-400 hover:text-red-300 transition-colors cursor-pointer py-1.5 px-2 rounded-lg"
+                    className="flex items-center space-x-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer py-1.5 px-2 rounded-lg"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t('delete_pocket')}</span>
+                    <span className="font-medium">{t('delete_pocket')}</span>
                   </button>
                 </div>
               )}
@@ -336,14 +339,14 @@ export const PocketDetailModal: React.FC = () => {
           {/* PINDAH DANA FORM */}
           {mode === 'transfer' && (
             <div className="flex flex-col space-y-4 pt-4">
-              <div className="flex items-center space-x-2 text-xs text-[#7B88A6] font-medium border-b border-[#1E2435] pb-2.5">
+              <div className="flex items-center space-x-2 text-xs text-slate-700 dark:text-[#7B88A6] font-medium border-b border-slate-200 dark:border-[#1E2435] pb-2.5">
                 <ArrowRightLeft className="w-3.5 h-3.5 text-[#635BFF]" />
-                <span>{t('move_funds_title')}</span>
+                <span className="font-semibold">{t('move_funds_title')}</span>
               </div>
 
               {otherPockets.length === 0 ? (
-                <div className="p-4 rounded-2xl bg-[#111520] border border-[#1E2435] text-center flex flex-col items-center space-y-3">
-                  <p className="text-xs text-[#7B88A6] leading-relaxed">
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-200 dark:border-[#1E2435] text-center flex flex-col items-center space-y-3">
+                  <p className="text-xs text-slate-600 dark:text-[#7B88A6] leading-relaxed">
                     {t('no_other_pockets')}
                   </p>
                   <button
@@ -352,7 +355,7 @@ export const PocketDetailModal: React.FC = () => {
                       setMode('view');
                       setFeedbackMsg(null);
                     }}
-                    className="py-2 px-4 rounded-xl bg-[#1C2233] text-white text-xs font-semibold hover:bg-[#242D42] cursor-pointer"
+                    className="py-2 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-800 dark:text-white text-xs font-semibold cursor-pointer"
                   >
                     {t('cancel')}
                   </button>
@@ -361,7 +364,7 @@ export const PocketDetailModal: React.FC = () => {
                 <form onSubmit={handleTransferFunds} className="flex flex-col space-y-3.5">
                   {/* Select Destination Pocket */}
                   <div>
-                    <label className="text-xs text-[#7B88A6] font-medium block mb-2">
+                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-2">
                       {t('dest_pocket_label')}
                     </label>
                     <div className="flex flex-col space-y-2 max-h-40 overflow-y-auto pr-0.5">
@@ -373,8 +376,8 @@ export const PocketDetailModal: React.FC = () => {
                             onClick={() => setTargetPocketId(p.id)}
                             className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
                               isTarget
-                                ? 'bg-[#1C2233] border-[#635BFF] ring-1 ring-[#635BFF]'
-                                : 'bg-[#111520] border-[#1E2435] hover:border-[#2D364D]'
+                                ? 'bg-white dark:bg-[#1C2233] border-[#635BFF] ring-1 ring-[#635BFF] shadow-sm'
+                                : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520] border-slate-200 dark:border-[#1E2435]'
                             }`}
                           >
                             <div className="flex items-center space-x-2.5">
@@ -385,10 +388,10 @@ export const PocketDetailModal: React.FC = () => {
                                 {renderIcon(p.iconName)}
                               </div>
                               <div>
-                                <p className="text-xs font-semibold text-white tracking-tight">
+                                <p className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight">
                                   {p.name}
                                 </p>
-                                <p className="text-[10px] text-[#7B88A6]">
+                                <p className="text-[10px] text-slate-500 dark:text-[#7B88A6]">
                                   {t('collected_label')}: {formatCurrency(p.balance)}
                                 </p>
                               </div>
@@ -407,10 +410,10 @@ export const PocketDetailModal: React.FC = () => {
                   {/* Transfer Amount Input */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs text-[#7B88A6] font-medium">
+                      <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">
                         {t('amount_label')}
                       </label>
-                      <span className="text-[11px] text-[#7B88A6]">
+                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
                         {t('available_label')}: {formatCurrency(selectedPocket.balance)}
                       </span>
                     </div>
@@ -422,7 +425,7 @@ export const PocketDetailModal: React.FC = () => {
                       value={amountInput}
                       onChange={(e) => setAmountInput(e.target.value)}
                       placeholder="0"
-                      className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-[#635BFF]"
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                       autoFocus
                       required
                     />
@@ -438,7 +441,7 @@ export const PocketDetailModal: React.FC = () => {
                             onClick={() =>
                               setAmountInput(calculated > 0 ? calculated.toString() : '0')
                             }
-                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#8E9BB8] hover:text-white hover:border-[#635BFF] cursor-pointer text-center"
+                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white hover:border-[#635BFF] cursor-pointer text-center transition-colors"
                           >
                             {fraction * 100}%
                           </button>
@@ -447,7 +450,7 @@ export const PocketDetailModal: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setAmountInput(selectedPocket.balance.toString())}
-                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-[#1C2233] border border-[#273047] text-[#635BFF] hover:text-white hover:bg-[#635BFF] hover:border-[#635BFF] cursor-pointer text-center transition-colors"
+                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] border border-[#635BFF]/40 text-[#635BFF] hover:text-white hover:bg-[#635BFF] hover:border-[#635BFF] cursor-pointer text-center transition-colors"
                       >
                         {t('all_balance')}
                       </button>
@@ -459,10 +462,10 @@ export const PocketDetailModal: React.FC = () => {
                     <button
                       type="submit"
                       disabled={selectedPocket.balance <= 0}
-                      className={`flex-1 py-3 rounded-xl text-white text-xs font-bold transition-all ${
+                      className={`flex-1 py-3 rounded-xl text-white text-xs font-bold transition-all shadow-sm ${
                         selectedPocket.balance > 0
-                          ? 'bg-[#635BFF] hover:bg-[#564EE6] cursor-pointer shadow-sm active:scale-95'
-                          : 'bg-[#273047] text-white/50 cursor-not-allowed'
+                          ? 'bg-[#635BFF] hover:bg-[#564EE6] cursor-pointer active:scale-95'
+                          : 'bg-slate-300 dark:bg-[#273047] text-slate-500 dark:text-white/50 cursor-not-allowed'
                       }`}
                     >
                       {t('confirm_move_funds')}
@@ -473,7 +476,7 @@ export const PocketDetailModal: React.FC = () => {
                         setMode('view');
                         setFeedbackMsg(null);
                       }}
-                      className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
+                      className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white text-xs font-semibold cursor-pointer transition-colors"
                     >
                       {t('cancel')}
                     </button>
@@ -487,20 +490,20 @@ export const PocketDetailModal: React.FC = () => {
           {mode === 'edit' && (
             <form onSubmit={handleSaveEdit} className="flex flex-col space-y-3.5 pt-4">
               <div>
-                <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">
+                <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
                   {t('pocket_name_label')}
                 </label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#635BFF]"
+                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-[11px] text-[#7B88A6] font-medium block mb-1">
+                <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
                   {t('pocket_target_input')}
                 </label>
                 <input
@@ -509,22 +512,22 @@ export const PocketDetailModal: React.FC = () => {
                   min="1"
                   value={editTarget}
                   onChange={(e) => setEditTarget(e.target.value)}
-                  className="w-full bg-[#1C2233] border border-[#273047] rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-[#635BFF]"
+                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] text-[#7B88A6] font-medium">
+                  <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium">
                     {t('pocket_color_label')}
                   </label>
-                  <div className="flex items-center space-x-1.5 bg-[#1C2233] px-2 py-0.5 rounded-lg border border-[#273047]">
+                  <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-[#1C2233] px-2 py-0.5 rounded-lg border border-slate-200 dark:border-[#273047]">
                     <span
                       className="w-2.5 h-2.5 rounded-full"
                       style={{ backgroundColor: editColor }}
                     />
-                    <span className="text-[11px] font-mono text-white/90 uppercase font-semibold">
+                    <span className="text-[11px] font-mono text-slate-800 dark:text-white/90 uppercase font-semibold">
                       {editColor}
                     </span>
                   </div>
@@ -541,7 +544,7 @@ export const PocketDetailModal: React.FC = () => {
                         title={preset.name}
                         className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                           isSelected
-                            ? 'scale-110 ring-2 ring-white/80 ring-offset-2 ring-offset-[#141824]'
+                            ? 'scale-110 ring-2 ring-slate-400 dark:ring-white/80 ring-offset-2 ring-offset-white dark:ring-offset-[#141824]'
                             : 'opacity-70 hover:opacity-100'
                         }`}
                         style={{ backgroundColor: preset.hex }}
@@ -560,8 +563,8 @@ export const PocketDetailModal: React.FC = () => {
                         !POCKET_COLOR_PRESETS.some(
                           (p) => p.hex.toLowerCase() === editColor.toLowerCase()
                         )
-                          ? 'scale-110 ring-2 ring-white/80 ring-offset-2 ring-offset-[#141824]'
-                          : 'border border-dashed border-[#3E4A68] hover:border-white/60 bg-[#1C2233]'
+                          ? 'scale-110 ring-2 ring-slate-400 dark:ring-white/80 ring-offset-2 ring-offset-white dark:ring-offset-[#141824]'
+                          : 'border border-dashed border-slate-300 dark:border-[#3E4A68] hover:border-slate-500 dark:hover:border-white/60 bg-slate-100 dark:bg-[#1C2233]'
                       }`}
                       style={{
                         backgroundColor: !POCKET_COLOR_PRESETS.some(
@@ -576,7 +579,7 @@ export const PocketDetailModal: React.FC = () => {
                       ) ? (
                         <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-sm" />
                       ) : (
-                        <Pipette className="w-3 h-3 text-[#A0AEC0] hover:text-white transition-colors" />
+                        <Pipette className="w-3 h-3 text-slate-500 hover:text-slate-800 dark:text-[#A0AEC0] dark:hover:text-white transition-colors" />
                       )}
                       <input
                         type="color"
@@ -596,7 +599,7 @@ export const PocketDetailModal: React.FC = () => {
 
               {/* Icon Selector */}
               <div>
-                <label className="text-[11px] text-[#7B88A6] font-medium block mb-1.5">
+                <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
                   {t('pocket_icon_label')}
                 </label>
                 <div className="grid grid-cols-5 gap-2">
@@ -610,8 +613,8 @@ export const PocketDetailModal: React.FC = () => {
                         onClick={() => setEditIcon(item.id)}
                         className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#1C2233] text-white border-white/40 shadow-sm'
-                            : 'bg-[#141824] border-[#1E2435] text-[#7B88A6] hover:text-white hover:border-[#2A344A]'
+                            ? 'bg-slate-200 dark:bg-[#1C2233] text-slate-900 dark:text-white border-slate-400 dark:border-white/40 shadow-sm'
+                            : 'bg-slate-50 dark:bg-[#141824] border-slate-200 dark:border-[#1E2435] text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white hover:border-slate-300 dark:hover:border-[#2A344A]'
                         }`}
                         title={item.label}
                       >
@@ -628,14 +631,14 @@ export const PocketDetailModal: React.FC = () => {
               <div className="flex items-center space-x-2 pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm"
+                  className="flex-1 py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
                 >
                   {t('save_changes')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode('view')}
-                  className="py-3 px-4 rounded-xl bg-[#1C2233] text-[#7B88A6] hover:text-white text-xs font-semibold cursor-pointer"
+                  className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white text-xs font-semibold cursor-pointer transition-colors"
                 >
                   {t('cancel')}
                 </button>
@@ -647,4 +650,3 @@ export const PocketDetailModal: React.FC = () => {
     </AnimatePresence>
   );
 };
-

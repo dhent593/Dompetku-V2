@@ -88,14 +88,18 @@ html:not(.dark) {
   .bg-\[\#181E2E\],
   .bg-\[\#1B2234\],
   .bg-\[\#181E2D\],
-  .bg-\[\#21283D\] {
+  .bg-\[\#21283D\],
+  .bg-\[\#1C2233\]\/60,
+  .bg-\[\#1C2233\]\/70,
+  .bg-\[\#111520\]\/60 {
     background-color: #F1F5F9 !important;
-    color: #334155;
+    color: #0F172A !important;
   }
 
   .hover\:bg-\[\#252E44\]:hover,
   .hover\:bg-\[\#232B3E\]:hover,
-  .hover\:bg-\[\#20283E\]:hover {
+  .hover\:bg-\[\#20283E\]:hover,
+  .hover\:bg-\[\#202738\]:hover {
     background-color: #E2E8F0 !important;
   }
 
@@ -113,7 +117,8 @@ html:not(.dark) {
   .border-\[\#20273D\],
   .border-\[\#222B40\],
   .border-\[\#242E46\],
-  .border-\[\#222A3D\] {
+  .border-\[\#222A3D\],
+  .border-\[\#354160\] {
     border-color: #E2E8F0 !important;
   }
 
@@ -131,7 +136,7 @@ html:not(.dark) {
     color: #94A3B8 !important;
   }
 
-  /* Text color fixes for light mode cards and modals */
+  /* Headings inside cards */
   .bg-\[\#141824\] h1,
   .bg-\[\#141824\] h2,
   .bg-\[\#141824\] h3,
@@ -142,6 +147,20 @@ html:not(.dark) {
   .bg-\[\#161B29\] h2,
   .bg-\[\#161B29\] h3 {
     color: #0F172A !important;
+  }
+
+  /* Universal safety: Turn white/near-white text dark when inside light cards,
+     EXCEPT when inside intentional solid colored buttons/banners */
+  :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B29\], .bg-\[\#161B26\])
+    :is(.text-white, .text-white\/90, .text-white\/80):not(
+      :is(.bg-\[\#635BFF\], .bg-\[\#F43F5E\], .bg-\[\#10B981\], .bg-red-600, .bg-emerald-600, .bg-\[\#0F172A\], .bg-\[\#1C2538\]) *
+    ) {
+    color: #0F172A !important;
+  }
+
+  /* Ensure secondary text is clearly readable slate-500, not washed out */
+  :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B29\], .bg-\[\#161B26\]) .text-\[\#7B88A6\] {
+    color: #64748B !important;
   }
 
   /* Soft drag indicator on bottom sheets */
