@@ -11,10 +11,15 @@ import {
   Banknote,
   ArrowLeftRight,
   CheckCircle2,
+  Sparkles,
+  Target,
+  ChevronRight,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { formatCurrency } from '@/lib/utils';
 
 export const WalletView: React.FC = () => {
   const {
@@ -26,18 +31,49 @@ export const WalletView: React.FC = () => {
     handleKeypadBackspace,
     unlockWithBiometrics,
   } = useAuth();
-  const { t } = useLanguage();
-  const { setActiveModal } = useFinance();
+  const { t, language } = useLanguage();
+  const { setActiveModal, debts, assets, budgets, transactions } = useFinance();
   const [showKeypad, setShowKeypad] = useState(false);
   const [activeProductToast, setActiveProductToast] = useState<string | null>(null);
 
+  // Quick calculations for the overview widget
+  const totalAssetsValue = assets.reduce((sum, a) => sum + a.currentValue, 0);
+  const totalDebtsRemaining = debts
+    .filter((d) => d.status !== 'paid_off')
+    .reduce((sum, d) => sum + d.remainingAmount, 0);
+
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const currentMonthSpent = transactions
+    .filter((tx) => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  const totalBudgetLimit = budgets.reduce((sum, b) => sum + b.monthlyLimit, 0);
+  const budgetPercent =
+    totalBudgetLimit > 0 ? Math.min(100, Math.round((currentMonthSpent / totalBudgetLimit) * 100)) : 0;
+
   const handleProductClick = (productId: string, productName: string) => {
+    if (productId === 'debts') {
+      setActiveModal('debtManagement');
+      return;
+    }
+    if (productId === 'assets') {
+      setActiveModal('assetManagement');
+      return;
+    }
+    if (productId === 'budget') {
+      setActiveModal('monthlyBudget');
+      return;
+    }
     if (productId === 'scan_qr') {
       setActiveModal('scanQr');
       return;
     }
     if (productId === 'fund_transfer') {
       setActiveModal('transfer');
+      return;
+    }
+    if (productId === 'credit_cards') {
+      setActiveModal('paymentMethods');
       return;
     }
 
@@ -48,12 +84,43 @@ export const WalletView: React.FC = () => {
   };
 
   const products = [
-    { id: 'tap_to_pay' as const, name: t('tap_to_pay'), icon: Wifi },
-    { id: 'credit_cards' as const, name: t('credit_cards'), icon: CreditCard },
-    { id: 'scan_qr' as const, name: t('scan_qr'), icon: QrCode },
-    { id: 'mobile_banking' as const, name: t('mobile_banking'), icon: Smartphone },
-    { id: 'loans' as const, name: t('loans'), icon: Banknote },
-    { id: 'fund_transfer' as const, name: t('fund_transfer'), icon: ArrowLeftRight },
+    {
+      id: 'debts' as const,
+      name: language === 'id' ? 'Catat & Cicil Hutang' : 'Debt & Loans',
+      icon: Banknote,
+      badge: debts.filter((d) => d.status !== 'paid_off').length > 0 ? `${debts.filter((d) => d.status !== 'paid_off').length}` : undefined,
+      color: 'bg-rose-50 text-[#F43F5E] dark:bg-rose-950/40 dark:text-rose-400',
+    },
+    {
+      id: 'assets' as const,
+      name: language === 'id' ? 'Pencatatan Aset' : 'Asset Portfolio',
+      icon: Sparkles,
+      color: 'bg-violet-50 text-[#635BFF] dark:bg-violet-950/40 dark:text-violet-400',
+    },
+    {
+      id: 'budget' as const,
+      name: language === 'id' ? 'Budgeting Bulanan' : 'Monthly Budget',
+      icon: Target,
+      color: 'bg-emerald-50 text-[#10B981] dark:bg-emerald-950/40 dark:text-emerald-400',
+    },
+    {
+      id: 'scan_qr' as const,
+      name: t('scan_qr'),
+      icon: QrCode,
+      color: 'bg-sky-50 text-[#0EA5E9] dark:bg-sky-950/40 dark:text-sky-400',
+    },
+    {
+      id: 'fund_transfer' as const,
+      name: t('fund_transfer'),
+      icon: ArrowLeftRight,
+      color: 'bg-amber-50 text-[#F59E0B] dark:bg-amber-950/40 dark:text-amber-400',
+    },
+    {
+      id: 'credit_cards' as const,
+      name: t('credit_cards'),
+      icon: CreditCard,
+      color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400',
+    },
   ];
 
   return (
@@ -162,6 +229,66 @@ export const WalletView: React.FC = () => {
         </div>
       )}
 
+      {/* 2.5 Quick Financial Overview Widget */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {/* Card 1: Aset */}
+        <div
+          onClick={() => setActiveModal('assetManagement')}
+          className="p-3 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs cursor-pointer hover:border-slate-300 dark:hover:border-[#2D364D] transition-all flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] font-medium truncate">
+              {language === 'id' ? 'Total Aset' : 'Total Assets'}
+            </span>
+            <Sparkles className="w-3.5 h-3.5 text-[#635BFF]" />
+          </div>
+          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+            {formatCurrency(totalAssetsValue)}
+          </span>
+          <span className="text-[10px] text-[#635BFF] font-semibold flex items-center mt-1">
+            {language === 'id' ? 'Kelola' : 'Manage'} <ChevronRight className="w-2.5 h-2.5 ml-0.5" />
+          </span>
+        </div>
+
+        {/* Card 2: Hutang */}
+        <div
+          onClick={() => setActiveModal('debtManagement')}
+          className="p-3 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs cursor-pointer hover:border-slate-300 dark:hover:border-[#2D364D] transition-all flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] font-medium truncate">
+              {language === 'id' ? 'Sisa Hutang' : 'Total Debts'}
+            </span>
+            <Banknote className="w-3.5 h-3.5 text-[#F43F5E]" />
+          </div>
+          <span className="text-xs font-bold text-[#F43F5E] truncate">
+            {formatCurrency(totalDebtsRemaining)}
+          </span>
+          <span className="text-[10px] text-[#F43F5E] font-semibold flex items-center mt-1">
+            {language === 'id' ? 'Cicil' : 'Pay'} <ChevronRight className="w-2.5 h-2.5 ml-0.5" />
+          </span>
+        </div>
+
+        {/* Card 3: Budget */}
+        <div
+          onClick={() => setActiveModal('monthlyBudget')}
+          className="p-3 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs cursor-pointer hover:border-slate-300 dark:hover:border-[#2D364D] transition-all flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] font-medium truncate">
+              {language === 'id' ? 'Budget Bln Ini' : 'Monthly Budget'}
+            </span>
+            <Target className="w-3.5 h-3.5 text-[#10B981]" />
+          </div>
+          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+            {budgetPercent}% {language === 'id' ? 'Pakai' : 'Spent'}
+          </span>
+          <span className="text-[10px] text-[#10B981] font-semibold flex items-center mt-1">
+            {language === 'id' ? 'Batas' : 'Limits'} <ChevronRight className="w-2.5 h-2.5 ml-0.5" />
+          </span>
+        </div>
+      </div>
+
       {/* 3. Products Section */}
       <div className="flex flex-col space-y-3 pt-1">
         <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('products')}</h2>
@@ -173,12 +300,19 @@ export const WalletView: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => handleProductClick(item.id, item.name)}
-                className="flex flex-col items-center justify-center p-4 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] active:scale-95 transition-all group cursor-pointer shadow-sm"
+                className="flex flex-col items-center justify-center p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] text-center hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] active:scale-95 transition-all group cursor-pointer shadow-xs relative"
               >
-                <div className="w-12 h-12 rounded-[16px] bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                {item.badge && (
+                  <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#F43F5E] text-white text-[9px] font-bold rounded-full shadow-xs">
+                    {item.badge}
+                  </span>
+                )}
+                <div
+                  className={`w-11 h-11 rounded-[16px] flex items-center justify-center transition-colors ${item.color}`}
+                >
                   <Icon className="w-5 h-5 stroke-[2]" />
                 </div>
-                <span className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium mt-3 leading-tight group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                <span className="text-xs text-slate-700 dark:text-[#A0AEC0] font-semibold mt-2.5 leading-tight group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   {item.name}
                 </span>
               </button>

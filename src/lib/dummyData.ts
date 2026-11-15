@@ -1,4 +1,4 @@
-import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket } from '@/types';
+import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget } from '@/types';
 
 export const INITIAL_USER: UserProfile = {
   id: 'usr_01',
@@ -141,23 +141,26 @@ export const CHART_DATA = {
   monthly: {
     labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul'],
     expenses: [360, 1350, 480, 720, 510],
-    savings: [800, 1100, 1400, 1600, 1950],
+    income: [2500, 2800, 2500, 3100, 2900],
     highlightIndex: 1,
-    highlightValue: 1350,
+    highlightExpense: 1350,
+    highlightIncome: 2800,
   },
   weekly: {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     expenses: [120, 240, 180, 420, 310, 560, 280],
-    savings: [200, 250, 300, 350, 400, 450, 500],
+    income: [0, 0, 0, 0, 2500, 350, 0],
     highlightIndex: 5,
-    highlightValue: 560,
+    highlightExpense: 560,
+    highlightIncome: 2500,
   },
   yearly: {
     labels: ['2021', '2022', '2023', '2024'],
     expenses: [5200, 7800, 14482, 9200],
-    savings: [4000, 8500, 16000, 21000],
+    income: [18000, 24000, 32000, 35000],
     highlightIndex: 2,
-    highlightValue: 14482,
+    highlightExpense: 14482,
+    highlightIncome: 32000,
   },
 };
 
@@ -197,4 +200,88 @@ export const INITIAL_POCKETS: Pocket[] = [
     iconName: 'Smartphone',
     createdAt: Date.now() - 86400000 * 5,
   },
+];
+
+export const INITIAL_DEBTS: DebtItem[] = [
+  {
+    id: 'debt_01',
+    title: 'Cicilan Laptop Kerja',
+    lender: 'Toko Elektronik / PayLater',
+    totalAmount: 12000,
+    remainingAmount: 4000,
+    dueDate: '2026-11-28',
+    installmentCount: 12,
+    paidInstallments: 8,
+    status: 'active',
+    reminderNotes: 'Cicilan ke-9 dari 12 jatuh tempo 28 Nov',
+    createdAt: Date.now() - 86400000 * 120,
+    paymentHistory: [
+      { id: 'dp_1', date: '2026-10-28', amount: 1000, pocketName: 'Dana Darurat' },
+    ],
+  },
+  {
+    id: 'debt_02',
+    title: 'Pinjaman Renovasi Rumah',
+    lender: 'Bank Mandiri',
+    totalAmount: 20000,
+    remainingAmount: 11000,
+    dueDate: '2026-11-20',
+    installmentCount: 20,
+    paidInstallments: 9,
+    status: 'active',
+    reminderNotes: 'Auto-debit setiap tanggal 20',
+    createdAt: Date.now() - 86400000 * 180,
+    paymentHistory: [],
+  },
+];
+
+export const INITIAL_ASSETS: AssetItem[] = [
+  {
+    id: 'ast_01',
+    name: 'Rumah Tinggal BSD',
+    category: 'property',
+    currentValue: 850000,
+    purchasePrice: 720000,
+    purchaseDate: '2022-03-15',
+    notes: 'Sertifikat Hak Milik (SHM)',
+    createdAt: Date.now() - 86400000 * 600,
+  },
+  {
+    id: 'ast_02',
+    name: 'Mobil Honda HR-V',
+    category: 'vehicle',
+    currentValue: 310000,
+    purchasePrice: 360000,
+    purchaseDate: '2022-08-10',
+    notes: 'Kondisi mulus, servis resmi',
+    createdAt: Date.now() - 86400000 * 450,
+  },
+  {
+    id: 'ast_03',
+    name: 'Logam Mulia Antam 25gr',
+    category: 'precious_metal',
+    currentValue: 36250,
+    purchasePrice: 24500,
+    purchaseDate: '2023-01-20',
+    notes: 'Safe deposit box',
+    createdAt: Date.now() - 86400000 * 300,
+  },
+  {
+    id: 'ast_04',
+    name: 'Portofolio Saham & Reksadana',
+    category: 'investment',
+    currentValue: 48500,
+    purchasePrice: 40000,
+    purchaseDate: '2023-05-12',
+    notes: 'BBCA & Obligasi Negara',
+    createdAt: Date.now() - 86400000 * 200,
+  },
+];
+
+export const INITIAL_BUDGETS: CategoryBudget[] = [
+  { id: 'bdg_01', category: 'food', monthlyLimit: 2000 },
+  { id: 'bdg_02', category: 'shopping', monthlyLimit: 1500 },
+  { id: 'bdg_03', category: 'bill', monthlyLimit: 1200 },
+  { id: 'bdg_04', category: 'travel', monthlyLimit: 800 },
+  { id: 'bdg_05', category: 'entertainment', monthlyLimit: 500 },
 ];

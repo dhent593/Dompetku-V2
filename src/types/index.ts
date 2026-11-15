@@ -51,7 +51,7 @@ export interface CategorySummary {
 export type NavTab = 'home' | 'analytics' | 'wallet' | 'settings' | 'transactions';
 
 export type TimeFilter = 'monthly' | 'weekly' | 'yearly';
-export type AnalyticType = 'expenses' | 'savings';
+export type AnalyticType = 'expenses' | 'income';
 
 export interface Pocket {
   id: string;
@@ -61,4 +61,43 @@ export interface Pocket {
   color: string;
   iconName: string;
   createdAt: number;
+}
+
+export interface DebtPaymentRecord {
+  id: string;
+  date: string;
+  amount: number;
+  pocketName: string;
+}
+
+export interface DebtItem {
+  id: string;
+  title: string;
+  lender: string;
+  totalAmount: number;
+  remainingAmount: number;
+  dueDate: string; // YYYY-MM-DD
+  installmentCount?: number;
+  paidInstallments?: number;
+  status: 'active' | 'paid_off' | 'overdue';
+  reminderNotes?: string;
+  createdAt: number;
+  paymentHistory?: DebtPaymentRecord[];
+}
+
+export interface AssetItem {
+  id: string;
+  name: string;
+  category: 'property' | 'vehicle' | 'precious_metal' | 'investment' | 'electronics' | 'other';
+  currentValue: number;
+  purchasePrice: number;
+  purchaseDate: string; // YYYY-MM-DD
+  notes?: string;
+  createdAt: number;
+}
+
+export interface CategoryBudget {
+  id: string;
+  category: Transaction['category'];
+  monthlyLimit: number;
 }

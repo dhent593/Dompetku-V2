@@ -1,9 +1,17 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket } from '@/types';
+import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget } from '@/types';
 import { dataService } from '@/lib/dataService';
-import { CATEGORY_SUMMARIES, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS } from '@/lib/dummyData';
+import {
+  CATEGORY_SUMMARIES,
+  INITIAL_TRANSACTIONS,
+  INITIAL_CARDS,
+  INITIAL_POCKETS,
+  INITIAL_DEBTS,
+  INITIAL_ASSETS,
+  INITIAL_BUDGETS,
+} from '@/lib/dummyData';
 import { useAuth } from './AuthContext';
 
 interface FinanceContextType {
@@ -13,6 +21,9 @@ interface FinanceContextType {
   pockets: Pocket[];
   selectedPocket: Pocket | null;
   setSelectedPocket: (pocket: Pocket | null) => void;
+  debts: DebtItem[];
+  assets: AssetItem[];
+  budgets: CategoryBudget[];
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   activeModal: string | null;
@@ -44,6 +55,15 @@ interface FinanceContextType {
   transferBetweenPockets: (fromPocketId: string, toPocketId: string, amount: number) => boolean;
   transferMoney: (recipient: string, amount: number, note?: string) => boolean;
   withdrawMoney: (amount: number, bankName?: string) => boolean;
+  addDebt: (debt: Omit<DebtItem, 'id' | 'createdAt'>) => DebtItem;
+  updateDebt: (id: string, updates: Partial<Omit<DebtItem, 'id' | 'createdAt'>>) => DebtItem | null;
+  deleteDebt: (id: string) => boolean;
+  payDebtInstallment: (debtId: string, amount: number, pocketId: string) => boolean;
+  addAsset: (asset: Omit<AssetItem, 'id' | 'createdAt'>) => AssetItem;
+  updateAsset: (id: string, updates: Partial<Omit<AssetItem, 'id' | 'createdAt'>>) => AssetItem | null;
+  deleteAsset: (id: string) => boolean;
+  setCategoryBudget: (category: Transaction['category'], monthlyLimit: number) => CategoryBudget;
+  deleteCategoryBudget: (category: Transaction['category']) => boolean;
   filteredTransactions: Transaction[];
   resetData: () => void;
 }
@@ -56,6 +76,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [cards, setCards] = useState<PaymentCard[]>(INITIAL_CARDS);
   const [pockets, setPockets] = useState<Pocket[]>(INITIAL_POCKETS);
   const [selectedPocket, setSelectedPocket] = useState<Pocket | null>(null);
+  const [debts, setDebts] = useState<DebtItem[]>(INITIAL_DEBTS);
+  const [assets, setAssets] = useState<AssetItem[]>(INITIAL_ASSETS);
+  const [budgets, setBudgets] = useState<CategoryBudget[]>(INITIAL_BUDGETS);
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -75,6 +98,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const loadedPockets = dataService.getPockets();
     if (loadedPockets && loadedPockets.length > 0) {
       setPockets(loadedPockets);
+    }
+    const loadedDebts = dataService.getDebts();
+    if (loadedDebts && loadedDebts.length > 0) {
+      setDebts(loadedDebts);
+    }
+    const loadedAssets = dataService.getAssets();
+    if (loadedAssets && loadedAssets.length > 0) {
+      setAssets(loadedAssets);
+    }
+    const loadedBudgets = dataService.getBudgets();
+    if (loadedBudgets && loadedBudgets.length > 0) {
+      setBudgets(loadedBudgets);
     }
   }, []);
 
@@ -271,11 +306,73 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const addDebt = (debt: Omit<DebtItem, 'id' | 'createdAt'>): DebtItem => {
+    const created = dataService.addDebt(debt);
+    setDebts(dataService.getDebts());
+    return created;
+  };
+
+  const updateDebt = (id: string, updates: Partial<Omit<DebtItem, 'id' | 'createdAt'>>): DebtItem | null => {
+    const updated = dataService.updateDebt(id, updates);
+    setDebts(dataService.getDebts());
+    return updated;
+  };
+
+  const deleteDebt = (id: string): boolean => {
+    const res = dataService.deleteDebt(id);
+    if (res) setDebts(dataService.getDebts());
+    return res;
+  };
+
+  const payDebtInstallment = (debtId: string, amount: number, pocketId: string): boolean => {
+    const success = dataService.payDebtInstallment(debtId, amount, pocketId);
+    if (success) {
+      setDebts(dataService.getDebts());
+      setPockets(dataService.getPockets());
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+    }
+    return success;
+  };
+
+  const addAsset = (asset: Omit<AssetItem, 'id' | 'createdAt'>): AssetItem => {
+    const created = dataService.addAsset(asset);
+    setAssets(dataService.getAssets());
+    return created;
+  };
+
+  const updateAsset = (id: string, updates: Partial<Omit<AssetItem, 'id' | 'createdAt'>>): AssetItem | null => {
+    const updated = dataService.updateAsset(id, updates);
+    setAssets(dataService.getAssets());
+    return updated;
+  };
+
+  const deleteAsset = (id: string): boolean => {
+    const res = dataService.deleteAsset(id);
+    if (res) setAssets(dataService.getAssets());
+    return res;
+  };
+
+  const setCategoryBudget = (category: Transaction['category'], monthlyLimit: number): CategoryBudget => {
+    const res = dataService.setCategoryBudget(category, monthlyLimit);
+    setBudgets(dataService.getBudgets());
+    return res;
+  };
+
+  const deleteCategoryBudget = (category: Transaction['category']): boolean => {
+    const res = dataService.deleteCategoryBudget(category);
+    if (res) setBudgets(dataService.getBudgets());
+    return res;
+  };
+
   const resetData = () => {
     dataService.resetToDefaults();
     setTransactions(INITIAL_TRANSACTIONS);
     setCards(INITIAL_CARDS);
     setPockets(INITIAL_POCKETS);
+    setDebts(INITIAL_DEBTS);
+    setAssets(INITIAL_ASSETS);
+    setBudgets(INITIAL_BUDGETS);
     setCategories(CATEGORY_SUMMARIES);
     setSelectedPocket(null);
     updateUser(dataService.getUser());
@@ -301,6 +398,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         pockets,
         selectedPocket,
         setSelectedPocket,
+        debts,
+        assets,
+        budgets,
         activeTab,
         setActiveTab,
         activeModal,
@@ -323,6 +423,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         transferBetweenPockets,
         transferMoney,
         withdrawMoney,
+        addDebt,
+        updateDebt,
+        deleteDebt,
+        payDebtInstallment,
+        addAsset,
+        updateAsset,
+        deleteAsset,
+        setCategoryBudget,
+        deleteCategoryBudget,
         filteredTransactions,
         resetData,
       }}
