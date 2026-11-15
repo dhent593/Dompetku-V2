@@ -68,7 +68,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0A0D15] text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white">
       {/* Main Direct Content Container with Snappy Slide-up Animation */}
-      <main className="w-full max-w-md mx-auto min-h-screen flex flex-col justify-start px-5 pt-6 pb-28 overflow-x-hidden">
+      <main
+        className={`w-full max-w-md mx-auto flex flex-col justify-start px-5 pt-4 sm:pt-5 ${
+          activeTab === 'home'
+            ? 'h-[100dvh] pb-24 overflow-hidden'
+            : 'min-h-screen pb-28 overflow-x-hidden'
+        }`}
+      >
         <AnimatePresence mode="popLayout">
           <motion.div
             key={activeTab}
@@ -76,7 +82,7 @@ export default function App() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full"
+            className={activeTab === 'home' ? 'w-full h-full flex flex-col min-h-0' : 'w-full'}
           >
             {activeTab === 'home' && <HomeView />}
             {activeTab === 'analytics' && <AnalyticsView />}

@@ -131,9 +131,9 @@ export const HomeView: React.FC = () => {
   const displayTransactions = transactions.slice(0, 3);
 
   return (
-    <div className="flex flex-col space-y-6 text-white w-full">
-      {/* 1. Header */}
-      <div className="flex items-center justify-between pt-1">
+    <div className="flex flex-col h-full text-white w-full min-h-0 space-y-4">
+      {/* 1. Header (Fixed) */}
+      <div className="flex items-center justify-between pt-1 flex-shrink-0">
         <div>
           <span className="text-xs text-[#7B88A6] font-medium tracking-wide">{t('welcome_back')}</span>
           <h1 className="text-2xl font-bold text-white tracking-tight mt-0.5">{user.name}</h1>
@@ -148,8 +148,8 @@ export const HomeView: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Main Balance Solid Card */}
-      <div className="relative overflow-hidden rounded-[24px] p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15">
+      {/* 2. Main Balance Solid Card (Fixed) */}
+      <div className="relative overflow-hidden rounded-[24px] p-5 sm:p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15 flex-shrink-0">
         <div className="relative z-10 flex flex-col justify-between space-y-3.5">
           {/* Card Top: Label & Live Date */}
           <div className="flex items-center justify-between">
@@ -212,8 +212,8 @@ export const HomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Kantong Saya (My Pockets) */}
-      <div className="flex flex-col space-y-3">
+      {/* 3. Kantong Saya (My Pockets - Fixed Vertical, Horizontal Scroll) */}
+      <div className="flex flex-col space-y-2.5 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-white tracking-tight">{t('my_pockets')}</h2>
           <button
@@ -293,9 +293,9 @@ export const HomeView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Transactions Section */}
-      <div className="flex flex-col space-y-3 pt-2">
-        <div className="flex items-center justify-between">
+      {/* 4. Transactions Section (Scrollable Vertically) */}
+      <div className="flex-1 flex flex-col min-h-0 pt-1">
+        <div className="flex items-center justify-between pb-2 flex-shrink-0">
           <h2 className="text-base font-bold text-white tracking-tight">{t('transactions')}</h2>
           <button
             onClick={() => setActiveTab('transactions')}
@@ -305,17 +305,17 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        {/* Transaction Cards List */}
-        <div className="flex flex-col space-y-3">
-          {displayTransactions.map((tx) => (
+        {/* Scrollable Transaction Cards List ONLY */}
+        <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-2 -mr-1 pr-1">
+          {transactions.map((tx) => (
             <div
               key={tx.id}
               onClick={() => setSelectedTransaction(tx)}
-              className="flex items-center justify-between p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer group"
+              className="flex items-center justify-between p-3.5 sm:p-4 rounded-[20px] bg-[#141824] border border-[#1E2435] hover:border-[#2D364D] hover:bg-[#181D2B] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
               title="Click to view, edit, or delete"
             >
               <div className="flex items-center space-x-3.5">
-                <div className="w-12 h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-[16px] bg-[#1C2233] flex items-center justify-center flex-shrink-0">
                   {renderTxIcon(tx)}
                 </div>
                 <div>
