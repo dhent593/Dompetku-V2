@@ -117,7 +117,7 @@ export const AddPocketModal: React.FC = () => {
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center pocket-icon-badge text-white shadow-sm [&>svg]:text-white [&>svg]:stroke-white"
                   style={{ backgroundColor: selectedColor }}
                 >
                   <Wallet className="w-4 h-4 text-white stroke-[2.2]" />

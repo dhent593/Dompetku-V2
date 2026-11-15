@@ -92,25 +92,25 @@ export const PocketDetailModal: React.FC = () => {
   const renderIcon = (name: string) => {
     switch (name) {
       case 'Wallet':
-        return <Wallet className="w-5 h-5" />;
+        return <Wallet className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Landmark':
-        return <Landmark className="w-5 h-5" />;
+        return <Landmark className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Plane':
-        return <Plane className="w-5 h-5" />;
+        return <Plane className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Smartphone':
-        return <Smartphone className="w-5 h-5" />;
+        return <Smartphone className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Heart':
-        return <Heart className="w-5 h-5" />;
+        return <Heart className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'ShoppingBag':
-        return <ShoppingBag className="w-5 h-5" />;
+        return <ShoppingBag className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Car':
-        return <Car className="w-5 h-5" />;
+        return <Car className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Home':
-        return <Home className="w-5 h-5" />;
+        return <Home className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       case 'Briefcase':
-        return <Briefcase className="w-5 h-5" />;
+        return <Briefcase className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
       default:
-        return <Shield className="w-5 h-5" />;
+        return <Shield className="w-5 h-5 text-white stroke-white stroke-[2.2]" />;
     }
   };
 
@@ -199,7 +199,7 @@ export const PocketDetailModal: React.FC = () => {
           <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
             <div className="flex items-center space-x-2.5">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm"
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white pocket-icon-badge shadow-sm [&>svg]:text-white [&>svg]:stroke-white"
                 style={{ backgroundColor: selectedPocket.color }}
               >
                 {renderIcon(selectedPocket.iconName)}

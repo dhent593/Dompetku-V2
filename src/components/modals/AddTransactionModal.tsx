@@ -101,14 +101,14 @@ export const AddTransactionModal: React.FC = () => {
             <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
               <div className="flex items-center space-x-2.5">
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center !text-white shadow-sm ${
                     type === 'income' ? 'bg-[#10B981]' : 'bg-[#F43F5E]'
                   }`}
                 >
                   {type === 'income' ? (
-                    <ArrowDownLeft className="w-4 h-4 stroke-[2.5]" />
+                    <ArrowDownLeft className="w-4 h-4 stroke-[2.5] !text-white stroke-white" />
                   ) : (
-                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                    <ArrowUpRight className="w-4 h-4 stroke-[2.5] !text-white stroke-white" />
                   )}
                 </div>
                 <div>
@@ -139,11 +139,13 @@ export const AddTransactionModal: React.FC = () => {
                   }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     type === 'expense'
-                      ? 'bg-[#F43F5E] text-white shadow-sm'
+                      ? 'bg-[#F43F5E] !text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
-                  {t('expense_type')}
+                  <span className={type === 'expense' ? '!text-white font-bold' : ''}>
+                    {t('expense_type')}
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -153,11 +155,13 @@ export const AddTransactionModal: React.FC = () => {
                   }}
                   className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     type === 'income'
-                      ? 'bg-[#10B981] text-white shadow-sm'
+                      ? 'bg-[#10B981] !text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
-                  {t('income_type')}
+                  <span className={type === 'income' ? '!text-white font-bold' : ''}>
+                    {t('income_type')}
+                  </span>
                 </button>
               </div>
 
@@ -216,13 +220,13 @@ export const AddTransactionModal: React.FC = () => {
                         className={`flex items-center space-x-1.5 p-2 rounded-xl border text-[11px] font-medium transition-all cursor-pointer ${
                           isSelected
                             ? type === 'income'
-                              ? 'bg-[#10B981] border-[#10B981] text-white shadow-sm font-semibold'
-                              : 'bg-[#F43F5E] border-[#F43F5E] text-white shadow-sm font-semibold'
+                              ? 'bg-[#10B981] border-[#10B981] !text-white shadow-sm font-semibold'
+                              : 'bg-[#F43F5E] border-[#F43F5E] !text-white shadow-sm font-semibold'
                             : 'bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
-                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-600 dark:text-[#7B88A6]'}`} />
-                        <span className="truncate">{c.label}</span>
+                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? '!text-white stroke-white' : 'text-slate-600 dark:text-[#7B88A6]'}`} />
+                        <span className={`truncate ${isSelected ? '!text-white font-semibold' : ''}`}>{c.label}</span>
                       </button>
                     );
                   })}
@@ -240,13 +244,13 @@ export const AddTransactionModal: React.FC = () => {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.97 }}
                 type="submit"
-                className={`w-full py-3.5 rounded-xl text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm ${
+                className={`w-full py-3.5 rounded-xl !text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm ${
                   type === 'income'
                     ? 'bg-[#10B981] hover:bg-[#059669]'
                     : 'bg-[#F43F5E] hover:bg-[#E11D48]'
                 }`}
               >
-                {t('save_tx')}
+                <span className="!text-white font-bold">{t('save_tx')}</span>
               </motion.button>
             </form>
           </motion.div>

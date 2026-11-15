@@ -149,15 +149,6 @@ html:not(.dark) {
     color: #0F172A !important;
   }
 
-  /* Universal safety: Turn white/near-white text dark when inside light cards,
-     EXCEPT when inside intentional solid colored buttons/banners */
-  :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B29\], .bg-\[\#161B26\])
-    :is(.text-white, .text-white\/90, .text-white\/80):not(
-      :is(.bg-\[\#635BFF\], .bg-\[\#F43F5E\], .bg-\[\#10B981\], .bg-red-600, .bg-emerald-600, .bg-\[\#0F172A\], .bg-\[\#1C2538\]) *
-    ) {
-    color: #0F172A !important;
-  }
-
   /* Ensure secondary text is clearly readable slate-500, not washed out */
   :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B29\], .bg-\[\#161B26\]) .text-\[\#7B88A6\] {
     color: #64748B !important;
@@ -172,28 +163,49 @@ html:not(.dark) {
 }
 
 /* ========================================================
-   ELEMENTS THAT MUST ALWAYS RETAIN WHITE TEXT
-   Regardless of whether Light or Dark theme is active.
+   POCKET ICONS & BADGES WITH ACCENT COLORS
+   Must ALWAYS render with crisp pure white icons & text
    ======================================================== */
+.pocket-icon-badge,
+.pocket-icon-badge *,
+.pocket-icon-badge svg,
+.pocket-icon-badge path {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
 
-.bg-\[\#635BFF\],
-.bg-\[\#635BFF\] *,
-.bg-\[\#635BFF\] .text-white,
-button.bg-\[\#635BFF\],
-button.bg-\[\#635BFF\] *,
-.bg-red-600,
-.bg-red-600 *,
+/* ========================================================
+   SOLID COLORED BUTTONS & PILLS (Pemasukan, Pengeluaran, Simpan, dll)
+   Must ALWAYS have bright crisp white text & icons
+   ======================================================== */
 .bg-\[\#F43F5E\],
 .bg-\[\#F43F5E\] *,
+.bg-\[\#F43F5E\] span,
+.bg-\[\#F43F5E\] svg,
 .bg-\[\#10B981\],
 .bg-\[\#10B981\] *,
+.bg-\[\#10B981\] span,
+.bg-\[\#10B981\] svg,
+.bg-\[\#635BFF\],
+.bg-\[\#635BFF\] *,
+.bg-\[\#635BFF\] span,
+.bg-\[\#635BFF\] svg,
+.bg-red-600,
+.bg-red-600 *,
 .bg-emerald-600,
 .bg-emerald-600 *,
-.bg-\[\#0F172A\],
-.bg-\[\#0F172A\] *,
-.bg-\[\#1C2538\],
-.bg-\[\#1C2538\] * {
-  /* Retain bright crisp white text on solid colored buttons & badges */
+.\!text-white,
+.\!text-white * {
+  color: #FFFFFF !important;
+}
+
+.bg-\[\#F43F5E\] svg,
+.bg-\[\#10B981\] svg,
+.bg-\[\#635BFF\] svg,
+.bg-red-600 svg,
+.bg-emerald-600 svg,
+.\!text-white svg {
+  stroke: #FFFFFF !important;
 }
 
 html:not(.dark) .bg-\[\#635BFF\] h1,

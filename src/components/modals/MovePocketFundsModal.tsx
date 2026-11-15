@@ -213,7 +213,7 @@ export const MovePocketFundsModal: React.FC = () => {
                         >
                           <div className="flex items-center space-x-2.5">
                             <div
-                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white flex-shrink-0"
                               style={{ backgroundColor: p.color }}
                             >
                               {renderIcon(p.iconName)}
@@ -261,7 +261,7 @@ export const MovePocketFundsModal: React.FC = () => {
                         >
                           <div className="flex items-center space-x-2.5">
                             <div
-                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white flex-shrink-0"
                               style={{ backgroundColor: p.color }}
                             >
                               {renderIcon(p.iconName)}

@@ -106,25 +106,25 @@ export const HomeView: React.FC = () => {
   const renderPocketIcon = (name: string) => {
     switch (name) {
       case 'Wallet':
-        return <Wallet className="w-3.5 h-3.5" />;
+        return <Wallet className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Landmark':
-        return <Landmark className="w-3.5 h-3.5" />;
+        return <Landmark className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Plane':
-        return <Plane className="w-3.5 h-3.5" />;
+        return <Plane className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Smartphone':
-        return <Smartphone className="w-3.5 h-3.5" />;
+        return <Smartphone className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Heart':
-        return <Heart className="w-3.5 h-3.5" />;
+        return <Heart className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'ShoppingBag':
-        return <ShoppingBag className="w-3.5 h-3.5" />;
+        return <ShoppingBag className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Car':
-        return <Car className="w-3.5 h-3.5" />;
+        return <Car className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Home':
-        return <HomeIcon className="w-3.5 h-3.5" />;
+        return <HomeIcon className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       case 'Briefcase':
-        return <Briefcase className="w-3.5 h-3.5" />;
+        return <Briefcase className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
       default:
-        return <Shield className="w-3.5 h-3.5" />;
+        return <Shield className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
     }
   };
 
@@ -241,7 +241,7 @@ export const HomeView: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <div
-                      className="w-7 h-7 rounded-[10px] flex items-center justify-center text-white"
+                      className="w-7 h-7 rounded-[10px] flex items-center justify-center text-white pocket-icon-badge shadow-xs [&>svg]:text-white [&>svg]:stroke-white"
                       style={{ backgroundColor: pocket.color }}
                     >
                       {renderPocketIcon(pocket.iconName)}
