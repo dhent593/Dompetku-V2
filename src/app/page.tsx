@@ -71,7 +71,7 @@ export default function App() {
       <main
         className={`w-full max-w-md mx-auto flex flex-col justify-start px-5 pt-4 sm:pt-5 ${
           activeTab === 'home'
-            ? 'h-[100dvh] pb-24 overflow-hidden'
+            ? 'h-[100dvh] pb-[66px] overflow-hidden'
             : 'min-h-screen pb-28 overflow-x-hidden'
         }`}
       >

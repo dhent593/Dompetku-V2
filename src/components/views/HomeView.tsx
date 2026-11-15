@@ -305,8 +305,8 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        {/* Scrollable Transaction Cards List ONLY */}
-        <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-2 -mr-1 pr-1">
+        {/* Scrollable Transaction Cards List ONLY (Aligned directly to navbar border) */}
+        <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-6 sm:pb-8 -mr-1 pr-1">
           {transactions.map((tx) => (
             <div
               key={tx.id}
