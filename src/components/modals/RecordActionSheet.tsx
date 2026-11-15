@@ -37,21 +37,21 @@ export const RecordActionSheet: React.FC = () => {
             {/* Top Drag Indicator */}
             <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-4" />
 
-            {/* Header: Clean & Soft */}
+            {/* Header: Clean & Minimalist */}
             <div className="flex items-center justify-between pb-2">
               <span className="text-xs font-semibold text-[#7B88A6] tracking-wide">
                 {t('new_record')}
               </span>
               <button
                 onClick={() => setActiveModal(null)}
-                className="w-7 h-7 rounded-full bg-white/[0.05] hover:bg-white/10 flex items-center justify-center text-[#7B88A6] hover:text-white transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-full bg-white/[0.06] hover:bg-white/10 flex items-center justify-center text-[#7B88A6] hover:text-white transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* 3 Borderless, Soft Circular Action Buttons */}
+            {/* 3 Action Buttons: Translucent White Rounded Box, Monochromatic Elegant Icons */}
             <div className="grid grid-cols-3 gap-2 pt-4 pb-2">
               {/* 1. Pemasukan (Income) */}
               <motion.button
@@ -59,12 +59,12 @@ export const RecordActionSheet: React.FC = () => {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setActiveModal('addIncome')}
-                className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/[0.03] transition-all cursor-pointer group focus:outline-none"
+                className="flex flex-col items-center justify-center py-2 px-1 cursor-pointer group focus:outline-none"
               >
-                <div className="w-14 h-14 rounded-full bg-[#10B981]/12 text-[#10B981] group-hover:bg-[#10B981]/20 flex items-center justify-center group-hover:scale-105 transition-all duration-200">
-                  <ArrowDownLeft className="w-6 h-6 stroke-[2.4]" />
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.07] group-hover:bg-white/[0.13] text-white/90 group-hover:text-white flex items-center justify-center group-hover:scale-105 transition-all duration-200">
+                  <ArrowDownLeft className="w-6 h-6 stroke-[2.2]" />
                 </div>
-                <span className="text-xs font-medium text-[#8E9BB8] group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
                   {t('record_income_title')}
                 </span>
               </motion.button>
@@ -75,12 +75,12 @@ export const RecordActionSheet: React.FC = () => {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setActiveModal('addExpense')}
-                className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/[0.03] transition-all cursor-pointer group focus:outline-none"
+                className="flex flex-col items-center justify-center py-2 px-1 cursor-pointer group focus:outline-none"
               >
-                <div className="w-14 h-14 rounded-full bg-[#F43F5E]/12 text-[#F43F5E] group-hover:bg-[#F43F5E]/20 flex items-center justify-center group-hover:scale-105 transition-all duration-200">
-                  <ArrowUpRight className="w-6 h-6 stroke-[2.4]" />
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.07] group-hover:bg-white/[0.13] text-white/90 group-hover:text-white flex items-center justify-center group-hover:scale-105 transition-all duration-200">
+                  <ArrowUpRight className="w-6 h-6 stroke-[2.2]" />
                 </div>
-                <span className="text-xs font-medium text-[#8E9BB8] group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
                   {t('record_expense_title')}
                 </span>
               </motion.button>
@@ -91,12 +91,12 @@ export const RecordActionSheet: React.FC = () => {
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={() => setActiveModal('movePocketFunds')}
-                className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl hover:bg-white/[0.03] transition-all cursor-pointer group focus:outline-none"
+                className="flex flex-col items-center justify-center py-2 px-1 cursor-pointer group focus:outline-none"
               >
-                <div className="w-14 h-14 rounded-full bg-[#635BFF]/12 text-[#635BFF] group-hover:bg-[#635BFF]/20 flex items-center justify-center group-hover:scale-105 transition-all duration-200">
-                  <ArrowRightLeft className="w-6 h-6 stroke-[2.2]" />
+                <div className="w-14 h-14 rounded-2xl bg-white/[0.07] group-hover:bg-white/[0.13] text-white/90 group-hover:text-white flex items-center justify-center group-hover:scale-105 transition-all duration-200">
+                  <ArrowRightLeft className="w-6 h-6 stroke-[2]" />
                 </div>
-                <span className="text-xs font-medium text-[#8E9BB8] group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white mt-2.5 tracking-tight text-center transition-colors">
                   {t('record_move_title')}
                 </span>
               </motion.button>
