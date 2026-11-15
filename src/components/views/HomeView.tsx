@@ -168,8 +168,12 @@ export const HomeView: React.FC = () => {
             </div>
           </div>
 
-          {/* Card Bottom: Rincian Pemasukan & Pengeluaran Bulan Ini */}
-          <div className="pt-3 border-t border-white/15 flex items-center justify-between text-xs">
+          {/* Card Bottom: Rincian Pemasukan & Pengeluaran Bulan Ini (Click to see Analytics) */}
+          <div
+            onClick={() => setActiveTab('analytics')}
+            className="pt-3 border-t border-white/15 flex items-center justify-between text-xs cursor-pointer hover:bg-white/5 -mx-6 -mb-6 px-6 pb-4 pt-3 transition-colors group"
+            title="Lihat Analisis Keuangan"
+          >
             {/* Pemasukan */}
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
