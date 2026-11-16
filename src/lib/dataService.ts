@@ -47,6 +47,7 @@ export const EMPTY_USER: UserProfile = {
 
 const STORAGE_KEYS = {
   USER: 'mypocket_user_v1',
+  REGISTERED_ACCOUNTS: 'mypocket_registered_accounts_v1',
   TRANSACTIONS: 'mypocket_transactions_v1',
   CARDS: 'mypocket_cards_v1',
   POCKETS: 'mypocket_pockets_v1',
@@ -109,6 +110,36 @@ class DataService {
     } catch (e) {
       console.error('Failed to save auth state', e);
     }
+  }
+
+  // --- Registered Accounts Local Registry (Fallback) ---
+  saveRegisteredAccount(account: { name: string; email: string; pass: string }): void {
+    if (!this.isBrowser()) return;
+    try {
+      const list = this.getRegisteredAccounts();
+      const filtered = list.filter((a) => a.email.toLowerCase() !== account.email.toLowerCase());
+      filtered.push(account);
+      localStorage.setItem(STORAGE_KEYS.REGISTERED_ACCOUNTS, JSON.stringify(filtered));
+    } catch (e) {
+      console.error('Failed to save registered account', e);
+    }
+  }
+
+  getRegisteredAccounts(): Array<{ name: string; email: string; pass: string }> {
+    if (!this.isBrowser()) return [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.REGISTERED_ACCOUNTS);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return [];
+  }
+
+  verifyLocalCredentials(email: string, pass: string): { name: string; email: string; pass: string } | null {
+    const list = this.getRegisteredAccounts();
+    const found = list.find(
+      (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim() && a.pass === pass
+    );
+    return found || null;
   }
 
   getAppLocked(): boolean {

@@ -193,15 +193,19 @@ const translations = {
 
     // Login
     welcome_sub: 'Pencatatan keuangan modern & aman',
-    email_login_tab: 'Masuk Email',
+    email_login_tab: 'Masuk',
+    register_tab: 'Daftar Baru',
     mpin_login_tab: 'mPIN / Biometrik',
     password_label: 'Kata Sandi',
+    repeat_password_label: 'Ulangi Kata Sandi',
+    repeat_password_placeholder: 'Ketik ulang kata sandi',
+    password_mismatch: 'Kata sandi dan konfirmasi kata sandi tidak cocok.',
     sign_in_btn: 'Masuk ke MyPocket',
     instant_demo: 'Akses Demo Instan (Smith)',
     dont_have_account: 'Belum punya akun?',
     create_account: 'Daftar Baru',
     full_name: 'Nama Lengkap',
-    complete_reg: 'Selesaikan Pendaftaran',
+    complete_reg: 'Daftar Akun Baru',
     already_registered: 'Sudah punya akun?',
   },
   en: {
@@ -392,16 +396,20 @@ const translations = {
 
     // Login
     welcome_sub: 'Smart, clean personal finance management',
-    email_login_tab: 'Email Login',
+    email_login_tab: 'Sign In',
+    register_tab: 'Sign Up',
     mpin_login_tab: 'mPIN / Biometric',
     password_label: 'Password',
+    repeat_password_label: 'Repeat Password',
+    repeat_password_placeholder: 'Re-type your password',
+    password_mismatch: 'Passwords do not match.',
     sign_in_btn: 'Sign In',
     instant_demo: 'Instant Demo Access (Smith)',
     dont_have_account: "Don't have an account?",
-    create_account: 'Create Account',
+    create_account: 'Sign Up',
     full_name: 'Full Name',
-    complete_reg: 'Complete Registration',
-    already_registered: 'Already registered?',
+    complete_reg: 'Create New Account',
+    already_registered: 'Already have an account?',
   },
 };
 

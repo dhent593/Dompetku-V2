@@ -18,8 +18,8 @@ interface AuthContextType {
   handleKeypadPress: (char: string) => void;
   handleKeypadBackspace: () => void;
   handleKeypadClear: () => void;
-  loginWithEmail: (email: string, pass: string) => Promise<boolean>;
-  register: (name: string, email: string, pass: string) => Promise<boolean>;
+  loginWithEmail: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   loginWithPin: (pinToTest?: string) => boolean;
   loginWithBiometrics: () => Promise<boolean>;
   unlockWithPin: (pinToTest?: string) => boolean;
@@ -183,12 +183,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return loginWithBiometrics();
   };
 
-  const loginWithEmail = async (email: string, pass: string): Promise<boolean> => {
-    if (!email || !pass) return false;
+  const loginWithEmail = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !pass) return { success: false, error: 'Email dan kata sandi wajib diisi.' };
+
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: cleanEmail,
           password: pass,
         });
 
@@ -205,62 +207,134 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const fallback: UserProfile = {
               ...EMPTY_USER,
               id: data.user.id,
-              name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-              email: data.user.email || '',
+              name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || cleanEmail.split('@')[0] || 'User',
+              email: cleanEmail,
             };
             setUser(fallback);
             dataService.saveUser(fallback);
           }
-          return true;
+          return { success: true };
         }
 
-        // Allow demo user credentials as instant local fallback
-        if (email === 'smith@example.com' && pass === 'password123') {
+        // Check local registered credentials fallback
+        const localAcc = dataService.verifyLocalCredentials(cleanEmail, pass);
+        if (localAcc) {
+          const localUser: UserProfile = {
+            ...EMPTY_USER,
+            id: `usr_${Date.now()}`,
+            name: localAcc.name,
+            email: localAcc.email,
+          };
+          setUser(localUser);
+          dataService.saveUser(localUser);
+          setIsLoggedIn(true);
+          setIsLocked(false);
+          dataService.setAuthState(true);
+          dataService.setAppLocked(false);
+          return { success: true };
+        }
+
+        // Demo user credentials fallback
+        if (cleanEmail === 'smith@example.com' && pass === 'password123') {
           setIsLoggedIn(true);
           setIsLocked(false);
           dataService.setAuthState(true);
           dataService.setAppLocked(false);
           setUser(INITIAL_USER);
           dataService.saveUser(INITIAL_USER);
-          return true;
+          return { success: true };
         }
 
-        console.warn('Supabase login:', error?.message);
-        return false;
-      } catch (err) {
+        // Specific error handling from Supabase
+        if (error?.message?.toLowerCase().includes('email not confirmed')) {
+          return {
+            success: false,
+            error: 'Email belum dikonfirmasi. Silakan matikan "Confirm email" di dashboard Supabase (Authentication > Providers > Email) atau periksa kotak masuk email Anda.',
+          };
+        }
+
+        if (error?.message?.toLowerCase().includes('invalid login credentials')) {
+          return { success: false, error: 'Email atau kata sandi salah. Silakan periksa kembali.' };
+        }
+
+        return { success: false, error: error?.message || 'Gagal masuk. Silakan coba lagi.' };
+      } catch (err: any) {
         console.error('Login error', err);
+        return { success: false, error: err?.message || 'Terjadi kesalahan saat masuk.' };
       }
     }
 
-    // Default simulation fallback
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setIsLoggedIn(true);
-    setIsLocked(false);
-    dataService.setAuthState(true);
-    dataService.setAppLocked(false);
-    return true;
+    // Local-only verification
+    const localAcc = dataService.verifyLocalCredentials(cleanEmail, pass);
+    if (localAcc) {
+      const localUser: UserProfile = {
+        ...EMPTY_USER,
+        id: `usr_${Date.now()}`,
+        name: localAcc.name,
+        email: localAcc.email,
+      };
+      setUser(localUser);
+      dataService.saveUser(localUser);
+      setIsLoggedIn(true);
+      setIsLocked(false);
+      dataService.setAuthState(true);
+      dataService.setAppLocked(false);
+      return { success: true };
+    }
+
+    if (cleanEmail === 'smith@example.com' && pass === 'password123') {
+      setIsLoggedIn(true);
+      setIsLocked(false);
+      dataService.setAuthState(true);
+      dataService.setAppLocked(false);
+      setUser(INITIAL_USER);
+      dataService.saveUser(INITIAL_USER);
+      return { success: true };
+    }
+
+    return { success: false, error: 'Email atau kata sandi tidak cocok.' };
   };
 
-  const register = async (name: string, email: string, pass: string): Promise<boolean> => {
-    if (!name || !email || !pass) return false;
+  const register = async (name: string, email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    if (!cleanName || !cleanEmail || !pass) {
+      return { success: false, error: 'Mohon lengkapi semua kolom pendaftaran.' };
+    }
+
+    // Always cache registered account locally
+    dataService.saveRegisteredAccount({
+      name: cleanName,
+      email: cleanEmail,
+      pass,
+    });
+
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: cleanEmail,
           password: pass,
           options: {
             data: {
-              full_name: name,
-              name: name,
+              full_name: cleanName,
+              name: cleanName,
             },
           },
         });
 
-        if (!error && data.user) {
+        if (error) {
+          console.warn('Supabase register notice:', error.message);
+          if (error.message.toLowerCase().includes('already registered')) {
+            return { success: false, error: 'Email ini sudah terdaftar. Silakan langsung Masuk.' };
+          }
+        }
+
+        if (data?.user) {
           setIsLoggedIn(true);
           setIsLocked(false);
           dataService.setAuthState(true);
           dataService.setAppLocked(false);
+
           if (data.session) {
             const profile = await SupabaseService.getProfile();
             if (profile) {
@@ -268,33 +342,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               dataService.saveUser(profile);
             }
           } else {
-            const updated = { ...user, name, email };
-            setUser(updated);
-            dataService.saveUser(updated);
+            const newUser: UserProfile = {
+              ...EMPTY_USER,
+              id: data.user.id,
+              name: cleanName,
+              email: cleanEmail,
+            };
+            setUser(newUser);
+            dataService.saveUser(newUser);
           }
-          return true;
+          return { success: true };
         }
-
-        console.warn('Supabase register:', error?.message);
-        return false;
-      } catch (err) {
+      } catch (err: any) {
         console.error('Register error', err);
       }
     }
 
     // Default simulation fallback
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    const updated = {
-      ...user,
-      name,
-      email,
+    const newUser: UserProfile = {
+      ...EMPTY_USER,
+      id: `usr_${Date.now()}`,
+      name: cleanName,
+      email: cleanEmail,
     };
-    setUser(updated);
-    dataService.saveUser(updated);
+    setUser(newUser);
+    dataService.saveUser(newUser);
     setIsLoggedIn(true);
     setIsLocked(false);
     dataService.setAuthState(true);
-    return true;
+    dataService.setAppLocked(false);
+    return { success: true };
   };
 
   const lockApp = () => {
