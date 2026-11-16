@@ -9,7 +9,7 @@ import { formatCurrency } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const ScanQRModal: React.FC = () => {
-  const { activeModal, setActiveModal, addTransaction } = useFinance();
+  const { activeModal, setActiveModal, addTransaction, pockets } = useFinance();
   const { t } = useLanguage();
   const [scannedResult, setScannedResult] = useState<string | null>(null);
 
@@ -24,6 +24,7 @@ export const ScanQRModal: React.FC = () => {
       category: 'food',
       amount: amount,
       type: 'expense',
+      pocketId: pockets[0]?.id,
       note: 'QR contactless merchant payment',
     });
 
@@ -43,6 +44,7 @@ export const ScanQRModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
         >
           <motion.div
@@ -51,7 +53,8 @@ export const ScanQRModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative flex flex-col items-center"
           >
             <button
               onClick={() => setActiveModal(null)}
@@ -83,7 +86,7 @@ export const ScanQRModal: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:text-[#10B981] dark:bg-[#10B981]/15 py-2 px-4 rounded-full mt-5 border border-emerald-200 dark:border-[#10B981]/30"
+                className="flex items-center space-x-2 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:text-[#10B981] dark:bg-[#10B981]/15 py-2 px-4 rounded-full mt-5"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{scannedResult}</span>
@@ -93,7 +96,7 @@ export const ScanQRModal: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={handleSimulateScan}
-                className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] hover:border-[#635BFF] text-xs font-semibold text-slate-800 dark:text-white mt-6 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-xs font-semibold text-slate-800 dark:text-white mt-6 active:scale-95 transition-all cursor-pointer shadow-sm"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#635BFF]" />
                 <span>{t('simulate_scan')}</span>

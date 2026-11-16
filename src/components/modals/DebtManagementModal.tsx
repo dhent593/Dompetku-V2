@@ -171,6 +171,7 @@ export const DebtManagementModal: React.FC = () => {
         initial="initial"
         animate="animate"
         exit="exit"
+        onClick={() => setActiveModal(null)}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
       >
         <motion.div
@@ -179,10 +180,11 @@ export const DebtManagementModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1E2435]">
+          <div className="flex items-center justify-between pb-3">
             <div className="flex items-center space-x-2.5">
               <div className="w-8 h-8 rounded-xl bg-[#F43F5E] flex items-center justify-center text-white shadow-sm">
                 <CreditCard className="w-4 h-4 text-white stroke-[2.2]" />
@@ -205,7 +207,7 @@ export const DebtManagementModal: React.FC = () => {
           </div>
 
           {/* Top Summary Card */}
-          <div className="my-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-200 dark:border-[#1C2233] flex items-center justify-between">
+          <div className="my-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#111520] flex items-center justify-between">
             <div>
               <span className="text-[11px] text-slate-500 dark:text-[#7B88A6] font-medium block">
                 {language === 'id' ? 'Total Sisa Hutang' : 'Total Remaining Debt'}
@@ -225,7 +227,7 @@ export const DebtManagementModal: React.FC = () => {
           </div>
 
           {/* Sub Navigation Tabs */}
-          <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl mb-4 border border-slate-200 dark:border-[#1C2233]">
+          <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl mb-4">
             <button
               type="button"
               onClick={() => {
@@ -259,7 +261,7 @@ export const DebtManagementModal: React.FC = () => {
           {/* VIEW 1: PAY INSTALLMENT DRAWER */}
           {selectedDebtForPay ? (
             <div className="flex flex-col space-y-3.5 pt-1">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#1E2435]">
+              <div className="flex items-center justify-between pb-2">
                 <div>
                   <span className="text-[11px] text-slate-500 dark:text-[#7B88A6] font-medium block">
                     {language === 'id' ? 'Pembayaran Cicilan' : 'Pay Installment'}
@@ -278,10 +280,10 @@ export const DebtManagementModal: React.FC = () => {
 
               {feedbackMsg && (
                 <div
-                  className={`text-xs p-2.5 rounded-xl border flex items-center space-x-2 ${
+                  className={`text-xs p-2.5 rounded-xl flex items-center space-x-2 ${
                     feedbackMsg.isError
-                      ? 'text-red-700 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/40'
-                      : 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40'
+                      ? 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40'
+                      : 'text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40'
                   }`}
                 >
                   {feedbackMsg.isError ? (
@@ -342,10 +344,10 @@ export const DebtManagementModal: React.FC = () => {
                         <div
                           key={pkt.id}
                           onClick={() => setSelectedPocketId(pkt.id)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
                             isSelected
-                              ? 'bg-white dark:bg-[#1C2233] border-[#635BFF] ring-1 ring-[#635BFF] shadow-xs'
-                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520] border-slate-200 dark:border-[#1E2435]'
+                              ? 'bg-white dark:bg-[#1C2233] ring-2 ring-[#635BFF] shadow-xs'
+                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520]'
                           }`}
                         >
                           <div className="flex items-center space-x-2">
@@ -403,7 +405,7 @@ export const DebtManagementModal: React.FC = () => {
                   return (
                     <div
                       key={d.id}
-                      className="p-3.5 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs flex flex-col space-y-2.5"
+                      className="p-3.5 rounded-2xl bg-white dark:bg-[#141824] shadow-xs flex flex-col space-y-2.5"
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -494,7 +496,7 @@ export const DebtManagementModal: React.FC = () => {
             /* VIEW 3: ADD NEW DEBT FORM */
             <form onSubmit={handleAddDebtSubmit} className="flex flex-col space-y-3 pt-1">
               {formError && (
-                <div className="text-xs p-2.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 flex items-center space-x-2">
+                <div className="text-xs p-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 flex items-center space-x-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{formError}</span>
                 </div>

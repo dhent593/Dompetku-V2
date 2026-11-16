@@ -80,6 +80,7 @@ export const MonthlyBudgetModal: React.FC = () => {
         initial="initial"
         animate="animate"
         exit="exit"
+        onClick={() => setActiveModal(null)}
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
       >
         <motion.div
@@ -88,10 +89,11 @@ export const MonthlyBudgetModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1E2435]">
+          <div className="flex items-center justify-between pb-3">
             <div className="flex items-center space-x-2.5">
               <div className="w-8 h-8 rounded-xl bg-[#10B981] flex items-center justify-center text-white shadow-sm">
                 <Target className="w-4 h-4 text-white stroke-[2.2]" />
@@ -114,7 +116,7 @@ export const MonthlyBudgetModal: React.FC = () => {
           </div>
 
           {/* Overall Budget Progress Card */}
-          <div className="my-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-200 dark:border-[#1C2233]">
+          <div className="my-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#111520]">
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-slate-500 dark:text-[#7B88A6] font-medium">
                 {language === 'id' ? 'Pengeluaran Bulan Ini' : 'This Month Spent'}
@@ -163,7 +165,7 @@ export const MonthlyBudgetModal: React.FC = () => {
               return (
                 <div
                   key={cat.id}
-                  className="p-3.5 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs flex flex-col space-y-2"
+                  className="p-3.5 rounded-2xl bg-white dark:bg-[#141824] shadow-xs flex flex-col space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2.5">

@@ -109,7 +109,7 @@ export const LoginView: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center w-full bg-[#111520] p-1.5 rounded-2xl border border-[#1C2233] mb-6"
+          className="flex items-center w-full bg-[#111520] p-1.5 rounded-2xl mb-6"
         >
           <button
             type="button"
@@ -194,7 +194,7 @@ export const LoginView: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl border border-red-900/50"
+                  className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl"
                 >
                   {errorMsg}
                 </motion.div>
@@ -222,7 +222,7 @@ export const LoginView: React.FC = () => {
                 whileTap={{ scale: 0.97 }}
                 type="button"
                 onClick={handleQuickDemoLogin}
-                className="w-full py-3 rounded-xl bg-[#141824] border border-[#1E2435] hover:border-[#635BFF] text-xs font-semibold text-white/90 hover:text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-[#141824] hover:bg-[#1E2435] text-xs font-semibold text-white/90 hover:text-white transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <span>{t('instant_demo')}</span>
               </motion.button>
@@ -313,7 +313,7 @@ export const LoginView: React.FC = () => {
                       else if (val === '⌫') handleKeypadBackspace();
                       else handleKeypadPress(val);
                     }}
-                    className="h-12 rounded-xl bg-[#141824] border border-[#1E2435] hover:bg-[#1C2233] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                    className="h-12 rounded-xl bg-[#141824] hover:bg-[#1C2233] active:scale-95 text-white font-bold text-base flex items-center justify-center transition-all cursor-pointer shadow-sm"
                   >
                     {val}
                   </motion.button>
@@ -390,7 +390,7 @@ export const LoginView: React.FC = () => {
               </div>
 
               {errorMsg && (
-                <div className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl border border-red-900/50">
+                <div className="text-xs text-red-400 bg-red-950/40 p-3 rounded-xl">
                   {errorMsg}
                 </div>
               )}

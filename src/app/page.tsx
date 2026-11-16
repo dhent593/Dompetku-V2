@@ -62,6 +62,7 @@ export default function App() {
     },
     exit: {
       opacity: 0,
+      pointerEvents: 'none' as const,
       transition: {
         duration: 0.08,
       },
@@ -69,45 +70,38 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0D15] text-slate-900 dark:text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white transition-colors duration-200">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#0A0D15] text-slate-900 dark:text-white flex flex-col justify-between selection:bg-[#635BFF] selection:text-white transition-colors duration-200">
       {/* Main Direct Content Container with Snappy Slide-up Animation */}
       <main
         className={`w-full max-w-md mx-auto flex flex-col justify-start px-5 pt-4 sm:pt-5 ${
-          activeTab === 'home' || activeTab === 'transactions'
+          activeTab === 'home' || activeTab === 'transactions' || activeTab === 'analytics' || activeTab === 'wallet'
             ? 'h-[100dvh] pb-[66px] overflow-hidden'
             : 'min-h-screen pb-28 overflow-x-hidden'
         }`}
       >
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={activeTab}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className={
-              activeTab === 'home' || activeTab === 'transactions'
-                ? 'w-full h-full flex flex-col min-h-0'
-                : 'w-full'
-            }
-          >
-            {activeTab === 'home' && <HomeView />}
-            {activeTab === 'analytics' && <AnalyticsView />}
-            {activeTab === 'wallet' && <WalletView />}
-            {activeTab === 'settings' && <SettingsView />}
-            {activeTab === 'transactions' && <TransactionsView />}
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          className={
+            activeTab === 'home' || activeTab === 'transactions' || activeTab === 'analytics' || activeTab === 'wallet'
+              ? 'w-full h-full flex flex-col min-h-0'
+              : 'w-full'
+          }
+        >
+          {activeTab === 'home' && <HomeView />}
+          {activeTab === 'analytics' && <AnalyticsView />}
+          {activeTab === 'wallet' && <WalletView />}
+          {activeTab === 'settings' && <SettingsView />}
+          {activeTab === 'transactions' && <TransactionsView />}
+        </motion.div>
       </main>
 
       {/* Direct Bottom Navigation Bar */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200">
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto pb-1">
           <BottomNav currentTab={activeTab} onSelectTab={setActiveTab} />
-          {/* Subtle mobile indicator bar */}
-          <div className="w-full flex justify-center pb-2 bg-transparent">
-            <div className="w-28 h-1 bg-slate-300 dark:bg-white/20 rounded-full transition-colors" />
-          </div>
         </div>
       </div>
 

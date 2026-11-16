@@ -65,6 +65,7 @@ export const TransferModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
@@ -73,10 +74,11 @@ export const TransferModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center shadow-sm">
                   <Send className="w-4 h-4 text-white stroke-[2.2] -rotate-12" />
@@ -151,7 +153,7 @@ export const TransferModal: React.FC = () => {
                         key={val}
                         type="button"
                         onClick={() => setAmount(val.toString())}
-                        className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white hover:border-[#635BFF] cursor-pointer transition-colors"
+                        className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
                       >
                         {formatCurrency(val)}
                       </button>
@@ -173,7 +175,7 @@ export const TransferModal: React.FC = () => {
                 </div>
 
                 {error && (
-                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900/50">
+                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>

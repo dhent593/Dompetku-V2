@@ -59,6 +59,8 @@ export const HomeView: React.FC = () => {
     .filter((tx) => tx.type === 'expense')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
+  const totalPocketBalance = pockets.reduce((sum, p) => sum + p.balance, 0);
+
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
       case 'shopping':
@@ -141,7 +143,7 @@ export const HomeView: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('settings')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
           aria-label="Profile"
         >
           <User className="w-5 h-5 stroke-[2]" />
@@ -167,7 +169,7 @@ export const HomeView: React.FC = () => {
               Rp
             </span>
             <span className="text-3xl sm:text-[38px] font-extrabold text-white tracking-tight tabular-nums font-sans">
-              {Math.abs(Math.round(user.balance || 0)).toLocaleString('id-ID')}
+              {Math.abs(Math.round(totalPocketBalance)).toLocaleString('id-ID')}
             </span>
           </div>
 
@@ -235,43 +237,37 @@ export const HomeView: React.FC = () => {
               <div
                 key={pocket.id}
                 onClick={() => setSelectedPocket(pocket)}
-                className="min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98]"
+                className="pocket-card min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98] relative overflow-hidden"
+                style={{ backgroundColor: pocket.color }}
                 title={pocket.name}
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <div
-                      className="w-7 h-7 rounded-[10px] flex items-center justify-center text-white pocket-icon-badge shadow-xs [&>svg]:text-white [&>svg]:stroke-white"
-                      style={{ backgroundColor: pocket.color }}
-                    >
+                    <div className="w-7 h-7 rounded-[10px] pocket-card-badge flex items-center justify-center shadow-xs">
                       {renderPocketIcon(pocket.iconName)}
                     </div>
-                    <span
-                      className="text-[11px] font-bold"
-                      style={{ color: pocket.color }}
-                    >
+                    <span className="text-[10px] font-bold pocket-card-badge px-2 py-0.5 rounded-full">
                       {progressPercent}%
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight truncate mt-2.5">
+                  <h3 className="text-sm font-bold text-white tracking-tight truncate mt-2.5">
                     {pocket.name}
                   </h3>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight mt-0.5">
+                  <p className="text-sm font-black text-white tracking-tight mt-0.5">
                     {formatCurrency(pocket.balance)}
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-[#7B88A6] mt-0.5 truncate">
+                  <p className="text-[11px] text-white/80 mt-0.5 truncate">
                     {t('pocket_target_label')}: {formatCurrency(pocket.targetAmount)}
                   </p>
                 </div>
 
                 {/* Mini progress bar */}
-                <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#1F2637] overflow-hidden mt-3">
+                <div className="w-full h-1.5 rounded-full bg-black/20 overflow-hidden mt-3">
                   <div
-                    className="h-full rounded-full transition-all duration-500"
+                    className="h-full rounded-full transition-all duration-500 bg-white"
                     style={{
                       width: `${progressPercent}%`,
-                      backgroundColor: pocket.color,
                     }}
                   />
                 </div>
@@ -282,7 +278,7 @@ export const HomeView: React.FC = () => {
           {pockets.length === 0 && (
             <div
               onClick={() => setActiveModal('addPocket')}
-              className="min-w-[200px] flex-shrink-0 p-4 rounded-[20px] border border-dashed border-slate-300 dark:border-[#23293A] hover:border-[#635BFF] flex items-center justify-center text-center cursor-pointer transition-colors bg-white dark:bg-transparent"
+              className="min-w-[200px] flex-shrink-0 p-4 rounded-[20px] flex items-center justify-center text-center cursor-pointer transition-colors bg-white dark:bg-[#141824] shadow-sm"
             >
               <div className="flex flex-col items-center space-y-1">
                 <Plus className="w-5 h-5 text-slate-400 dark:text-[#7B88A6]" />
@@ -311,7 +307,7 @@ export const HomeView: React.FC = () => {
             <div
               key={tx.id}
               onClick={() => setSelectedTransaction(tx)}
-              className="flex items-center justify-between p-3.5 sm:p-4 rounded-[20px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2D364D] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
+              className="flex items-center justify-between p-3.5 sm:p-4 rounded-[20px] bg-white dark:bg-[#141824] hover:bg-slate-50 dark:hover:bg-[#181D2B] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
               title="Click to view, edit, or delete"
             >
               <div className="flex items-center space-x-3.5">

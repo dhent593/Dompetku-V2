@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   ChevronLeft,
   User,
@@ -26,11 +27,16 @@ import { CHART_DATA } from '@/lib/dummyData';
 import { TimeFilter, AnalyticType, Transaction } from '@/types';
 
 export const AnalyticsView: React.FC = () => {
-  const { setActiveTab, transactions } = useFinance();
+  const { setActiveTab, transactions, setSelectedTransaction } = useFinance();
   const { language, t } = useLanguage();
   const [activeType, setActiveType] = useState<AnalyticType>('expenses');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('monthly');
   const [showDropdown, setShowDropdown] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
+  const toggleCategory = (cat: string) => {
+    setExpandedCategory((prev) => (prev === cat ? null : cat));
+  };
 
   const currentChart = CHART_DATA[timeFilter];
 
@@ -131,56 +137,121 @@ export const AnalyticsView: React.FC = () => {
 
   const totalFilteredAmount = displayedCategories.reduce((sum, c) => sum + c.amount, 0);
 
+  // Helper to format transaction date
+  const formatTxDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  // Helper to get transactions belonging to a category
+  const getCategoryTransactions = (cat: string) => {
+    const currentMonthMatches = currentMonthTx.filter(
+      (tx) =>
+        tx.category === cat &&
+        (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income')
+    );
+    if (currentMonthMatches.length > 0) return currentMonthMatches;
+
+    return transactions.filter(
+      (tx) =>
+        tx.category === cat &&
+        (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income')
+    );
+  };
+
   return (
-    <div className="flex flex-col space-y-4 text-slate-900 dark:text-white w-full">
-      {/* 1. Top Header */}
-      <div className="flex items-center justify-between pt-1">
-        <button
-          onClick={() => setActiveTab('home')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm cursor-pointer"
-          aria-label="Back"
-        >
-          <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
-        </button>
+    <div className="flex flex-col h-full text-slate-900 dark:text-white w-full min-h-0 space-y-3.5">
+      {/* 1. Fixed Top Section: Header & Tab Switcher (Does not scroll) */}
+      <div className="flex flex-col space-y-3 flex-shrink-0 pt-1">
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setActiveTab('home')}
+            className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm cursor-pointer"
+            aria-label="Back"
+          >
+            <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
+          </button>
 
-        <h1 className="text-base font-bold text-slate-900 dark:text-white">
-          {language === 'id' ? 'Analisis Keuangan' : 'Financial Analytics'}
-        </h1>
+          <h1 className="text-base font-bold text-slate-900 dark:text-white">
+            {language === 'id' ? 'Analisis Keuangan' : 'Financial Analytics'}
+          </h1>
 
-        <button
-          onClick={() => setActiveTab('settings')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] border border-slate-200 dark:border-[#23293A] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
-          aria-label="Profile"
-        >
-          <User className="w-5 h-5 stroke-[2]" />
-        </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm overflow-hidden cursor-pointer"
+            aria-label="Profile"
+          >
+            <User className="w-5 h-5 stroke-[2]" />
+          </button>
+        </div>
+
+        {/* Expenses / Income Tab Switcher (Fixed) */}
+        <LayoutGroup id="analyticsTabGroup">
+          <div className="flex items-center bg-slate-100 dark:bg-[#111520] p-1.5 rounded-[18px] relative">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveType('expenses');
+                setExpandedCategory(null);
+              }}
+              className="relative flex-1 py-2.5 text-center text-xs sm:text-sm font-bold rounded-[14px] transition-colors cursor-pointer z-10 flex items-center justify-center space-x-1.5"
+            >
+              {activeType === 'expenses' && (
+                <motion.div
+                  layoutId="activeAnalyticTabIndicator"
+                  className="absolute inset-0 bg-white dark:bg-[#1E2435] rounded-[14px] shadow-sm -z-10"
+                  transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                />
+              )}
+              <span
+                className={`transition-colors duration-200 ${
+                  activeType === 'expenses'
+                    ? 'text-slate-900 dark:text-white font-extrabold'
+                    : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white font-medium'
+                }`}
+              >
+                {t('expenses')}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveType('income');
+                setExpandedCategory(null);
+              }}
+              className="relative flex-1 py-2.5 text-center text-xs sm:text-sm font-bold rounded-[14px] transition-colors cursor-pointer z-10 flex items-center justify-center space-x-1.5"
+            >
+              {activeType === 'income' && (
+                <motion.div
+                  layoutId="activeAnalyticTabIndicator"
+                  className="absolute inset-0 bg-white dark:bg-[#1E2435] rounded-[14px] shadow-sm -z-10"
+                  transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                />
+              )}
+              <span
+                className={`transition-colors duration-200 ${
+                  activeType === 'income'
+                    ? 'text-slate-900 dark:text-white font-extrabold'
+                    : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white font-medium'
+                }`}
+              >
+                {language === 'id' ? 'Pemasukan' : 'Income'}
+              </span>
+            </button>
+          </div>
+        </LayoutGroup>
       </div>
 
-      {/* 2. Expenses / Income Tab Switcher (Card Saldo Atas Dihilangkan) */}
-      <div className="flex items-center bg-slate-100 dark:bg-[#111520] p-1.5 rounded-[18px] border border-slate-200 dark:border-[#1B2130]">
-        <button
-          onClick={() => setActiveType('expenses')}
-          className={`flex-1 py-2.5 text-center text-xs sm:text-sm font-bold rounded-[14px] transition-all cursor-pointer ${
-            activeType === 'expenses'
-              ? 'text-slate-900 dark:text-white bg-white dark:bg-[#1E2435] shadow-xs'
-              : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          {t('expenses')}
-        </button>
-        <button
-          onClick={() => setActiveType('income')}
-          className={`flex-1 py-2.5 text-center text-xs sm:text-sm font-bold rounded-[14px] transition-all cursor-pointer ${
-            activeType === 'income'
-              ? 'text-slate-900 dark:text-white bg-white dark:bg-[#1E2435] shadow-xs'
-              : 'text-slate-500 dark:text-[#677491] hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          {language === 'id' ? 'Pemasukan' : 'Income'}
-        </button>
-      </div>
-
-      {/* 3. Month Header & Period Selector */}
+      {/* 2. Scrollable Body Content (Month selector, Chart, Summary, & Category cards) */}
+      <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-4 pb-6 sm:pb-8 pr-0.5 pt-1">
+        {/* 3. Month Header & Period Selector */}
       <div className="flex items-center justify-between pt-1 relative">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
           {timeFilter === 'monthly'
@@ -199,14 +270,14 @@ export const AnalyticsView: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-[#7A87A5] hover:text-slate-900 dark:hover:text-white font-medium bg-white dark:bg-[#141824] px-3 py-1.5 rounded-full border border-slate-200 dark:border-[#1E2435] transition-colors cursor-pointer shadow-xs"
+            className="flex items-center space-x-1.5 text-xs text-slate-700 dark:text-[#7A87A5] hover:text-slate-900 dark:hover:text-white font-medium bg-white dark:bg-[#141824] px-3 py-1.5 rounded-full transition-colors cursor-pointer shadow-xs"
           >
             <span>{timeFilter === 'monthly' ? t('monthly') : timeFilter === 'weekly' ? t('weekly') : t('yearly')}</span>
             <ChevronDown className="w-3.5 h-3.5 stroke-[2]" />
           </button>
 
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#1A2030] border border-slate-200 dark:border-[#273045] rounded-xl shadow-xl z-20 py-1 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-[#1A2030] rounded-xl shadow-xl z-20 py-1 overflow-hidden">
               {(['monthly', 'weekly', 'yearly'] as TimeFilter[]).map((filter) => (
                 <button
                   key={filter}
@@ -244,51 +315,74 @@ export const AnalyticsView: React.FC = () => {
             <line x1="0" y1="85" x2="340" y2="85" stroke="currentColor" className="text-slate-200 dark:text-[#181E2E]" strokeWidth="1" strokeDasharray="3 3" />
 
             {/* Filled Area */}
-            <path
-              d={
-                activeType === 'expenses'
-                  ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100 L 340 140 L 0 140 Z'
-                  : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50 L 340 140 L 0 140 Z'
-              }
-              fill={activeType === 'expenses' ? 'url(#chartGradientExpense)' : 'url(#chartGradientIncome)'}
+            <motion.path
+              initial={false}
+              animate={{
+                d:
+                  activeType === 'expenses'
+                    ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100 L 340 140 L 0 140 Z'
+                    : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50 L 340 140 L 0 140 Z',
+                fill: activeType === 'expenses' ? 'url(#chartGradientExpense)' : 'url(#chartGradientIncome)',
+              }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             />
 
             {/* Stroke Line */}
-            <path
-              d={
-                activeType === 'expenses'
-                  ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100'
-                  : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50'
-              }
+            <motion.path
+              initial={false}
+              animate={{
+                d:
+                  activeType === 'expenses'
+                    ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100'
+                    : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50',
+                stroke: activeType === 'expenses' ? '#635BFF' : '#10B981',
+              }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               fill="none"
-              stroke={activeType === 'expenses' ? '#635BFF' : '#10B981'}
               strokeWidth="3"
               strokeLinecap="round"
             />
 
             {/* Highlight Point */}
-            <circle
-              cx={activeType === 'expenses' ? '95' : '140'}
-              cy="25"
+            <motion.circle
+              initial={false}
+              animate={{
+                cx: activeType === 'expenses' ? 95 : 140,
+                cy: 25,
+                fill: activeType === 'expenses' ? '#635BFF' : '#10B981',
+              }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
               r="5"
-              fill={activeType === 'expenses' ? '#635BFF' : '#10B981'}
               stroke="#FFFFFF"
               strokeWidth="2"
             />
           </svg>
 
           {/* Floating Highlight Pill */}
-          <div
-            className={`absolute top-[-10px] -translate-x-1/2 !text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none ${
-              activeType === 'expenses' ? 'left-[28%] bg-[#635BFF]' : 'left-[41%] bg-[#10B981]'
-            }`}
+          <motion.div
+            initial={false}
+            animate={{
+              left: activeType === 'expenses' ? '28%' : '41%',
+              backgroundColor: activeType === 'expenses' ? '#635BFF' : '#10B981',
+            }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="absolute top-[-10px] -translate-x-1/2 !text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none"
           >
-            <span className="!text-white font-bold">
-              {formatCurrency(
-                activeType === 'expenses' ? currentChart.highlightExpense : currentChart.highlightIncome
-              )}
-            </span>
-          </div>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={activeType}
+                initial={{ opacity: 0, y: -4, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.9 }}
+                transition={{ duration: 0.15 }}
+                className="!text-white font-bold"
+              >
+                {formatCurrency(
+                  activeType === 'expenses' ? currentChart.highlightExpense : currentChart.highlightIncome
+                )}
+              </motion.span>
+            </AnimatePresence>
+          </motion.div>
         </div>
 
         {/* X-axis Labels */}
@@ -307,7 +401,7 @@ export const AnalyticsView: React.FC = () => {
       </div>
 
       {/* 5. Ringkasan Keuangan Bulan Ini (Monthly Financial Summary) */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] shadow-xs">
+      <div className="p-4 rounded-2xl bg-white dark:bg-[#141824] shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1E2435]">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
             {language === 'id' ? 'Ringkasan Keuangan Bulan Ini' : 'Monthly Financial Summary'}
@@ -326,7 +420,18 @@ export const AnalyticsView: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-3 pt-3">
           {/* Total Pemasukan */}
-          <div className="flex items-center space-x-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#111520]">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveType('income');
+              setExpandedCategory(null);
+            }}
+            className={`flex items-center space-x-2.5 p-2 rounded-xl transition-all cursor-pointer text-left ${
+              activeType === 'income'
+                ? 'bg-emerald-500/10 shadow-xs ring-1 ring-emerald-500/20'
+                : 'bg-slate-50 dark:bg-[#111520]'
+            }`}
+          >
             <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-[#10B981] flex-shrink-0">
               <TrendingUp className="w-4 h-4 stroke-[2.2]" />
             </div>
@@ -338,10 +443,21 @@ export const AnalyticsView: React.FC = () => {
                 +{formatCurrency(totalMonthIncome || 2500)}
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Total Pengeluaran */}
-          <div className="flex items-center space-x-2.5 p-2 rounded-xl bg-slate-50 dark:bg-[#111520]">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveType('expenses');
+              setExpandedCategory(null);
+            }}
+            className={`flex items-center space-x-2.5 p-2 rounded-xl transition-all cursor-pointer text-left ${
+              activeType === 'expenses'
+                ? 'bg-rose-500/10 shadow-xs ring-1 ring-rose-500/20'
+                : 'bg-slate-50 dark:bg-[#111520]'
+            }`}
+          >
             <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-[#F43F5E] flex-shrink-0">
               <TrendingDown className="w-4 h-4 stroke-[2.2]" />
             </div>
@@ -353,79 +469,234 @@ export const AnalyticsView: React.FC = () => {
                 -{formatCurrency(totalMonthExpense || 478)}
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
       {/* 6. Riwayat Kategori (Category Breakdown by Active Tab) */}
       <div className="flex flex-col space-y-3 pt-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-            {language === 'id'
-              ? `Rincian Kategori ${activeType === 'expenses' ? 'Pengeluaran' : 'Pemasukan'}`
-              : `${activeType === 'expenses' ? 'Expense' : 'Income'} Categories`}
-          </h2>
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={activeType}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+              className="text-base font-bold text-slate-900 dark:text-white tracking-tight"
+            >
+              {language === 'id'
+                ? `Rincian Kategori ${activeType === 'expenses' ? 'Pengeluaran' : 'Pemasukan'}`
+                : `${activeType === 'expenses' ? 'Expense' : 'Income'} Categories`}
+            </motion.h2>
+          </AnimatePresence>
           <span className="text-xs text-slate-500 dark:text-[#7B88A6] font-medium">
             {displayedCategories.length} {language === 'id' ? 'Kategori' : 'Categories'}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {displayedCategories.map((item) => {
-            const pct =
-              totalFilteredAmount > 0
-                ? Math.round((item.amount / totalFilteredAmount) * 100)
-                : 0;
+        {/* Animated Single column category cards */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeType}
+            initial={{ opacity: 0, x: activeType === 'income' ? 20 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: activeType === 'income' ? -20 : 20 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col space-y-2.5"
+          >
+            {displayedCategories.map((item, idx) => {
+              const isExpanded = expandedCategory === item.category;
+              const categoryTxs = getCategoryTransactions(item.category);
+              const pct =
+                totalFilteredAmount > 0
+                  ? Math.round((item.amount / totalFilteredAmount) * 100)
+                  : 0;
 
-            return (
-              <div
-                key={item.category}
-                className="p-3.5 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] flex items-center justify-between shadow-xs hover:border-slate-300 dark:hover:border-[#2D364D] transition-colors"
-              >
-                <div className="flex items-center space-x-3">
+              return (
+                <motion.div
+                  key={item.category}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.25,
+                    delay: idx * 0.04,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="rounded-2xl bg-white dark:bg-[#141824] transition-all duration-200 overflow-hidden shadow-xs"
+                >
+                  {/* Clickable Header that toggles accordion */}
                   <div
-                    className={`w-10 h-10 rounded-[14px] flex items-center justify-center ${
-                      activeType === 'expenses'
-                        ? 'bg-rose-50 text-[#F43F5E] dark:bg-rose-950/40 dark:text-rose-400'
-                        : 'bg-emerald-50 text-[#10B981] dark:bg-emerald-950/40 dark:text-emerald-400'
-                    }`}
+                    onClick={() => toggleCategory(item.category)}
+                    className="p-3.5 cursor-pointer flex flex-col justify-between select-none"
                   >
-                    {getCategoryIcon(item.category)}
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                      {getCategoryLabel(item.category)}
-                    </span>
-                    <span className="text-[10px] text-slate-500 dark:text-[#7B88A6]">
-                      {item.count} {language === 'id' ? 'transaksi' : 'tx'} • {pct}%
-                    </span>
-                  </div>
-                </div>
+                    {/* Top Row: Icon, Category Name, Tx Count, Nominal, Percentage & Chevron */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0 transition-colors ${
+                            activeType === 'expenses'
+                              ? 'bg-rose-50 text-[#F43F5E] dark:bg-rose-950/40 dark:text-rose-400'
+                              : 'bg-emerald-50 text-[#10B981] dark:bg-emerald-950/40 dark:text-emerald-400'
+                          }`}
+                        >
+                          {getCategoryIcon(item.category)}
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                            {getCategoryLabel(item.category)}
+                          </span>
+                          <span className="text-[11px] text-slate-500 dark:text-[#7B88A6]">
+                            {item.count} {language === 'id' ? 'transaksi' : 'transactions'}
+                          </span>
+                        </div>
+                      </div>
 
-                <div className="text-right">
-                  <span
-                    className={`text-xs font-bold block ${
-                      activeType === 'expenses'
-                        ? 'text-slate-900 dark:text-white'
-                        : 'text-emerald-600 dark:text-[#10B981]'
-                    }`}
-                  >
-                    {activeType === 'expenses' ? '-' : '+'}
-                    {formatCurrency(item.amount)}
-                  </span>
-                  <div className="w-16 h-1 bg-slate-100 dark:bg-[#1E2435] rounded-full mt-1.5 ml-auto overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        activeType === 'expenses' ? 'bg-[#635BFF]' : 'bg-[#10B981]'
-                      }`}
-                      style={{ width: `${pct}%` }}
-                    />
+                      <div className="flex items-center space-x-2">
+                        <div className="text-right">
+                          <span
+                            className={`text-sm font-extrabold block ${
+                              activeType === 'expenses'
+                                ? 'text-slate-900 dark:text-white'
+                                : 'text-emerald-600 dark:text-[#10B981]'
+                            }`}
+                          >
+                            {activeType === 'expenses' ? '-' : '+'}
+                            {formatCurrency(item.amount)}
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7B88A6]">
+                            {pct}%
+                          </span>
+                        </div>
+
+                        {/* Chevron toggle indicator */}
+                        <div
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition-transform duration-300 ${
+                            isExpanded
+                              ? 'rotate-180 text-[#635BFF]'
+                              : 'text-slate-400 dark:text-slate-500'
+                          }`}
+                        >
+                          <ChevronDown className="w-4 h-4 stroke-[2.2]" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Full-width Percentage Bar */}
+                    <div className="w-full h-2 bg-slate-100 dark:bg-[#1E2435] rounded-full mt-3 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{
+                          duration: 0.55,
+                          delay: 0.08 + idx * 0.04,
+                          ease: [0.16, 1, 0.3, 1],
+                        }}
+                        className={`h-full rounded-full ${
+                          activeType === 'expenses' ? 'bg-[#F43F5E]' : 'bg-[#10B981]'
+                        }`}
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+
+                  {/* Accordion Content with smooth height animation */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        key="accordion-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden bg-slate-50/70 dark:bg-[#0F131C] border-t border-slate-100 dark:border-[#1E2435]"
+                      >
+                        <div className="p-3.5 flex flex-col space-y-2">
+                          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-[#7B88A6] px-0.5">
+                            <span>
+                              {language === 'id' ? 'Daftar Transaksi' : 'Transaction List'} ({categoryTxs.length})
+                            </span>
+                            <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">
+                              {language === 'id' ? 'Klik untuk rincian' : 'Click for details'}
+                            </span>
+                          </div>
+
+                          {categoryTxs.length === 0 ? (
+                            <div className="text-center py-3 text-xs text-slate-400 dark:text-slate-500">
+                              {language === 'id'
+                                ? 'Belum ada rincian riwayat transaksi'
+                                : 'No transaction history details'}
+                            </div>
+                          ) : (
+                            <div className="flex flex-col space-y-1.5">
+                              {categoryTxs.map((tx) => (
+                                <div
+                                  key={tx.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTransaction(tx);
+                                  }}
+                                  className="flex items-center justify-between p-2.5 rounded-xl bg-white hover:bg-slate-100/80 dark:bg-[#151A26] dark:hover:bg-[#1C2233] cursor-pointer transition-all active:scale-[0.99] group shadow-2xs"
+                                >
+                                  <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                                    <div
+                                      className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                        tx.type === 'expense'
+                                          ? 'bg-rose-100 text-[#F43F5E] dark:bg-rose-950/60 dark:text-rose-400'
+                                          : 'bg-emerald-100 text-[#10B981] dark:bg-emerald-950/60 dark:text-emerald-400'
+                                      }`}
+                                    >
+                                      {getCategoryIcon(tx.category)}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <span className="text-xs font-bold text-slate-900 dark:text-white truncate block group-hover:text-[#635BFF] transition-colors">
+                                        {tx.title}
+                                      </span>
+                                      <div className="flex items-center space-x-1.5 text-[10px] text-slate-500 dark:text-[#7B88A6] mt-0.5">
+                                        <span>{formatTxDate(tx.date)}</span>
+                                        {tx.time && (
+                                          <>
+                                            <span>•</span>
+                                            <span>{tx.time}</span>
+                                          </>
+                                        )}
+                                        {(tx.pocketName || tx.cardNumber) && (
+                                          <>
+                                            <span>•</span>
+                                            <span className="text-[#635BFF] dark:text-[#8E87FF] font-medium truncate max-w-[100px]">
+                                              {tx.pocketName ? `Kantong ${tx.pocketName}` : tx.cardNumber}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right flex-shrink-0">
+                                    <span
+                                      className={`text-xs font-bold ${
+                                        tx.type === 'expense'
+                                          ? 'text-slate-900 dark:text-white'
+                                          : 'text-emerald-600 dark:text-[#10B981]'
+                                      }`}
+                                    >
+                                      {tx.type === 'expense' ? '-' : '+'}
+                                      {formatCurrency(tx.amount)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
+      </div>
       </div>
     </div>
   );

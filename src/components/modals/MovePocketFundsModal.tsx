@@ -19,6 +19,7 @@ import {
   Car,
   Home,
   Briefcase,
+  ChevronDown,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -135,6 +136,7 @@ export const MovePocketFundsModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
@@ -143,10 +145,11 @@ export const MovePocketFundsModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center text-white shadow-sm">
                   <ArrowRightLeft className="w-4 h-4 stroke-[2.2]" />
@@ -198,86 +201,85 @@ export const MovePocketFundsModal: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 gap-1.5 max-h-32 overflow-y-auto pr-0.5">
-                    {pockets.map((p) => {
-                      const isSelected = sourcePocketId === p.id;
-                      return (
-                        <div
+                  <div className="relative flex items-center">
+                    {sourcePocket && (
+                      <div
+                        className="absolute left-3 w-6 h-6 rounded-lg flex items-center justify-center text-white pointer-events-none z-10 flex-shrink-0"
+                        style={{ backgroundColor: sourcePocket.color }}
+                      >
+                        {renderIcon(sourcePocket.iconName)}
+                      </div>
+                    )}
+                    <select
+                      value={sourcePocketId}
+                      onChange={(e) => handleSourceChange(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl pl-11 pr-8 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors appearance-none cursor-pointer"
+                    >
+                      {pockets.map((p) => (
+                        <option
                           key={p.id}
-                          onClick={() => handleSourceChange(p.id)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-white dark:bg-[#1C2233] border-[#635BFF] ring-1 ring-[#635BFF] shadow-sm'
-                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520] border-slate-200 dark:border-[#1E2435]'
-                          }`}
+                          value={p.id}
+                          className="dark:bg-[#141824] text-slate-900 dark:text-white"
                         >
-                          <div className="flex items-center space-x-2.5">
-                            <div
-                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white flex-shrink-0"
-                              style={{ backgroundColor: p.color }}
-                            >
-                              {renderIcon(p.iconName)}
-                            </div>
-                            <span className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight">
-                              {p.name}
-                            </span>
-                          </div>
-                          <span className="text-[11px] font-medium text-slate-500 dark:text-[#7B88A6]">
-                            {formatCurrency(p.balance)}
-                          </span>
-                        </div>
-                      );
-                    })}
+                          {p.name} — {formatCurrency(p.balance)}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 pointer-events-none text-slate-400 dark:text-slate-500">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
                   </div>
                 </div>
 
                 {/* Arrow Divider Indicator */}
                 <div className="flex items-center justify-center my-0.5">
-                  <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] flex items-center justify-center text-[#635BFF] shadow-xs">
+                  <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-[#635BFF] shadow-xs">
                     <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
                 </div>
 
                 {/* 2. Kantong Tujuan (B) */}
                 <div>
-                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
-                    {t('dest_pocket_label_modal')}
-                  </label>
-                  <div className="grid grid-cols-1 gap-1.5 max-h-32 overflow-y-auto pr-0.5">
-                    {availableDestPockets.map((p) => {
-                      const isSelected = destPocketId === p.id;
-                      return (
-                        <div
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">
+                      {t('dest_pocket_label_modal')}
+                    </label>
+                    {destPocket && (
+                      <span className="text-[11px] font-medium text-slate-500 dark:text-[#7B88A6]">
+                        Saldo: {formatCurrency(destPocket.balance)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center">
+                    {destPocket && (
+                      <div
+                        className="absolute left-3 w-6 h-6 rounded-lg flex items-center justify-center text-white pointer-events-none z-10 flex-shrink-0"
+                        style={{ backgroundColor: destPocket.color }}
+                      >
+                        {renderIcon(destPocket.iconName)}
+                      </div>
+                    )}
+                    <select
+                      value={destPocketId}
+                      onChange={(e) => {
+                        setDestPocketId(e.target.value);
+                        setError(null);
+                      }}
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl pl-11 pr-8 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] transition-colors appearance-none cursor-pointer"
+                    >
+                      {availableDestPockets.map((p) => (
+                        <option
                           key={p.id}
-                          onClick={() => {
-                            setDestPocketId(p.id);
-                            setError(null);
-                          }}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition-all ${
-                            isSelected
-                              ? 'bg-white dark:bg-[#1C2233] border-[#10B981] ring-1 ring-[#10B981] shadow-sm'
-                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520] border-slate-200 dark:border-[#1E2435]'
-                          }`}
+                          value={p.id}
+                          className="dark:bg-[#141824] text-slate-900 dark:text-white"
                         >
-                          <div className="flex items-center space-x-2.5">
-                            <div
-                              className="w-6 h-6 rounded-lg flex items-center justify-center text-white pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white flex-shrink-0"
-                              style={{ backgroundColor: p.color }}
-                            >
-                              {renderIcon(p.iconName)}
-                            </div>
-                            <span className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight">
-                              {p.name}
-                            </span>
-                          </div>
-                          {isSelected && (
-                            <div className="w-4 h-4 rounded-full bg-[#10B981] flex items-center justify-center text-white">
-                              <Check className="w-3 h-3 stroke-[3]" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          {p.name} — {formatCurrency(p.balance)}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 pointer-events-none text-slate-400 dark:text-slate-500">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
                   </div>
                 </div>
 
@@ -313,7 +315,7 @@ export const MovePocketFundsModal: React.FC = () => {
                             onClick={() =>
                               setAmount(calculated > 0 ? calculated.toString() : '0')
                             }
-                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white hover:border-[#635BFF] cursor-pointer text-center transition-colors"
+                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer text-center transition-colors"
                           >
                             {fraction * 100}%
                           </button>
@@ -322,7 +324,7 @@ export const MovePocketFundsModal: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setAmount(sourcePocket.balance.toString())}
-                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] border border-[#635BFF]/40 text-[#635BFF] hover:text-white hover:bg-[#635BFF] hover:border-[#635BFF] cursor-pointer text-center transition-colors"
+                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer text-center transition-colors"
                       >
                         {t('all_balance')}
                       </button>
@@ -332,7 +334,7 @@ export const MovePocketFundsModal: React.FC = () => {
 
                 {/* Error message */}
                 {error && (
-                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900/50">
+                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -340,7 +342,7 @@ export const MovePocketFundsModal: React.FC = () => {
 
                 {/* Feedback message */}
                 {feedbackMsg && (
-                  <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50">
+                  <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 p-2.5 rounded-xl">
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                     <span>{feedbackMsg}</span>
                   </div>

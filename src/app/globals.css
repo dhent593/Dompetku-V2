@@ -56,21 +56,90 @@ body {
    ======================================================== */
 
 html:not(.dark) {
-  /* Application backgrounds */
+  /* Application backgrounds: Clean, modern slate canvas (#F1F5F9) for high contrast against pure white cards */
+  body,
   .bg-\[\#0A0D15\],
-  .bg-\[\#07090F\] {
-    background-color: #F8FAFC !important;
+  .bg-\[\#07090F\],
+  .bg-\[\#F8FAFC\],
+  .bg-slate-50 {
+    background-color: #F1F5F9 !important;
   }
 
-  /* Card Surfaces: Crisp clean white with soft subtle elevation */
+  /* Card Surfaces: Crisp clean white */
   .bg-\[\#141824\],
   .bg-\[\#121622\],
   .bg-\[\#161B26\],
   .bg-\[\#161B29\],
-  .bg-\[\#141926\] {
+  .bg-\[\#141926\],
+  .bg-\[\#181E2E\],
+  .bg-white {
     background-color: #FFFFFF !important;
-    color: #0F172A !important;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    color: #0F172A;
+  }
+
+  /* Enhanced Elevation & Multi-layered Shadows for Light Mode */
+  .shadow-xs,
+  [class*="shadow-xs"] {
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.04) !important;
+  }
+
+  .shadow-sm,
+  [class*="shadow-sm"] {
+    box-shadow: 0 3px 12px -1px rgba(15, 23, 42, 0.09), 0 1px 4px 0 rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .shadow,
+  [class*="shadow"]:not([class*="shadow-none"]):not([class*="shadow-inner"]):not([class*="shadow-xs"]):not([class*="shadow-sm"]):not([class*="shadow-md"]):not([class*="shadow-lg"]):not([class*="shadow-xl"]):not([class*="shadow-2xl"]) {
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.11), 0 2px 6px -1px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .hover\:shadow:hover,
+  [class*="hover:shadow"]:hover {
+    box-shadow: 0 8px 24px -3px rgba(15, 23, 42, 0.13), 0 3px 8px -1px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .shadow-md,
+  [class*="shadow-md"] {
+    box-shadow: 0 8px 22px -3px rgba(15, 23, 42, 0.12), 0 3px 8px -1px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .hover\:shadow-md:hover,
+  [class*="hover:shadow-md"]:hover {
+    box-shadow: 0 12px 28px -3px rgba(15, 23, 42, 0.15), 0 4px 10px -1px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .shadow-lg,
+  [class*="shadow-lg"] {
+    box-shadow: 0 14px 30px -4px rgba(15, 23, 42, 0.15), 0 6px 14px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .shadow-xl,
+  [class*="shadow-xl"],
+  .shadow-2xl,
+  [class*="shadow-2xl"] {
+    box-shadow: 0 24px 50px -8px rgba(15, 23, 42, 0.22), 0 10px 24px -4px rgba(15, 23, 42, 0.10), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  /* All white buttons in light mode (e.g. Back button, Settings button, Add button, etc.) */
+  button:is(.bg-white, [class*="bg-white"], .bg-\[\#FFFFFF\]):not([class*="bg-transparent"]):not([class*="hover:bg-white"]) {
+    box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.12), 0 1px 3px 0 rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  button:is(.bg-white, [class*="bg-white"], .bg-\[\#FFFFFF\]):hover:not([class*="bg-transparent"]) {
+    box-shadow: 0 5px 16px -2px rgba(15, 23, 42, 0.16), 0 2px 6px -1px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(15, 23, 42, 0.07) !important;
+  }
+
+  button:is(.bg-white, [class*="bg-white"], .bg-\[\#FFFFFF\]):active:not([class*="bg-transparent"]) {
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.12) !important;
+  }
+
+  /* All card surfaces in light mode across all views */
+  :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B26\], .bg-\[\#161B29\], .bg-\[\#141926\], .bg-\[\#181E2E\]):is([class*="rounded-[18px]"], [class*="rounded-[20px]"], [class*="rounded-[22px]"], [class*="rounded-[24px]"], [class*="rounded-[28px]"], [class*="rounded-2xl"], [class*="rounded-3xl"], .card) {
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 4px 0 rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  :is(.bg-white, .bg-\[\#141824\], .bg-\[\#121622\], .bg-\[\#161B26\], .bg-\[\#161B29\], .bg-\[\#141926\], .bg-\[\#181E2E\]):is([class*="rounded-[18px]"], [class*="rounded-[20px]"], [class*="rounded-[22px]"], [class*="rounded-[24px]"], [class*="rounded-[28px]"], [class*="rounded-2xl"], [class*="rounded-3xl"], .card):hover {
+    box-shadow: 0 8px 24px -3px rgba(15, 23, 42, 0.12), 0 3px 8px -1px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
   }
 
   .hover\:bg-\[\#181D2B\]:hover,
@@ -174,6 +243,24 @@ html:not(.dark) {
   stroke: #FFFFFF !important;
 }
 
+/* Inverted Pocket Card Styles (Card takes color, contents are white) */
+.pocket-card {
+  color: #FFFFFF !important;
+}
+.pocket-card h3,
+.pocket-card p,
+.pocket-card span {
+  color: #FFFFFF !important;
+}
+.pocket-card-badge {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #FFFFFF !important;
+}
+.pocket-card-badge svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
 /* ========================================================
    SOLID COLORED BUTTONS & PILLS (Pemasukan, Pengeluaran, Simpan, dll)
    Must ALWAYS have bright crisp white text & icons
@@ -223,4 +310,61 @@ html:not(.dark) .bg-\[\#635BFF\] .bg-white\/15 {
 
 html:not(.dark) .bg-\[\#635BFF\] .border-white\/15 {
   border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ========================================================
+   GLOBAL BORDERLESS DESIGN (Cards, Popups/Modals, Buttons)
+   All cards, popups/modals, and buttons have NO borders.
+   ======================================================== */
+
+/* 1. All Buttons & Interactive Controls: completely borderless */
+button,
+button:hover,
+button:active,
+button:focus,
+[role="button"],
+.btn,
+.button {
+  border: none !important;
+  border-width: 0 !important;
+  outline: none !important;
+}
+
+/* 2. All Popups, Modals, Action Sheets, Dialogs, Overlays: borderless */
+[role="dialog"],
+[role="dialog"] > div,
+.modal-container,
+.modal-box,
+.shadow-2xl,
+[class*="shadow-2xl"],
+[class*="rounded-t-[28px]"],
+[class*="rounded-[28px]"],
+[class*="rounded-t-[32px]"],
+[class*="rounded-[32px]"],
+[class*="rounded-t-[24px]"],
+[class*="rounded-[24px]"] {
+  border: none !important;
+  border-width: 0 !important;
+}
+
+/* 3. All Cards, Widgets, and Container Surfaces: borderless */
+.card,
+[class*="rounded-[14px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[16px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[18px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[20px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[22px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[24px]"]:not(input):not(textarea):not(select),
+[class*="rounded-[28px]"]:not(input):not(textarea):not(select),
+[class*="rounded-xl"]:not(input):not(textarea):not(select),
+[class*="rounded-2xl"]:not(input):not(textarea):not(select),
+[class*="rounded-3xl"]:not(input):not(textarea):not(select) {
+  border: none !important;
+  border-width: 0 !important;
+}
+
+/* Prevent hover border flash on cards, buttons & widgets */
+[class*="hover:border-"]:hover:not(input):not(textarea):not(select) {
+  border-color: transparent !important;
+  border-width: 0 !important;
 }

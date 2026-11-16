@@ -59,6 +59,7 @@ export const AccountSecurityModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
@@ -67,9 +68,10 @@ export const AccountSecurityModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center shadow-sm">
                   <ShieldCheck className="w-4 h-4 text-white" />
@@ -85,7 +87,7 @@ export const AccountSecurityModal: React.FC = () => {
             </div>
 
             {/* Biometrics Toggle */}
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1C2233]/60 mt-4 border border-slate-200 dark:border-[#273047]">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-[#1C2233]/60 mt-4">
               <div className="flex items-center space-x-3">
                 <Fingerprint className="w-5 h-5 text-[#635BFF]" />
                 <div>

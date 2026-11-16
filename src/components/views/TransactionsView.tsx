@@ -130,7 +130,7 @@ export const TransactionsView: React.FC = () => {
       <div className="flex items-center justify-between pt-1 flex-shrink-0">
         <button
           onClick={() => setActiveTab('home')}
-          className="w-10 h-10 rounded-full bg-white dark:bg-[#181E2E] border border-slate-200 dark:border-[#242E46] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#20283E] active:scale-95 transition-all shadow-sm cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white dark:bg-[#181E2E] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#20283E] active:scale-95 transition-all shadow-sm cursor-pointer"
           aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
@@ -142,8 +142,8 @@ export const TransactionsView: React.FC = () => {
           onClick={() => setShowSearchInput(!showSearchInput)}
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm cursor-pointer relative ${
             showSearchInput || filterPeriod !== 'all' || filterType !== 'all' || searchQuery
-              ? 'bg-[#635BFF] text-white border border-[#635BFF]'
-              : 'bg-white dark:bg-[#181E2E] border border-slate-200 dark:border-[#242E46] text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#20283E] active:scale-95'
+              ? 'bg-[#635BFF] text-white'
+              : 'bg-white dark:bg-[#181E2E] text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#20283E] active:scale-95'
           }`}
           aria-label="Search & Filter"
         >
@@ -164,7 +164,7 @@ export const TransactionsView: React.FC = () => {
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden flex-shrink-0"
           >
-            <div className="p-3.5 rounded-[22px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] flex flex-col space-y-3 shadow-md">
+            <div className="p-3.5 rounded-[22px] bg-white dark:bg-[#141824] flex flex-col space-y-3 shadow-md">
               {/* Search Bar Input */}
               <div className="relative">
                 <input
@@ -225,7 +225,7 @@ export const TransactionsView: React.FC = () => {
                       className={`py-1.5 px-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all text-center truncate ${
                         isActive
                           ? 'bg-[#635BFF] text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] text-slate-600 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-[#384566]'
+                          : 'bg-slate-100 dark:bg-[#1C2233] text-slate-600 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       {item.label}
@@ -254,7 +254,7 @@ export const TransactionsView: React.FC = () => {
                             : item.id === 'expense'
                             ? 'bg-[#F43F5E] text-white font-semibold'
                             : 'bg-slate-800 dark:bg-[#273047] text-white font-semibold'
-                          : 'bg-slate-100 dark:bg-[#1C2233]/70 border border-slate-200 dark:border-[#222A3D] text-slate-500 dark:text-[#64728E] hover:text-slate-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-[#1C2233]/70 text-slate-500 dark:text-[#64728E] hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       {item.label}
@@ -305,7 +305,7 @@ export const TransactionsView: React.FC = () => {
                       <div
                         key={tx.id}
                         onClick={() => setSelectedTransaction(tx)}
-                        className="flex items-center justify-between p-4 rounded-[22px] bg-white dark:bg-[#161B29] border border-slate-200 dark:border-[#20273D] hover:border-slate-300 dark:hover:border-[#5B4DF9] hover:bg-slate-50 dark:hover:bg-[#1A2031] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
+                        className="flex items-center justify-between p-4 rounded-[22px] bg-white dark:bg-[#161B29] hover:bg-slate-50 dark:hover:bg-[#1A2031] transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
                         title="Click to view, edit, or delete"
                       >
                         <div className="flex items-center space-x-3.5">
@@ -336,7 +336,7 @@ export const TransactionsView: React.FC = () => {
             <div className="pt-2">
               <button
                 onClick={() => setActiveModal('recordActionSheet')}
-                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-white dark:bg-[#161B29] border border-slate-200 dark:border-[#222B40] hover:border-[#635BFF] text-slate-900 dark:text-white text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer shadow-sm"
+                className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-[20px] bg-white dark:bg-[#161B29] text-slate-900 dark:text-white text-xs font-semibold hover:bg-slate-50 dark:hover:bg-[#1E253B] active:scale-[0.99] transition-all cursor-pointer shadow-sm"
               >
                 <Plus className="w-4 h-4 text-[#635BFF] stroke-[2.5]" />
                 <span>{t('add_custom_tx')}</span>

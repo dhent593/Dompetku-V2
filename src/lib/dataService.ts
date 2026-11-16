@@ -1,5 +1,5 @@
-import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget } from '@/types';
-import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS, INITIAL_DEBTS, INITIAL_ASSETS, INITIAL_BUDGETS } from './dummyData';
+import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
+import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS, INITIAL_DEBTS, INITIAL_ASSETS, INITIAL_BUDGETS, INITIAL_NOTES, INITIAL_WISHLISTS } from './dummyData';
 
 const STORAGE_KEYS = {
   USER: 'mypocket_user_v1',
@@ -9,6 +9,8 @@ const STORAGE_KEYS = {
   DEBTS: 'mypocket_debts_v1',
   ASSETS: 'mypocket_assets_v1',
   BUDGETS: 'mypocket_budgets_v1',
+  NOTES: 'mypocket_notes_v1',
+  WISHLISTS: 'mypocket_wishlists_v1',
   IS_LOGGED_IN: 'mypocket_auth_status_v1',
   IS_LOCKED: 'mypocket_is_locked_v1',
 };
@@ -60,14 +62,20 @@ class DataService {
 
   // --- User Profile ---
   getUser(): UserProfile {
-    if (!this.isBrowser()) return INITIAL_USER;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEYS.USER);
-      if (stored) return JSON.parse(stored);
-    } catch (e) {
-      console.error('Failed to load user profile from storage', e);
+    let user = { ...INITIAL_USER };
+    if (this.isBrowser()) {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEYS.USER);
+        if (stored) user = { ...user, ...JSON.parse(stored) };
+      } catch (e) {
+        console.error('Failed to load user profile from storage', e);
+      }
     }
-    return INITIAL_USER;
+    const pockets = this.getPockets();
+    const sumPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    user.balance = sumPockets;
+    user.totalBalance = sumPockets;
+    return user;
   }
 
   saveUser(user: UserProfile): void {
@@ -104,21 +112,41 @@ class DataService {
   // CREATE
   addTransaction(newTx: Omit<Transaction, 'id' | 'timestamp'>): Transaction {
     const transactions = this.getTransactions();
+    const pockets = this.getPockets();
+    const pktId = newTx.pocketId || (pockets.length > 0 ? pockets[0].id : undefined);
+    let pocketName = newTx.pocketName;
+
+    // Apply transaction to selected pocket
+    if (pktId) {
+      const pkt = pockets.find((p) => p.id === pktId);
+      if (pkt) {
+        if (newTx.type === 'income') {
+          pkt.balance += newTx.amount;
+        } else {
+          pkt.balance = Math.max(0, pkt.balance - newTx.amount);
+        }
+        pocketName = pkt.name;
+        this.savePockets(pockets);
+      }
+    }
+
+    // Recalculate user balance as the sum of all pockets
+    const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const user = this.getUser();
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
+    this.saveUser(user);
+
     const created: Transaction = {
       ...newTx,
+      pocketId: pktId,
+      pocketName,
       id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       timestamp: Date.now(),
     };
 
     const updated = [created, ...transactions];
     this.saveTransactions(updated);
-
-    // Update user balance
-    const user = this.getUser();
-    const balanceDelta = created.type === 'income' ? created.amount : -created.amount;
-    user.balance = Math.max(0, user.balance + balanceDelta);
-    user.totalBalance = Math.max(0, user.totalBalance + balanceDelta);
-    this.saveUser(user);
 
     return created;
   }
@@ -130,26 +158,52 @@ class DataService {
     if (index === -1) return null;
 
     const existing = transactions[index];
+    const pockets = this.getPockets();
 
-    // Revert old transaction effect on balance
-    const user = this.getUser();
-    const oldDelta = existing.type === 'income' ? existing.amount : -existing.amount;
-    user.balance = user.balance - oldDelta;
-    user.totalBalance = user.totalBalance - oldDelta;
+    // Revert old transaction on old pocket
+    if (existing.pocketId) {
+      const pkt = pockets.find((p) => p.id === existing.pocketId);
+      if (pkt) {
+        if (existing.type === 'income') {
+          pkt.balance = Math.max(0, pkt.balance - existing.amount);
+        } else {
+          pkt.balance += existing.amount;
+        }
+      }
+    }
 
     // Apply updates
     const updatedTx: Transaction = {
       ...existing,
       ...updates,
     };
+
+    // Apply new transaction on target pocket
+    const targetPocketId = updatedTx.pocketId || existing.pocketId;
+    if (targetPocketId) {
+      const pkt = pockets.find((p) => p.id === targetPocketId);
+      if (pkt) {
+        if (updatedTx.type === 'income') {
+          pkt.balance += updatedTx.amount;
+        } else {
+          pkt.balance = Math.max(0, pkt.balance - updatedTx.amount);
+        }
+        updatedTx.pocketId = targetPocketId;
+        updatedTx.pocketName = pkt.name;
+      }
+    }
+
+    this.savePockets(pockets);
+
+    // Recalculate user balance as the sum of all pockets
+    const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const user = this.getUser();
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
+    this.saveUser(user);
+
     transactions[index] = updatedTx;
     this.saveTransactions(transactions);
-
-    // Apply new transaction effect on balance
-    const newDelta = updatedTx.type === 'income' ? updatedTx.amount : -updatedTx.amount;
-    user.balance = Math.max(0, user.balance + newDelta);
-    user.totalBalance = Math.max(0, user.totalBalance + newDelta);
-    this.saveUser(user);
 
     return updatedTx;
   }
@@ -163,11 +217,25 @@ class DataService {
     const remaining = transactions.filter((t) => t.id !== id);
     this.saveTransactions(remaining);
 
-    // Revert balance effect
+    // Revert balance on pocket
+    const pockets = this.getPockets();
+    if (target.pocketId) {
+      const pkt = pockets.find((p) => p.id === target.pocketId);
+      if (pkt) {
+        if (target.type === 'income') {
+          pkt.balance = Math.max(0, pkt.balance - target.amount);
+        } else {
+          pkt.balance += target.amount;
+        }
+        this.savePockets(pockets);
+      }
+    }
+
+    // Recalculate user balance as the sum of all pockets
+    const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    const delta = target.type === 'income' ? -target.amount : target.amount;
-    user.balance = Math.max(0, user.balance + delta);
-    user.totalBalance = Math.max(0, user.totalBalance + delta);
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
     this.saveUser(user);
 
     return true;
@@ -205,12 +273,27 @@ class DataService {
       // update user card mask
       const user = this.getUser();
       user.cardNumberMask = newCard.cardNumberMask;
-      user.cardExpiry = newCard.cardExpiry;
+      user.cardExpiry = newCard.cardExpiry || '12/28';
       this.saveUser(user);
     }
     const updated = [...cards, newCard];
     this.saveCards(updated);
     return newCard;
+  }
+
+  updateCard(id: string, updates: Partial<Omit<PaymentCard, 'id'>>): PaymentCard | null {
+    const cards = this.getCards();
+    const index = cards.findIndex((c) => c.id === id);
+    if (index === -1) return null;
+    cards[index] = { ...cards[index], ...updates };
+    if (cards[index].isDefault && cards[index].cardNumberMask) {
+      const user = this.getUser();
+      user.cardNumberMask = cards[index].cardNumberMask;
+      if (cards[index].cardExpiry) user.cardExpiry = cards[index].cardExpiry;
+      this.saveUser(user);
+    }
+    this.saveCards(cards);
+    return cards[index];
   }
 
   deleteCard(id: string): boolean {
@@ -221,7 +304,7 @@ class DataService {
       remaining[0].isDefault = true;
       const user = this.getUser();
       user.cardNumberMask = remaining[0].cardNumberMask;
-      user.cardExpiry = remaining[0].cardExpiry;
+      user.cardExpiry = remaining[0].cardExpiry || '12/28';
       this.saveUser(user);
     }
     this.saveCards(remaining);
@@ -235,7 +318,7 @@ class DataService {
       if (c.isDefault) {
         const user = this.getUser();
         user.cardNumberMask = c.cardNumberMask;
-        user.cardExpiry = c.cardExpiry;
+        user.cardExpiry = c.cardExpiry || '12/28';
         this.saveUser(user);
       }
     });
@@ -271,22 +354,15 @@ class DataService {
       createdAt: Date.now(),
     };
 
-    // If an initial deposit was allocated, record it and adjust balance
-    if (newPocket.balance > 0) {
-      this.addTransaction({
-        title: `Setoran Awal ${newPocket.name}`,
-        category: 'other',
-        amount: newPocket.balance,
-        type: 'expense',
-        date: new Date().toISOString().split('T')[0],
-        dateGroup: 'TODAY',
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        note: `Setoran awal kantong ${newPocket.name}`,
-      });
-    }
-
     const updated = [...pockets, newPocket];
     this.savePockets(updated);
+
+    const totalPockets = updated.reduce((sum, p) => sum + p.balance, 0);
+    const user = this.getUser();
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
+    this.saveUser(user);
+
     return newPocket;
   }
 
@@ -301,30 +377,27 @@ class DataService {
     };
 
     this.savePockets(pockets);
+
+    const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const user = this.getUser();
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
+    this.saveUser(user);
+
     return pockets[index];
   }
 
   deletePocket(id: string): boolean {
     const pockets = this.getPockets();
-    const target = pockets.find((p) => p.id === id);
-    if (!target) return false;
-
-    // Refund any remaining balance in this pocket back to user main balance
-    if (target.balance > 0) {
-      this.addTransaction({
-        title: `Pengembalian ${target.name}`,
-        category: 'other',
-        amount: target.balance,
-        type: 'income',
-        date: new Date().toISOString().split('T')[0],
-        dateGroup: 'TODAY',
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        note: `Penutupan kantong ${target.name}`,
-      });
-    }
-
     const remaining = pockets.filter((p) => p.id !== id);
     this.savePockets(remaining);
+
+    const totalPockets = remaining.reduce((sum, p) => sum + p.balance, 0);
+    const user = this.getUser();
+    user.balance = totalPockets;
+    user.totalBalance = totalPockets;
+    this.saveUser(user);
+
     return true;
   }
 
@@ -593,6 +666,114 @@ class DataService {
     return true;
   }
 
+  // --- Financial Notes (CRUD) ---
+  getNotes(): NoteItem[] {
+    if (!this.isBrowser()) return INITIAL_NOTES;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.NOTES);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to load notes from storage', e);
+    }
+    return INITIAL_NOTES;
+  }
+
+  saveNotes(notes: NoteItem[]): void {
+    if (!this.isBrowser()) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+    } catch (e) {
+      console.error('Failed to save notes', e);
+    }
+  }
+
+  addNote(note: Omit<NoteItem, 'id' | 'createdAt'>): NoteItem {
+    const notes = this.getNotes();
+    const newNote: NoteItem = {
+      ...note,
+      id: `note_${Date.now()}`,
+      createdAt: Date.now(),
+    };
+    notes.unshift(newNote);
+    this.saveNotes(notes);
+    return newNote;
+  }
+
+  updateNote(id: string, updates: Partial<Omit<NoteItem, 'id' | 'createdAt'>>): NoteItem | null {
+    const notes = this.getNotes();
+    const index = notes.findIndex((n) => n.id === id);
+    if (index === -1) return null;
+    notes[index] = { ...notes[index], ...updates };
+    this.saveNotes(notes);
+    return notes[index];
+  }
+
+  deleteNote(id: string): boolean {
+    const notes = this.getNotes();
+    const filtered = notes.filter((n) => n.id !== id);
+    if (filtered.length === notes.length) return false;
+    this.saveNotes(filtered);
+    return true;
+  }
+
+  // --- Wishlist Items (CRUD) ---
+  getWishlists(): WishlistItem[] {
+    if (!this.isBrowser()) return INITIAL_WISHLISTS;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.WISHLISTS);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error('Failed to load wishlists from storage', e);
+    }
+    return INITIAL_WISHLISTS;
+  }
+
+  saveWishlists(wishlists: WishlistItem[]): void {
+    if (!this.isBrowser()) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.WISHLISTS, JSON.stringify(wishlists));
+    } catch (e) {
+      console.error('Failed to save wishlists', e);
+    }
+  }
+
+  addWishlistItem(item: Omit<WishlistItem, 'id' | 'createdAt'>): WishlistItem {
+    const wishlists = this.getWishlists();
+    const newItem: WishlistItem = {
+      ...item,
+      id: `wsh_${Date.now()}`,
+      createdAt: Date.now(),
+    };
+    wishlists.unshift(newItem);
+    this.saveWishlists(wishlists);
+    return newItem;
+  }
+
+  updateWishlistItem(id: string, updates: Partial<Omit<WishlistItem, 'id' | 'createdAt'>>): WishlistItem | null {
+    const wishlists = this.getWishlists();
+    const index = wishlists.findIndex((w) => w.id === id);
+    if (index === -1) {
+      const fallback = INITIAL_WISHLISTS.find((w) => w.id === id);
+      if (fallback) {
+        const updated = { ...fallback, ...updates };
+        wishlists.push(updated);
+        this.saveWishlists(wishlists);
+        return updated;
+      }
+      return null;
+    }
+    wishlists[index] = { ...wishlists[index], ...updates };
+    this.saveWishlists(wishlists);
+    return wishlists[index];
+  }
+
+  deleteWishlistItem(id: string): boolean {
+    const wishlists = this.getWishlists();
+    const filtered = wishlists.filter((w) => w.id !== id);
+    this.saveWishlists(filtered);
+    return true;
+  }
+
   // --- Reset to default mock data ---
   resetToDefaults(): void {
     if (!this.isBrowser()) return;
@@ -603,6 +784,8 @@ class DataService {
     localStorage.removeItem(STORAGE_KEYS.DEBTS);
     localStorage.removeItem(STORAGE_KEYS.ASSETS);
     localStorage.removeItem(STORAGE_KEYS.BUDGETS);
+    localStorage.removeItem(STORAGE_KEYS.NOTES);
+    localStorage.removeItem(STORAGE_KEYS.WISHLISTS);
     localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
     sessionStorage.removeItem(STORAGE_KEYS.IS_LOCKED);
   }

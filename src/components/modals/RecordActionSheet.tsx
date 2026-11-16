@@ -32,7 +32,7 @@ export const RecordActionSheet: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-white dark:bg-[#121622] border-t border-slate-200 dark:border-[#1C2233] rounded-t-[32px] px-6 pt-3 pb-8 shadow-2xl text-slate-900 dark:text-white relative"
+            className="w-full max-w-md bg-white dark:bg-[#121622] rounded-t-[32px] px-6 pt-3 pb-8 shadow-2xl text-slate-900 dark:text-white relative"
           >
             {/* Top Drag Indicator */}
             <div className="w-10 h-1 bg-slate-300 dark:bg-white/15 rounded-full mx-auto mb-4" />

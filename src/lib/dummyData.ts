@@ -1,4 +1,4 @@
-import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget } from '@/types';
+import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
 
 export const INITIAL_USER: UserProfile = {
   id: 'usr_01',
@@ -22,6 +22,10 @@ export const INITIAL_CARDS: PaymentCard[] = [
     cardExpiry: '08/30',
     brand: 'visa',
     isDefault: true,
+    bankName: 'Bank Mandiri',
+    accountNumber: '1370019283741',
+    accountHolder: 'Smith Doe',
+    colorGradient: 'from-blue-900 to-indigo-950',
   },
   {
     id: 'card_2',
@@ -30,6 +34,34 @@ export const INITIAL_CARDS: PaymentCard[] = [
     cardExpiry: '11/27',
     brand: 'mastercard',
     isDefault: false,
+    bankName: 'BCA (Bank Central Asia)',
+    accountNumber: '5220819238',
+    accountHolder: 'Smith Doe',
+    colorGradient: 'from-slate-900 to-blue-950',
+  },
+  {
+    id: 'card_3',
+    cardHolder: 'Smith Doe',
+    cardNumberMask: '.... 4402',
+    cardExpiry: '05/29',
+    brand: 'visa',
+    isDefault: false,
+    bankName: 'Bank BRI',
+    accountNumber: '020601002938531',
+    accountHolder: 'Smith Doe',
+    colorGradient: 'from-sky-900 to-slate-950',
+  },
+  {
+    id: 'card_4',
+    cardHolder: 'Smith Doe',
+    cardNumberMask: '.... 1198',
+    cardExpiry: '09/28',
+    brand: 'visa',
+    isDefault: false,
+    bankName: 'Bank Jago',
+    accountNumber: '1029384756',
+    accountHolder: 'Smith Doe',
+    colorGradient: 'from-violet-900 to-purple-950',
   },
 ];
 
@@ -284,4 +316,71 @@ export const INITIAL_BUDGETS: CategoryBudget[] = [
   { id: 'bdg_03', category: 'bill', monthlyLimit: 1200 },
   { id: 'bdg_04', category: 'travel', monthlyLimit: 800 },
   { id: 'bdg_05', category: 'entertainment', monthlyLimit: 500 },
+];
+
+export const INITIAL_NOTES: NoteItem[] = [
+  {
+    id: 'note_01',
+    title: 'Pelaporan SPT Tahunan Pajak',
+    content: 'Dokumen bukti potong 1721-A1 sudah diunduh dari HRD. Laporkan sebelum 31 Maret melalui DJP Online.',
+    date: '2026-11-10',
+    isPinned: true,
+    tag: 'Pajak',
+    createdAt: Date.now() - 86400000 * 6,
+  },
+  {
+    id: 'note_02',
+    title: 'Strategi Rebalancing Portofolio',
+    content: 'Alokasi portofolio: 50% Obligasi Negara FR/ORI, 30% Indeks Saham IDX30, 20% Pasar Uang untuk dana darurat cair.',
+    date: '2026-11-04',
+    isPinned: true,
+    tag: 'Investasi',
+    createdAt: Date.now() - 86400000 * 12,
+  },
+  {
+    id: 'note_03',
+    title: 'Catatan Polis Asuransi Kesehatan',
+    content: 'Nomor Polis: PRU-992019283. Rawat inap cashless di RS rekanan, klaim rawat jalan simpan kuitansi asli.',
+    date: '2026-10-18',
+    isPinned: false,
+    tag: 'Asuransi',
+    createdAt: Date.now() - 86400000 * 29,
+  },
+];
+
+export const INITIAL_WISHLISTS: WishlistItem[] = [
+  {
+    id: 'wsh_01',
+    title: 'MacBook Air M3 15-inch',
+    estimatedPrice: 21499000,
+    savedAmount: 8500000,
+    targetDate: '2027-02-15',
+    priority: 'high',
+    status: 'planned',
+    note: 'Warna Space Grey, 16GB RAM / 512GB SSD untuk produktivitas coding.',
+    pocketId: 'pkt_03',
+    createdAt: Date.now() - 86400000 * 14,
+  },
+  {
+    id: 'wsh_02',
+    title: 'Sepatu Lari Nike Pegasus 41',
+    estimatedPrice: 2099000,
+    savedAmount: 1500000,
+    targetDate: '2026-12-25',
+    priority: 'medium',
+    status: 'planned',
+    note: 'Ukuran 43 warna Phantom Black untuk lari pagi mingguan.',
+    createdAt: Date.now() - 86400000 * 8,
+  },
+  {
+    id: 'wsh_03',
+    title: 'Monitor Ergonomis 27" 4K',
+    estimatedPrice: 5800000,
+    savedAmount: 5800000,
+    targetDate: '2026-10-30',
+    priority: 'high',
+    status: 'purchased',
+    note: 'Sudah dibeli saat promo payday!',
+    createdAt: Date.now() - 86400000 * 45,
+  },
 ];

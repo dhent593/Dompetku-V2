@@ -12,26 +12,36 @@ import {
   Car,
   Building2,
   AlertCircle,
+  Wallet,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { formatCurrency } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const AddTransactionModal: React.FC = () => {
-  const { activeModal, setActiveModal, addTransaction } = useFinance();
-  const { t } = useLanguage();
+  const { user } = useAuth();
+  const { activeModal, setActiveModal, addTransaction, pockets } = useFinance();
+  const { t, language } = useLanguage();
 
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Transaction['category']>('shopping');
+  const [selectedPocketId, setSelectedPocketId] = useState<string>('');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const isOpen = activeModal === 'addTx' || activeModal === 'addIncome' || activeModal === 'addExpense';
 
   useEffect(() => {
+    if (pockets.length > 0) {
+      setSelectedPocketId((prev) => (pockets.some((p) => p.id === prev) ? prev : pockets[0].id));
+    } else {
+      setSelectedPocketId('');
+    }
     if (activeModal === 'addIncome') {
       setType('income');
       setCategory('salary');
@@ -41,7 +51,7 @@ export const AddTransactionModal: React.FC = () => {
       setCategory('shopping');
       setError(null);
     }
-  }, [activeModal]);
+  }, [activeModal, pockets]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,12 +65,37 @@ export const AddTransactionModal: React.FC = () => {
       return;
     }
 
+    if (pockets.length === 0 || !selectedPocketId) {
+      setError(
+        language === 'id'
+          ? 'Anda harus membuat kantong terlebih dahulu sebelum mencatat transaksi.'
+          : 'Please create a pocket first to record transactions.'
+      );
+      return;
+    }
+
+    const pkt = pockets.find((p) => p.id === selectedPocketId);
+    if (!pkt) {
+      setError(language === 'id' ? 'Kantong tidak ditemukan' : 'Pocket not found');
+      return;
+    }
+
+    if (type === 'expense' && num > pkt.balance) {
+      setError(
+        language === 'id'
+          ? `Saldo kantong "${pkt.name}" tidak mencukupi (Tersedia: ${formatCurrency(pkt.balance)})`
+          : `Insufficient balance in pocket "${pkt.name}" (Available: ${formatCurrency(pkt.balance)})`
+      );
+      return;
+    }
+
     addTransaction({
       title: title.trim(),
       amount: num,
       type,
       category,
       note: note.trim(),
+      pocketId: selectedPocketId,
     });
 
     setActiveModal(null);
@@ -87,6 +122,7 @@ export const AddTransactionModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
@@ -95,10 +131,11 @@ export const AddTransactionModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">
                 <div
                   className={`w-8 h-8 rounded-xl flex items-center justify-center !text-white shadow-sm ${
@@ -130,7 +167,7 @@ export const AddTransactionModal: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="flex flex-col space-y-3.5 pt-4">
               {/* Type Switcher */}
-              <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl border border-slate-200 dark:border-[#1C2233]">
+              <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => {
@@ -203,6 +240,79 @@ export const AddTransactionModal: React.FC = () => {
                 />
               </div>
 
+              {/* Pocket Selection (Only user's actual pockets - No "Saldo Utama") */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block">
+                    {type === 'income'
+                      ? language === 'id'
+                        ? 'Masukan Ke Kantong'
+                        : 'Deposit To Pocket'
+                      : language === 'id'
+                      ? 'Potong Dari Kantong'
+                      : 'Deduct From Pocket'}
+                  </label>
+                  <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] font-medium">
+                    {pockets.find((p) => p.id === selectedPocketId)?.name || ''}
+                  </span>
+                </div>
+
+                {pockets.length === 0 ? (
+                  <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between">
+                    <span className="text-[11px] text-amber-800 dark:text-amber-200 font-medium">
+                      {language === 'id'
+                        ? 'Belum ada kantong. Buat kantong dulu yuk!'
+                        : 'No pockets found. Please create one!'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal('addPocket')}
+                      className="px-3 py-1.5 rounded-lg bg-[#635BFF] hover:bg-[#564EE6] text-white text-[11px] font-bold shadow-xs cursor-pointer transition-colors"
+                    >
+                      + {language === 'id' ? 'Buat Kantong' : 'Create Pocket'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none -mx-1 px-1">
+                    {pockets.map((pkt) => {
+                      const isSelected = selectedPocketId === pkt.id;
+                      return (
+                        <button
+                          key={pkt.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedPocketId(pkt.id);
+                            setError(null);
+                          }}
+                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl border flex-shrink-0 transition-all cursor-pointer text-left ${
+                            isSelected
+                              ? type === 'income'
+                                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-[#10B981] ring-1 ring-[#10B981] shadow-xs'
+                                : 'bg-rose-50/60 dark:bg-rose-950/30 border-[#F43F5E] ring-1 ring-[#F43F5E] shadow-xs'
+                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#1C2233] border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#7B88A6]'
+                          }`}
+                        >
+                          <div
+                            className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0 pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white"
+                            style={{ backgroundColor: pkt.color }}
+                          >
+                            <Wallet className="w-3.5 h-3.5 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-bold block leading-tight text-slate-900 dark:text-white truncate max-w-[120px]">
+                              {pkt.name}
+                            </span>
+                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-[#10B981] block">
+                              {formatCurrency(pkt.balance)}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* Category Grid */}
               <div>
                 <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
@@ -234,7 +344,7 @@ export const AddTransactionModal: React.FC = () => {
               </div>
 
               {error && (
-                <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-200 dark:border-red-900/50">
+                <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>

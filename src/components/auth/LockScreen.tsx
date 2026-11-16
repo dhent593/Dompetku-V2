@@ -84,7 +84,7 @@ export const LockScreen: React.FC = () => {
                 else if (val === '⌫') handleKeypadBackspace();
                 else handleKeypadPress(val);
               }}
-              className="h-12 rounded-xl bg-[#141824] border border-[#1E2435] hover:bg-[#1E2435] active:scale-95 text-white font-bold text-lg flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              className="h-12 rounded-xl bg-[#141824] hover:bg-[#1E2435] active:scale-95 text-white font-bold text-lg flex items-center justify-center transition-all cursor-pointer shadow-sm"
             >
               {val === '⌫' ? <Delete className="w-5 h-5 text-[#8D9BB8]" /> : val}
             </button>

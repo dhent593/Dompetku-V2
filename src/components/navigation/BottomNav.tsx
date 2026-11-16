@@ -18,11 +18,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
 
   const leftTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'home', label: t('nav_home'), icon: Home },
-    { id: 'wallet', label: t('nav_wallet'), icon: Wallet },
+    { id: 'analytics', label: t('nav_analytics'), icon: PieChart },
   ];
 
   const rightTabs: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'analytics', label: t('nav_analytics'), icon: PieChart },
+    { id: 'wallet', label: t('nav_wallet'), icon: Wallet },
     { id: 'settings', label: t('nav_settings'), icon: Settings },
   ];
 

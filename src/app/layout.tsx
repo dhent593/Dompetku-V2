@@ -55,7 +55,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-[#F8FAFC] dark:bg-[#07090F] text-slate-900 dark:text-white transition-colors duration-200">
+      <body className="bg-[#F1F5F9] dark:bg-[#07090F] text-slate-900 dark:text-white transition-colors duration-200">
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

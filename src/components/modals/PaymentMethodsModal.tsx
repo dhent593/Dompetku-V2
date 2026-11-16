@@ -48,6 +48,7 @@ export const PaymentMethodsModal: React.FC = () => {
           initial="initial"
           animate="animate"
           exit="exit"
+          onClick={() => setActiveModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
         >
           <motion.div
@@ -56,9 +57,10 @@ export const PaymentMethodsModal: React.FC = () => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#1E2435]">
+            <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center shadow-sm">
                   <CreditCard className="w-4 h-4 text-white" />
@@ -94,10 +96,10 @@ export const PaymentMethodsModal: React.FC = () => {
                   {cards.map((card) => (
                     <div
                       key={card.id}
-                      className={`p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                      className={`p-4 rounded-2xl transition-all flex items-center justify-between ${
                         card.isDefault
-                          ? 'bg-white dark:bg-[#1C2233] border-[#635BFF] shadow-sm'
-                          : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#141824] border-slate-200 dark:border-[#1E2435] hover:border-slate-300 dark:hover:border-[#2E374F]'
+                          ? 'bg-white dark:bg-[#1C2233] ring-2 ring-[#635BFF] shadow-sm'
+                          : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#141824]'
                       }`}
                     >
                       <div className="flex items-center space-x-3">

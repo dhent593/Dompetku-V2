@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget } from '@/types';
+import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
 import { dataService } from '@/lib/dataService';
 import {
   CATEGORY_SUMMARIES,
@@ -11,6 +11,8 @@ import {
   INITIAL_DEBTS,
   INITIAL_ASSETS,
   INITIAL_BUDGETS,
+  INITIAL_NOTES,
+  INITIAL_WISHLISTS,
 } from '@/lib/dummyData';
 import { useAuth } from './AuthContext';
 
@@ -24,6 +26,16 @@ interface FinanceContextType {
   debts: DebtItem[];
   assets: AssetItem[];
   budgets: CategoryBudget[];
+  notes: NoteItem[];
+  setNotes: React.Dispatch<React.SetStateAction<NoteItem[]>>;
+  addNote: (note: Omit<NoteItem, 'id' | 'createdAt'>) => NoteItem;
+  updateNote: (id: string, updates: Partial<Omit<NoteItem, 'id' | 'createdAt'>>) => NoteItem | null;
+  deleteNote: (id: string) => boolean;
+  wishlists: WishlistItem[];
+  setWishlists: React.Dispatch<React.SetStateAction<WishlistItem[]>>;
+  addWishlistItem: (item: Omit<WishlistItem, 'id' | 'createdAt'>) => WishlistItem;
+  updateWishlistItem: (id: string, updates: Partial<Omit<WishlistItem, 'id' | 'createdAt'>>) => WishlistItem | null;
+  deleteWishlistItem: (id: string) => boolean;
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   activeModal: string | null;
@@ -38,6 +50,7 @@ interface FinanceContextType {
     amount: number;
     type: 'income' | 'expense';
     note?: string;
+    pocketId?: string;
   }) => Transaction;
   updateTransaction: (
     id: string,
@@ -45,6 +58,7 @@ interface FinanceContextType {
   ) => Transaction | null;
   deleteTransaction: (id: string) => boolean;
   addCard: (card: Omit<PaymentCard, 'id'>) => PaymentCard;
+  updateCard: (id: string, updates: Partial<Omit<PaymentCard, 'id'>>) => PaymentCard | null;
   deleteCard: (id: string) => boolean;
   setDefaultCard: (id: string) => void;
   addPocket: (pocket: Omit<Pocket, 'id' | 'createdAt'>) => Pocket;
@@ -79,6 +93,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [debts, setDebts] = useState<DebtItem[]>(INITIAL_DEBTS);
   const [assets, setAssets] = useState<AssetItem[]>(INITIAL_ASSETS);
   const [budgets, setBudgets] = useState<CategoryBudget[]>(INITIAL_BUDGETS);
+  const [notes, setNotes] = useState<NoteItem[]>(INITIAL_NOTES);
+  const [wishlists, setWishlists] = useState<WishlistItem[]>(INITIAL_WISHLISTS);
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -111,6 +127,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (loadedBudgets && loadedBudgets.length > 0) {
       setBudgets(loadedBudgets);
     }
+    const loadedNotes = dataService.getNotes();
+    if (loadedNotes && loadedNotes.length > 0) {
+      setNotes(loadedNotes);
+    }
+    const loadedWishlists = dataService.getWishlists();
+    if (loadedWishlists && loadedWishlists.length > 0) {
+      setWishlists(loadedWishlists);
+    }
   }, []);
 
   const addTransaction = (tx: {
@@ -119,6 +143,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     amount: number;
     type: 'income' | 'expense';
     note?: string;
+    pocketId?: string;
   }): Transaction => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', {
@@ -137,6 +162,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       time: timeStr,
       note: tx.note || '',
       cardNumber: user.cardNumberMask,
+      pocketId: tx.pocketId,
       iconName:
         tx.category === 'shopping'
           ? 'ShoppingBag'
@@ -158,6 +184,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
 
     setTransactions(dataService.getTransactions());
+    setPockets(dataService.getPockets());
     updateUser(dataService.getUser());
     return newTx;
   };
@@ -169,6 +196,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const updated = dataService.updateTransaction(id, updates);
     if (updated) {
       setTransactions(dataService.getTransactions());
+      setPockets(dataService.getPockets());
       updateUser(dataService.getUser());
     }
     return updated;
@@ -178,6 +206,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const ok = dataService.deleteTransaction(id);
     if (ok) {
       setTransactions(dataService.getTransactions());
+      setPockets(dataService.getPockets());
       updateUser(dataService.getUser());
     }
     return ok;
@@ -188,6 +217,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setCards(dataService.getCards());
     updateUser(dataService.getUser());
     return newCard;
+  };
+
+  const updateCard = (id: string, updates: Partial<Omit<PaymentCard, 'id'>>): PaymentCard | null => {
+    const updated = dataService.updateCard(id, updates);
+    if (updated) {
+      setCards(dataService.getCards());
+      updateUser(dataService.getUser());
+    }
+    return updated;
   };
 
   const deleteCard = (id: string): boolean => {
@@ -284,6 +322,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       category: 'transfer',
       amount,
       type: 'expense',
+      pocketId: pockets[0]?.id,
       note: note || `Fund transfer to ${recipient}`,
     });
 
@@ -300,6 +339,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       category: 'transfer',
       amount,
       type: 'expense',
+      pocketId: pockets[0]?.id,
       note: `Funds withdrawn to linked account`,
     });
 
@@ -365,6 +405,42 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
+  const addNote = (note: Omit<NoteItem, 'id' | 'createdAt'>): NoteItem => {
+    const newNote = dataService.addNote(note);
+    setNotes(dataService.getNotes());
+    return newNote;
+  };
+
+  const updateNote = (id: string, updates: Partial<Omit<NoteItem, 'id' | 'createdAt'>>): NoteItem | null => {
+    const res = dataService.updateNote(id, updates);
+    if (res) setNotes(dataService.getNotes());
+    return res;
+  };
+
+  const deleteNote = (id: string): boolean => {
+    const res = dataService.deleteNote(id);
+    if (res) setNotes(dataService.getNotes());
+    return res;
+  };
+
+  const addWishlistItem = (item: Omit<WishlistItem, 'id' | 'createdAt'>): WishlistItem => {
+    const newItem = dataService.addWishlistItem(item);
+    setWishlists((prev) => [newItem, ...prev.filter((w) => w.id !== newItem.id)]);
+    return newItem;
+  };
+
+  const updateWishlistItem = (id: string, updates: Partial<Omit<WishlistItem, 'id' | 'createdAt'>>): WishlistItem | null => {
+    const res = dataService.updateWishlistItem(id, updates);
+    setWishlists((prev) => prev.map((w) => (w.id === id ? { ...w, ...updates } : w)));
+    return res;
+  };
+
+  const deleteWishlistItem = (id: string): boolean => {
+    dataService.deleteWishlistItem(id);
+    setWishlists((prev) => prev.filter((w) => w.id !== id));
+    return true;
+  };
+
   const resetData = () => {
     dataService.resetToDefaults();
     setTransactions(INITIAL_TRANSACTIONS);
@@ -373,6 +449,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setDebts(INITIAL_DEBTS);
     setAssets(INITIAL_ASSETS);
     setBudgets(INITIAL_BUDGETS);
+    setNotes(INITIAL_NOTES);
+    setWishlists(INITIAL_WISHLISTS);
     setCategories(CATEGORY_SUMMARIES);
     setSelectedPocket(null);
     updateUser(dataService.getUser());
@@ -401,6 +479,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         debts,
         assets,
         budgets,
+        notes,
+        setNotes,
+        addNote,
+        updateNote,
+        deleteNote,
+        wishlists,
+        setWishlists,
+        addWishlistItem,
+        updateWishlistItem,
+        deleteWishlistItem,
         activeTab,
         setActiveTab,
         activeModal,
@@ -413,6 +501,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         updateTransaction,
         deleteTransaction,
         addCard,
+        updateCard,
         deleteCard,
         setDefaultCard,
         addPocket,
