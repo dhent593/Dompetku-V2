@@ -1,6 +1,50 @@
 import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
 import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS, INITIAL_DEBTS, INITIAL_ASSETS, INITIAL_BUDGETS, INITIAL_NOTES, INITIAL_WISHLISTS } from './dummyData';
 
+export const STARTER_POCKETS: Pocket[] = [
+  {
+    id: 'pkt_mandiri',
+    name: 'Mandiri',
+    balance: 0,
+    targetAmount: 10000000,
+    color: '#635BFF',
+    iconName: 'WalletCards',
+    createdAt: 1700000000000,
+  },
+  {
+    id: 'pkt_bri',
+    name: 'BRI',
+    balance: 0,
+    targetAmount: 5000000,
+    color: '#0284C7',
+    iconName: 'Building2',
+    createdAt: 1700000000001,
+  },
+  {
+    id: 'pkt_shoppepay',
+    name: 'ShoppePay',
+    balance: 0,
+    targetAmount: 2000000,
+    color: '#EA580C',
+    iconName: 'Smartphone',
+    createdAt: 1700000000002,
+  },
+];
+
+export const EMPTY_USER: UserProfile = {
+  id: '',
+  name: '',
+  email: '',
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+  cardNumberMask: '.... ----',
+  cardExpiry: '--/--',
+  balance: 0,
+  totalBalance: 0,
+  isOnline: false,
+  biometricEnabled: false,
+  mPinHash: '1234',
+};
+
 const STORAGE_KEYS = {
   USER: 'mypocket_user_v1',
   TRANSACTIONS: 'mypocket_transactions_v1',
@@ -20,15 +64,41 @@ class DataService {
     return typeof window !== 'undefined';
   }
 
+  isDemoUser(): boolean {
+    if (!this.isBrowser()) return false;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.USER);
+      if (stored) {
+        const u = JSON.parse(stored);
+        return u?.email === 'smith@example.com';
+      }
+    } catch {}
+    return false;
+  }
+
+  private getKey(baseKey: string): string {
+    if (!this.isBrowser()) return baseKey;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.USER);
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u?.email && u.email !== 'smith@example.com') {
+          const safeEmail = u.email.replace(/[^a-zA-Z0-9_]/g, '_');
+          return `${baseKey}_${safeEmail}`;
+        }
+      }
+    } catch {}
+    return baseKey;
+  }
+
   // --- Auth Session ---
   getAuthState(): boolean {
-    if (!this.isBrowser()) return true;
+    if (!this.isBrowser()) return false;
     try {
       const state = localStorage.getItem(STORAGE_KEYS.IS_LOGGED_IN);
-      // Default to true for smooth first-time demo, but toggleable on logout/login
-      return state === null ? true : state === 'true';
+      return state === 'true';
     } catch {
-      return true;
+      return false;
     }
   }
 
@@ -62,20 +132,22 @@ class DataService {
 
   // --- User Profile ---
   getUser(): UserProfile {
-    let user = { ...INITIAL_USER };
     if (this.isBrowser()) {
       try {
         const stored = localStorage.getItem(STORAGE_KEYS.USER);
-        if (stored) user = { ...user, ...JSON.parse(stored) };
+        if (stored) {
+          const user: UserProfile = JSON.parse(stored);
+          const pockets = this.getPockets();
+          const sumPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+          user.balance = sumPockets;
+          user.totalBalance = sumPockets;
+          return user;
+        }
       } catch (e) {
         console.error('Failed to load user profile from storage', e);
       }
     }
-    const pockets = this.getPockets();
-    const sumPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
-    user.balance = sumPockets;
-    user.totalBalance = sumPockets;
-    return user;
+    return this.isDemoUser() ? { ...INITIAL_USER } : { ...EMPTY_USER };
   }
 
   saveUser(user: UserProfile): void {
@@ -90,20 +162,20 @@ class DataService {
   // --- Transactions (CRUD) ---
   // READ
   getTransactions(): Transaction[] {
-    if (!this.isBrowser()) return INITIAL_TRANSACTIONS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_TRANSACTIONS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.TRANSACTIONS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load transactions from storage', e);
     }
-    return INITIAL_TRANSACTIONS;
+    return this.isDemoUser() ? INITIAL_TRANSACTIONS : [];
   }
 
   saveTransactions(transactions: Transaction[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.TRANSACTIONS), JSON.stringify(transactions));
     } catch (e) {
       console.error('Failed to save transactions', e);
     }
@@ -243,20 +315,20 @@ class DataService {
 
   // --- Payment Cards (CRUD) ---
   getCards(): PaymentCard[] {
-    if (!this.isBrowser()) return INITIAL_CARDS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_CARDS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.CARDS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.CARDS));
       if (stored) return JSON.parse(stored);
     } catch {
       // fallback
     }
-    return INITIAL_CARDS;
+    return this.isDemoUser() ? INITIAL_CARDS : [];
   }
 
   saveCards(cards: PaymentCard[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.CARDS), JSON.stringify(cards));
     } catch (e) {
       console.error('Failed to save cards', e);
     }
@@ -327,20 +399,20 @@ class DataService {
 
   // --- Pockets (Kantong Saya) CRUD ---
   getPockets(): Pocket[] {
-    if (!this.isBrowser()) return INITIAL_POCKETS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_POCKETS : STARTER_POCKETS;
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.POCKETS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.POCKETS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load pockets', e);
     }
-    return INITIAL_POCKETS;
+    return this.isDemoUser() ? INITIAL_POCKETS : STARTER_POCKETS;
   }
 
   savePockets(pockets: Pocket[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.POCKETS, JSON.stringify(pockets));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.POCKETS), JSON.stringify(pockets));
     } catch (e) {
       console.error('Failed to save pockets', e);
     }
@@ -468,20 +540,20 @@ class DataService {
 
   // --- Debts & Installments (CRUD + Pay via Pocket) ---
   getDebts(): DebtItem[] {
-    if (!this.isBrowser()) return INITIAL_DEBTS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_DEBTS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.DEBTS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.DEBTS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load debts from storage', e);
     }
-    return INITIAL_DEBTS;
+    return this.isDemoUser() ? INITIAL_DEBTS : [];
   }
 
   saveDebts(debts: DebtItem[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.DEBTS, JSON.stringify(debts));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.DEBTS), JSON.stringify(debts));
     } catch (e) {
       console.error('Failed to save debts', e);
     }
@@ -569,20 +641,20 @@ class DataService {
 
   // --- Assets (CRUD) ---
   getAssets(): AssetItem[] {
-    if (!this.isBrowser()) return INITIAL_ASSETS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_ASSETS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.ASSETS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.ASSETS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load assets from storage', e);
     }
-    return INITIAL_ASSETS;
+    return this.isDemoUser() ? INITIAL_ASSETS : [];
   }
 
   saveAssets(assets: AssetItem[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.ASSETS), JSON.stringify(assets));
     } catch (e) {
       console.error('Failed to save assets', e);
     }
@@ -620,20 +692,20 @@ class DataService {
 
   // --- Category Budgets ---
   getBudgets(): CategoryBudget[] {
-    if (!this.isBrowser()) return INITIAL_BUDGETS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_BUDGETS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.BUDGETS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.BUDGETS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load budgets from storage', e);
     }
-    return INITIAL_BUDGETS;
+    return this.isDemoUser() ? INITIAL_BUDGETS : [];
   }
 
   saveBudgets(budgets: CategoryBudget[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(budgets));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.BUDGETS), JSON.stringify(budgets));
     } catch (e) {
       console.error('Failed to save budgets', e);
     }
@@ -668,20 +740,20 @@ class DataService {
 
   // --- Financial Notes (CRUD) ---
   getNotes(): NoteItem[] {
-    if (!this.isBrowser()) return INITIAL_NOTES;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_NOTES : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.NOTES);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.NOTES));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load notes from storage', e);
     }
-    return INITIAL_NOTES;
+    return this.isDemoUser() ? INITIAL_NOTES : [];
   }
 
   saveNotes(notes: NoteItem[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.NOTES), JSON.stringify(notes));
     } catch (e) {
       console.error('Failed to save notes', e);
     }
@@ -718,20 +790,20 @@ class DataService {
 
   // --- Wishlist Items (CRUD) ---
   getWishlists(): WishlistItem[] {
-    if (!this.isBrowser()) return INITIAL_WISHLISTS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_WISHLISTS : [];
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.WISHLISTS);
+      const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.WISHLISTS));
       if (stored) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load wishlists from storage', e);
     }
-    return INITIAL_WISHLISTS;
+    return this.isDemoUser() ? INITIAL_WISHLISTS : [];
   }
 
   saveWishlists(wishlists: WishlistItem[]): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.WISHLISTS, JSON.stringify(wishlists));
+      localStorage.setItem(this.getKey(STORAGE_KEYS.WISHLISTS), JSON.stringify(wishlists));
     } catch (e) {
       console.error('Failed to save wishlists', e);
     }
@@ -774,7 +846,25 @@ class DataService {
     return true;
   }
 
-  // --- Reset to default mock data ---
+  // --- Reset & Clear Methods ---
+  clearUserData(email?: string): void {
+    if (!this.isBrowser()) return;
+    const targetEmail = email || this.getUser().email;
+    if (targetEmail && targetEmail !== 'smith@example.com') {
+      const safeEmail = targetEmail.replace(/[^a-zA-Z0-9_]/g, '_');
+      localStorage.removeItem(`${STORAGE_KEYS.TRANSACTIONS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.POCKETS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.CARDS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.DEBTS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.ASSETS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.BUDGETS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.NOTES}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.WISHLISTS}_${safeEmail}`);
+    } else {
+      this.resetToDefaults();
+    }
+  }
+
   resetToDefaults(): void {
     if (!this.isBrowser()) return;
     localStorage.removeItem(STORAGE_KEYS.USER);

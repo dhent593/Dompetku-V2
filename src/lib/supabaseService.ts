@@ -788,4 +788,49 @@ export class SupabaseService {
 
     return !error;
   }
+
+  // ========================================================
+  // 11. RESET USER DATA
+  // ========================================================
+  static async resetUserData(): Promise<boolean> {
+    if (!this.isConfigured()) return true;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return true;
+
+    try {
+      await supabase.from('debt_payments').delete().eq('user_id', user.id);
+      await supabase.from('transactions').delete().eq('user_id', user.id);
+      await supabase.from('debts').delete().eq('user_id', user.id);
+      await supabase.from('assets').delete().eq('user_id', user.id);
+      await supabase.from('category_budgets').delete().eq('user_id', user.id);
+      await supabase.from('notes').delete().eq('user_id', user.id);
+      await supabase.from('wishlists').delete().eq('user_id', user.id);
+      await supabase.from('payment_cards').delete().eq('user_id', user.id);
+      await supabase.from('pockets').delete().eq('user_id', user.id);
+
+      await supabase.from('profiles').update({
+        balance: 0,
+        total_balance: 0,
+      }).eq('id', user.id);
+
+      // Re-provision starter pockets
+      const starterList = [
+        { name: 'Mandiri', balance: 0, target_amount: 10000000, color: '#635BFF', icon_name: 'WalletCards' },
+        { name: 'BRI', balance: 0, target_amount: 5000000, color: '#0284C7', icon_name: 'Building2' },
+        { name: 'ShoppePay', balance: 0, target_amount: 2000000, color: '#EA580C', icon_name: 'Smartphone' },
+      ];
+
+      for (const sp of starterList) {
+        await supabase.from('pockets').insert({
+          user_id: user.id,
+          ...sp,
+        });
+      }
+
+      return true;
+    } catch (err) {
+      console.error('Failed to reset user data in Supabase', err);
+      return false;
+    }
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
@@ -27,10 +27,24 @@ import { MovePocketFundsModal } from '@/components/modals/MovePocketFundsModal';
 import { DebtManagementModal } from '@/components/modals/DebtManagementModal';
 import { AssetManagementModal } from '@/components/modals/AssetManagementModal';
 import { MonthlyBudgetModal } from '@/components/modals/MonthlyBudgetModal';
+import { ResetDatabaseModal } from '@/components/modals/ResetDatabaseModal';
 
 export default function App() {
   const { isLoggedIn } = useAuth();
   const { activeTab, setActiveTab } = useFinance();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#0A0D15] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   // If not authenticated, render Login Screen with fast smooth bottom-up reveal
   if (!isLoggedIn) {
@@ -121,6 +135,7 @@ export default function App() {
       <DebtManagementModal />
       <AssetManagementModal />
       <MonthlyBudgetModal />
+      <ResetDatabaseModal />
 
       {/* Security Overlay / mPIN Lock Screen */}
       <LockScreen />

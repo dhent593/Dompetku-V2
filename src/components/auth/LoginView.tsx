@@ -30,8 +30,8 @@ export const LoginView: React.FC = () => {
   const { t } = useLanguage();
 
   const [authMode, setAuthMode] = useState<'mpin' | 'email' | 'register'>('email');
-  const [email, setEmail] = useState('smith@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
