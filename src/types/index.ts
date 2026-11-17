@@ -1,9 +1,24 @@
 export type TransactionType = 'income' | 'expense';
 
+export type TransactionCategory =
+  | 'shopping'
+  | 'bill'
+  | 'salary'
+  | 'travel'
+  | 'investment'
+  | 'food'
+  | 'entertainment'
+  | 'health'
+  | 'education'
+  | 'family'
+  | 'gift'
+  | 'transfer'
+  | 'other';
+
 export interface Transaction {
   id: string;
   title: string;
-  category: 'shopping' | 'bill' | 'salary' | 'travel' | 'investment' | 'food' | 'entertainment' | 'transfer' | 'other';
+  category: TransactionCategory;
   amount: number;
   type: TransactionType;
   date: string; // ISO date string (YYYY-MM-DD)

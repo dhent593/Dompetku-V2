@@ -27,7 +27,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { POCKET_COLOR_PRESETS } from '@/lib/dummyData';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 
 const AVAILABLE_ICONS = [
   { id: 'Wallet', icon: Wallet, label: 'Dompet' },
@@ -67,7 +67,7 @@ export const PocketDetailModal: React.FC = () => {
   useEffect(() => {
     if (selectedPocket) {
       setEditName(selectedPocket.name);
-      setEditTarget(selectedPocket.targetAmount.toString());
+      setEditTarget(formatNumberInput(selectedPocket.targetAmount));
       setEditColor(selectedPocket.color);
       setEditIcon(selectedPocket.iconName || 'Shield');
       setMode('view');
@@ -117,7 +117,7 @@ export const PocketDetailModal: React.FC = () => {
 
   const handleTransferFunds = (e: React.FormEvent) => {
     e.preventDefault();
-    const num = parseFloat(amountInput);
+    const num = parseNumberInput(amountInput);
     if (isNaN(num) || num <= 0) {
       setFeedbackMsg({ text: 'Nominal transfer tidak valid', isError: true });
       return;
@@ -154,7 +154,7 @@ export const PocketDetailModal: React.FC = () => {
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
-    const targetNum = parseFloat(editTarget);
+    const targetNum = parseNumberInput(editTarget);
     if (!editName.trim() || isNaN(targetNum) || targetNum <= 0) {
       setFeedbackMsg({ text: 'Nama atau target saldo tidak valid', isError: true });
       return;
@@ -422,12 +422,10 @@ export const PocketDetailModal: React.FC = () => {
                       </span>
                     </div>
                     <input
-                      type="number"
-                      step="1"
-                      min="1"
-                      max={selectedPocket.balance}
+                      type="text"
+                      inputMode="numeric"
                       value={amountInput}
-                      onChange={(e) => setAmountInput(e.target.value)}
+                      onChange={(e) => setAmountInput(formatNumberInput(e.target.value))}
                       placeholder="0"
                       className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                       autoFocus
@@ -443,7 +441,7 @@ export const PocketDetailModal: React.FC = () => {
                             key={fraction}
                             type="button"
                             onClick={() =>
-                              setAmountInput(calculated > 0 ? calculated.toString() : '0')
+                              setAmountInput(calculated > 0 ? formatNumberInput(calculated) : '0')
                             }
                             className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer text-center transition-colors"
                           >
@@ -453,7 +451,7 @@ export const PocketDetailModal: React.FC = () => {
                       })}
                       <button
                         type="button"
-                        onClick={() => setAmountInput(selectedPocket.balance.toString())}
+                        onClick={() => setAmountInput(formatNumberInput(selectedPocket.balance))}
                         className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer text-center transition-colors"
                       >
                         {t('all_balance')}
@@ -511,11 +509,10 @@ export const PocketDetailModal: React.FC = () => {
                   {t('pocket_target_input')}
                 </label>
                 <input
-                  type="number"
-                  step="1"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
                   value={editTarget}
-                  onChange={(e) => setEditTarget(e.target.value)}
+                  onChange={(e) => setEditTarget(formatNumberInput(e.target.value))}
                   className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />

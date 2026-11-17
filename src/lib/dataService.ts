@@ -213,11 +213,14 @@ class DataService {
   }
 
   // CREATE
-  addTransaction(newTx: Omit<Transaction, 'id' | 'timestamp'>): Transaction {
+  addTransaction(newTx: Omit<Transaction, 'id' | 'timestamp'> & { timestamp?: number }): Transaction {
     const transactions = this.getTransactions();
     const pockets = this.getPockets();
-    const pktId = newTx.pocketId || (pockets.length > 0 ? pockets[0].id : undefined);
-    let pocketName = newTx.pocketName;
+    const isNonePocket = newTx.pocketId === 'none' || newTx.pocketId === 'manual';
+    const pktId = isNonePocket
+      ? undefined
+      : newTx.pocketId || (pockets.length > 0 ? pockets[0].id : undefined);
+    let pocketName = isNonePocket ? (newTx.pocketName || 'Pembayaran Manual') : newTx.pocketName;
 
     // Apply transaction to selected pocket
     if (pktId) {
@@ -245,10 +248,10 @@ class DataService {
       pocketId: pktId,
       pocketName,
       id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      timestamp: Date.now(),
+      timestamp: newTx.timestamp || Date.now(),
     };
 
-    const updated = [created, ...transactions];
+    const updated = [created, ...transactions].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     this.saveTransactions(updated);
 
     return created;
@@ -622,19 +625,33 @@ class DataService {
     return true;
   }
 
-  payDebtInstallment(debtId: string, amount: number, pocketId: string): boolean {
+  payDebtInstallment(debtId: string, amount: number, pocketId?: string, debtTitle?: string): boolean {
     if (amount <= 0) return false;
     const debts = this.getDebts();
-    const debt = debts.find((d) => d.id === debtId);
+    // 1. Match by exact id
+    let debt = debts.find((d) => d.id === debtId);
+    // 2. Match by title if id mismatch (e.g. Supabase UUID vs local id)
+    if (!debt && debtTitle) {
+      debt = debts.find((d) => d.title.toLowerCase() === debtTitle.toLowerCase() && d.remainingAmount > 0);
+    }
+    // 3. Fallback matching in case debtId is Supabase UUID while localStorage has temporary debt_ ID
+    if (!debt) {
+      debt = debts.find((d) => d.remainingAmount > 0 && (d.id.includes(debtId) || debtId.includes(d.id)));
+    }
+    if (!debt && debts.length === 1) {
+      debt = debts[0];
+    }
     if (!debt || debt.remainingAmount <= 0) return false;
 
-    // Deduct from pocket
-    const pockets = this.getPockets();
-    const pocket = pockets.find((p) => p.id === pocketId);
-    if (!pocket || pocket.balance < amount) return false;
+    const isManualPay = !pocketId || pocketId === 'none' || pocketId === 'manual';
+    let pocketName = 'Pembayaran Manual';
 
-    pocket.balance -= amount;
-    this.savePockets(pockets);
+    if (!isManualPay) {
+      const pockets = this.getPockets();
+      const pocket = pockets.find((p) => p.id === pocketId);
+      if (!pocket || pocket.balance < amount) return false;
+      pocketName = pocket.name;
+    }
 
     // Update debt
     const actualPay = Math.min(amount, debt.remainingAmount);
@@ -650,12 +667,12 @@ class DataService {
       id: `dp_${Date.now()}`,
       date: todayStr,
       amount: actualPay,
-      pocketName: pocket.name,
+      pocketName: isManualPay ? 'Pembayaran Manual / Tunai' : pocketName,
     });
     debt.paymentHistory = newHistory;
     this.saveDebts(debts);
 
-    // Record expense transaction
+    // Record expense transaction (addTransaction will deduct from pocket only if pocketId !== 'none')
     this.addTransaction({
       title: `Cicilan: ${debt.title}`,
       category: 'bill',
@@ -664,7 +681,11 @@ class DataService {
       date: todayStr,
       dateGroup: 'TODAY',
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      note: `Bayar cicilan ke ${debt.lender} via kantong ${pocket.name}`,
+      note: isManualPay
+        ? `Bayar cicilan ke ${debt.lender} (Manual / Tanpa Kantong)`
+        : `Bayar cicilan ke ${debt.lender} via kantong ${pocketName}`,
+      pocketId: isManualPay ? 'none' : pocketId,
+      pocketName: isManualPay ? 'Pembayaran Manual' : pocketName,
     });
 
     return true;

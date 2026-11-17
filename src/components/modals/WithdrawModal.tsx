@@ -6,7 +6,7 @@ import { X, Landmark, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const WithdrawModal: React.FC = () => {
@@ -22,7 +22,7 @@ export const WithdrawModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const num = parseFloat(amount);
+    const num = parseNumberInput(amount);
     if (isNaN(num) || num <= 0) {
       setError('Nominal tidak valid / Invalid amount');
       return;
@@ -112,12 +112,11 @@ export const WithdrawModal: React.FC = () => {
                     <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">{t('available_label')}: {formatCurrency(user.totalBalance)}</span>
                   </div>
                   <input
-                    type="number"
-                    step="1"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
                     value={amount}
                     onChange={(e) => {
-                      setAmount(e.target.value);
+                      setAmount(formatNumberInput(e.target.value));
                       setError(null);
                     }}
                     placeholder="0"
@@ -126,11 +125,11 @@ export const WithdrawModal: React.FC = () => {
                   />
                   {/* Quick Pills */}
                   <div className="flex items-center space-x-2 mt-2">
-                    {[100, 500, 1000].map((val) => (
+                    {[50000, 100000, 500000, 1000000].map((val) => (
                       <button
                         key={val}
                         type="button"
-                        onClick={() => setAmount(val.toString())}
+                        onClick={() => setAmount(formatNumberInput(val))}
                         className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
                       >
                         {formatCurrency(val)}
@@ -138,7 +137,7 @@ export const WithdrawModal: React.FC = () => {
                     ))}
                     <button
                       type="button"
-                      onClick={() => setAmount(user.totalBalance.toString())}
+                      onClick={() => setAmount(formatNumberInput(user.totalBalance))}
                       className="text-[11px] font-semibold py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer transition-colors"
                     >
                       {t('all_balance')}

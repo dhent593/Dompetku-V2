@@ -4,33 +4,28 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  ShoppingBag,
-  Wifi,
   ArrowDownLeft,
   ArrowUpRight,
-  Utensils,
-  Car,
-  Building2,
   AlertCircle,
-  Wallet,
+  Calendar,
+  ChevronDown,
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const AddTransactionModal: React.FC = () => {
-  const { user } = useAuth();
   const { activeModal, setActiveModal, addTransaction, pockets } = useFinance();
   const { t, language } = useLanguage();
 
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [category, setCategory] = useState<Transaction['category']>('shopping');
+  const [category, setCategory] = useState<Transaction['category']>('food');
   const [selectedPocketId, setSelectedPocketId] = useState<string>('');
+  const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -48,20 +43,22 @@ export const AddTransactionModal: React.FC = () => {
       setError(null);
     } else if (activeModal === 'addExpense') {
       setType('expense');
-      setCategory('shopping');
+      setCategory('food');
       setError(null);
     }
+    // Always default to today on open
+    setDate(new Date().toISOString().split('T')[0]);
   }, [activeModal, pockets]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const num = parseFloat(amount);
+    const num = parseNumberInput(amount);
     if (!title.trim()) {
       setError(t('title_label'));
       return;
     }
     if (isNaN(num) || num <= 0) {
-      setError('Nominal tidak valid / Invalid amount');
+      setError(language === 'id' ? 'Nominal tidak valid' : 'Invalid amount');
       return;
     }
 
@@ -96,22 +93,41 @@ export const AddTransactionModal: React.FC = () => {
       category,
       note: note.trim(),
       pocketId: selectedPocketId,
+      date: date || new Date().toISOString().split('T')[0],
     });
 
     setActiveModal(null);
     setTitle('');
     setAmount('');
+    setDate(new Date().toISOString().split('T')[0]);
     setNote('');
+    setError(null);
   };
 
-  const categories: { id: Transaction['category']; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'shopping', label: t('shopping'), icon: ShoppingBag },
-    { id: 'bill', label: t('bill'), icon: Wifi },
-    { id: 'salary', label: t('salary'), icon: ArrowDownLeft },
-    { id: 'food', label: t('food'), icon: Utensils },
-    { id: 'travel', label: t('travel'), icon: Car },
-    { id: 'investment', label: t('investment'), icon: Building2 },
+  const expenseCategories: { id: Transaction['category']; label: string }[] = [
+    { id: 'food', label: language === 'id' ? '🍔 Makanan & Minuman' : '🍔 Food & Dining' },
+    { id: 'shopping', label: language === 'id' ? '🛍️ Belanja & Kebutuhan' : '🛍️ Shopping & Groceries' },
+    { id: 'bill', label: language === 'id' ? '⚡ Tagihan & Utilitas (Listrik, Air, Wifi)' : '⚡ Bills & Utilities' },
+    { id: 'travel', label: language === 'id' ? '🚗 Transportasi & Perjalanan' : '🚗 Transportation & Travel' },
+    { id: 'entertainment', label: language === 'id' ? '🎬 Hiburan, Langganan & Hobi' : '🎬 Entertainment & Hobbies' },
+    { id: 'health', label: language === 'id' ? '💊 Kesehatan & Medis' : '💊 Health & Medical' },
+    { id: 'education', label: language === 'id' ? '📚 Pendidikan & Kursus' : '📚 Education & Courses' },
+    { id: 'family', label: language === 'id' ? '🏠 Kebutuhan Rumah & Keluarga' : '🏠 Household & Family' },
+    { id: 'gift', label: language === 'id' ? '🎁 Hadiah, Donasi & Sedekah' : '🎁 Gifts & Donations' },
+    { id: 'investment', label: language === 'id' ? '📈 Investasi & Tabungan' : '📈 Investments' },
+    { id: 'transfer', label: language === 'id' ? '🔄 Transfer Keluar' : '🔄 Transfer Out' },
+    { id: 'other', label: language === 'id' ? '📦 Lain-lain' : '📦 Others' },
   ];
+
+  const incomeCategories: { id: Transaction['category']; label: string }[] = [
+    { id: 'salary', label: language === 'id' ? '💰 Gaji & Upah Bulanan' : '💰 Salary & Wages' },
+    { id: 'investment', label: language === 'id' ? '📈 Hasil Investasi & Dividen' : '📈 Investment Profits' },
+    { id: 'gift', label: language === 'id' ? '🎁 Bonus, THR & Hadiah' : '🎁 Bonus & Gifts' },
+    { id: 'transfer', label: language === 'id' ? '🔄 Transfer Masuk' : '🔄 Transfer In' },
+    { id: 'other', label: language === 'id' ? '📦 Lain-lain' : '📦 Others' },
+  ];
+
+  const selectedPocket = pockets.find((p) => p.id === selectedPocketId);
 
   return (
     <AnimatePresence>
@@ -123,7 +139,7 @@ export const AddTransactionModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
         >
           <motion.div
             key="addtx-modal"
@@ -132,79 +148,111 @@ export const AddTransactionModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none"
+            className="w-full max-w-sm rounded-[28px] bg-white dark:bg-[#121622] p-5 sm:p-6 shadow-2xl border border-slate-200/80 dark:border-[#222A3E] text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4">
+            {/* Header: Clean & Typographic */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-[#1E2538]">
               <div className="flex items-center space-x-2.5">
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center !text-white shadow-sm ${
-                    type === 'income' ? 'bg-[#10B981]' : 'bg-[#F43F5E]'
+                  className={`w-7 h-7 rounded-xl flex items-center justify-center shadow-xs ${
+                    type === 'income'
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   {type === 'income' ? (
-                    <ArrowDownLeft className="w-4 h-4 stroke-[2.5] !text-white stroke-white" />
+                    <ArrowDownLeft className="w-4 h-4 stroke-[2.2]" />
                   ) : (
-                    <ArrowUpRight className="w-4 h-4 stroke-[2.5] !text-white stroke-white" />
+                    <ArrowUpRight className="w-4 h-4 stroke-[2.2]" />
                   )}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    {type === 'income' ? t('record_income_title') : t('record_expense_title')}
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                    {language === 'id'
+                      ? type === 'income'
+                        ? 'Catat Pemasukan'
+                        : 'Catat Pengeluaran'
+                      : type === 'income'
+                      ? 'Record Income'
+                      : 'Record Expense'}
                   </h3>
                   <span className="text-[11px] text-slate-500 dark:text-[#7B88A6]">
-                    {type === 'income' ? 'Uang Masuk (+)' : 'Uang Keluar (-)'}
+                    {language === 'id' ? 'Arus kas keuangan' : 'Financial cash flow'}
                   </span>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer transition-colors"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
+                aria-label="Close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col space-y-3.5 pt-4">
-              {/* Type Switcher */}
-              <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl">
+            <form onSubmit={handleSubmit} className="flex flex-col space-y-3.5 pt-3.5">
+              {/* Type Switcher: iOS/Fintech Segmented Control */}
+              <div className="flex bg-slate-100 dark:bg-[#0B0E17] p-1 rounded-2xl border border-slate-200/60 dark:border-[#1E2538]">
                 <button
                   type="button"
                   onClick={() => {
                     setType('expense');
-                    setCategory('shopping');
+                    setCategory('food');
+                    setError(null);
                   }}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                     type === 'expense'
-                      ? 'bg-[#F43F5E] !text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#1C2233] text-rose-500 dark:text-rose-400 font-bold shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
-                  <span className={type === 'expense' ? '!text-white font-bold' : ''}>
-                    {t('expense_type')}
-                  </span>
+                  <span>{t('expense_type')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setType('income');
                     setCategory('salary');
+                    setError(null);
                   }}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                     type === 'income'
-                      ? 'bg-[#10B981] !text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#1C2233] text-emerald-500 dark:text-emerald-400 font-bold shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
                   }`}
                 >
-                  <span className={type === 'income' ? '!text-white font-bold' : ''}>
-                    {t('income_type')}
-                  </span>
+                  <span>{t('income_type')}</span>
                 </button>
               </div>
 
-              {/* Title Input */}
+              {/* Nominal Input (Thousand Dot Separator) */}
               <div>
-                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block mb-1">
+                  {t('amount_label')}
+                </label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-xs font-bold text-slate-400 dark:text-slate-500 select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={amount}
+                    onChange={(e) => {
+                      setAmount(formatNumberInput(e.target.value));
+                      setError(null);
+                    }}
+                    placeholder="0"
+                    className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl pl-10 pr-3.5 py-2.5 text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#556380] focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Judul Transaksi */}
+              <div>
+                <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block mb-1">
                   {t('title_label')}
                 </label>
                 <input
@@ -214,36 +262,59 @@ export const AddTransactionModal: React.FC = () => {
                     setTitle(e.target.value);
                     setError(null);
                   }}
-                  placeholder="e.g. Netflix Subscription"
-                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
+                  placeholder={
+                    type === 'income'
+                      ? 'e.g. Gaji Bulanan, Bonus Proyek'
+                      : 'e.g. Belanja Bulanan, Makan Siang'
+                  }
+                  className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#556380] focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors"
                   required
                 />
               </div>
 
-              {/* Amount Input */}
+              {/* Tanggal Transaksi (Manual Date Picker with Quick Chips) */}
               <div>
-                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
-                  {t('amount_label')}
-                </label>
-                <input
-                  type="number"
-                  step="1"
-                  min="1"
-                  value={amount}
-                  onChange={(e) => {
-                    setAmount(e.target.value);
-                    setError(null);
-                  }}
-                  placeholder="0"
-                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
-                  required
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block">
+                    {language === 'id' ? 'Tanggal Transaksi' : 'Transaction Date'}
+                  </label>
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setDate(new Date().toISOString().split('T')[0])}
+                      className="text-[10px] font-semibold text-[#635BFF] hover:underline cursor-pointer"
+                    >
+                      {language === 'id' ? 'Hari Ini' : 'Today'}
+                    </button>
+                    <span className="text-[10px] text-slate-400">•</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const y = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                        setDate(y.toISOString().split('T')[0]);
+                      }}
+                      className="text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer"
+                    >
+                      {language === 'id' ? 'Kemarin' : 'Yesterday'}
+                    </button>
+                  </div>
+                </div>
+                <div className="relative flex items-center">
+                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl pl-10 pr-3.5 py-2 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer"
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Pocket Selection (Only user's actual pockets - No "Saldo Utama") */}
+              {/* Dropdown Pilihan Kantong */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block">
+                  <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block">
                     {type === 'income'
                       ? language === 'id'
                         ? 'Masukan Ke Kantong'
@@ -252,13 +323,15 @@ export const AddTransactionModal: React.FC = () => {
                       ? 'Potong Dari Kantong'
                       : 'Deduct From Pocket'}
                   </label>
-                  <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] font-medium">
-                    {pockets.find((p) => p.id === selectedPocketId)?.name || ''}
-                  </span>
+                  {selectedPocket && (
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
+                      Saldo: {formatCurrency(selectedPocket.balance)}
+                    </span>
+                  )}
                 </div>
 
                 {pockets.length === 0 ? (
-                  <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between">
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-between">
                     <span className="text-[11px] text-amber-800 dark:text-amber-200 font-medium">
                       {language === 'id'
                         ? 'Belum ada kantong. Buat kantong dulu yuk!'
@@ -267,80 +340,77 @@ export const AddTransactionModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveModal('addPocket')}
-                      className="px-3 py-1.5 rounded-lg bg-[#635BFF] hover:bg-[#564EE6] text-white text-[11px] font-bold shadow-xs cursor-pointer transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-[#635BFF] hover:bg-[#564EE6] text-white text-[11px] font-bold shadow-xs cursor-pointer transition-colors"
                     >
-                      + {language === 'id' ? 'Buat Kantong' : 'Create Pocket'}
+                      + {language === 'id' ? 'Buat' : 'Create'}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex space-x-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none -mx-1 px-1">
-                    {pockets.map((pkt) => {
-                      const isSelected = selectedPocketId === pkt.id;
-                      return (
-                        <button
+                  <div className="relative">
+                    <select
+                      value={selectedPocketId}
+                      onChange={(e) => {
+                        setSelectedPocketId(e.target.value);
+                        setError(null);
+                      }}
+                      className="w-full appearance-none bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer pr-10"
+                    >
+                      {pockets.map((pkt) => (
+                        <option
                           key={pkt.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedPocketId(pkt.id);
-                            setError(null);
-                          }}
-                          className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl border flex-shrink-0 transition-all cursor-pointer text-left ${
-                            isSelected
-                              ? type === 'income'
-                                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-[#10B981] ring-1 ring-[#10B981] shadow-xs'
-                                : 'bg-rose-50/60 dark:bg-rose-950/30 border-[#F43F5E] ring-1 ring-[#F43F5E] shadow-xs'
-                              : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#1C2233] border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#7B88A6]'
-                          }`}
+                          value={pkt.id}
+                          className="bg-white dark:bg-[#141824] text-slate-900 dark:text-white py-1"
                         >
-                          <div
-                            className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0 pocket-icon-badge [&>svg]:text-white [&>svg]:stroke-white"
-                            style={{ backgroundColor: pkt.color }}
-                          >
-                            <Wallet className="w-3.5 h-3.5 text-white" />
-                          </div>
-                          <div>
-                            <span className="text-[11px] font-bold block leading-tight text-slate-900 dark:text-white truncate max-w-[120px]">
-                              {pkt.name}
-                            </span>
-                            <span className="text-[10px] font-semibold text-emerald-600 dark:text-[#10B981] block">
-                              {formatCurrency(pkt.balance)}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                          {pkt.name} — Saldo: {formatCurrency(pkt.balance)}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Category Grid */}
+              {/* Dropdown Kategori */}
               <div>
-                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
+                <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block mb-1.5">
                   {t('category_label')}
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {categories.map((c) => {
-                    const Icon = c.icon;
-                    const isSelected = category === c.id;
-                    return (
-                      <button
+                <div className="relative">
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as Transaction['category'])}
+                    className="w-full appearance-none bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer pr-10"
+                  >
+                    {(type === 'income' ? incomeCategories : expenseCategories).map((c) => (
+                      <option
                         key={c.id}
-                        type="button"
-                        onClick={() => setCategory(c.id)}
-                        className={`flex items-center space-x-1.5 p-2 rounded-xl border text-[11px] font-medium transition-all cursor-pointer ${
-                          isSelected
-                            ? type === 'income'
-                              ? 'bg-[#10B981] border-[#10B981] !text-white shadow-sm font-semibold'
-                              : 'bg-[#F43F5E] border-[#F43F5E] !text-white shadow-sm font-semibold'
-                            : 'bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] border-slate-200 dark:border-[#273047] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white'
-                        }`}
+                        value={c.id}
+                        className="bg-white dark:bg-[#141824] text-slate-900 dark:text-white py-1"
                       >
-                        <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? '!text-white stroke-white' : 'text-slate-600 dark:text-[#7B88A6]'}`} />
-                        <span className={`truncate ${isSelected ? '!text-white font-semibold' : ''}`}>{c.label}</span>
-                      </button>
-                    );
-                  })}
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
                 </div>
+              </div>
+
+              {/* Catatan (Opsional) */}
+              <div>
+                <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block mb-1">
+                  {language === 'id' ? 'Catatan (Opsional)' : 'Notes (Optional)'}
+                </label>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Pembelian di kasir / transfer"
+                  className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#556380] focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors"
+                />
               </div>
 
               {error && (
@@ -350,18 +420,13 @@ export const AddTransactionModal: React.FC = () => {
                 </div>
               )}
 
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.97 }}
+              {/* Tombol Simpan Transaksi (Brand Primary #635BFF) */}
+              <button
                 type="submit"
-                className={`w-full py-3.5 rounded-xl !text-white text-xs font-bold tracking-wide active:scale-95 transition-all mt-2 cursor-pointer shadow-sm ${
-                  type === 'income'
-                    ? 'bg-[#10B981] hover:bg-[#059669]'
-                    : 'bg-[#F43F5E] hover:bg-[#E11D48]'
-                }`}
+                className="w-full py-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold tracking-wide active:scale-95 transition-all shadow-sm cursor-pointer mt-1"
               >
-                <span className="!text-white font-bold">{t('save_tx')}</span>
-              </motion.button>
+                <span className="text-white font-bold">{t('save_tx')}</span>
+              </button>
             </form>
           </motion.div>
         </motion.div>

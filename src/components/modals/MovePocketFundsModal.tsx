@@ -24,7 +24,7 @@ import {
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import confetti from 'canvas-confetti';
 
 export const MovePocketFundsModal: React.FC = () => {
@@ -99,7 +99,7 @@ export const MovePocketFundsModal: React.FC = () => {
       setError('Pilih kantong asal dan tujuan yang valid');
       return;
     }
-    const num = parseFloat(amount);
+    const num = parseNumberInput(amount);
     if (isNaN(num) || num <= 0) {
       setError('Nominal transfer harus lebih besar dari 0');
       return;
@@ -289,13 +289,11 @@ export const MovePocketFundsModal: React.FC = () => {
                     {t('amount_label')}
                   </label>
                   <input
-                    type="number"
-                    step="1"
-                    min="1"
-                    max={sourcePocket?.balance || 0}
+                    type="text"
+                    inputMode="numeric"
                     value={amount}
                     onChange={(e) => {
-                      setAmount(e.target.value);
+                      setAmount(formatNumberInput(e.target.value));
                       setError(null);
                     }}
                     placeholder="0"
@@ -313,7 +311,7 @@ export const MovePocketFundsModal: React.FC = () => {
                             key={fraction}
                             type="button"
                             onClick={() =>
-                              setAmount(calculated > 0 ? calculated.toString() : '0')
+                              setAmount(calculated > 0 ? formatNumberInput(calculated) : '0')
                             }
                             className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer text-center transition-colors"
                           >
@@ -323,7 +321,7 @@ export const MovePocketFundsModal: React.FC = () => {
                       })}
                       <button
                         type="button"
-                        onClick={() => setAmount(sourcePocket.balance.toString())}
+                        onClick={() => setAmount(formatNumberInput(sourcePocket.balance))}
                         className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer text-center transition-colors"
                       >
                         {t('all_balance')}

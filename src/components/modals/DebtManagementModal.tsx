@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { DebtItem } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -90,23 +90,25 @@ export const DebtManagementModal: React.FC = () => {
     e.preventDefault();
     if (!selectedDebtForPay) return;
 
-    const amountNum = parseFloat(payAmount);
+    const amountNum = parseNumberInput(payAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
       setFeedbackMsg({ text: language === 'id' ? 'Nominal bayar tidak valid' : 'Invalid payment amount', isError: true });
       return;
     }
-    if (!selectedPocketId) {
-      setFeedbackMsg({ text: language === 'id' ? 'Pilih kantong sumber saldo' : 'Select source pocket', isError: true });
-      return;
+
+    const isManualPay = !selectedPocketId || selectedPocketId === 'none';
+    let pocketName = language === 'id' ? 'Pembayaran Manual / Tunai' : 'Manual / Cash Payment';
+
+    if (!isManualPay) {
+      const pocket = pockets.find((p) => p.id === selectedPocketId);
+      if (!pocket || pocket.balance < amountNum) {
+        setFeedbackMsg({ text: language === 'id' ? 'Saldo kantong tidak mencukupi' : 'Pocket balance insufficient', isError: true });
+        return;
+      }
+      pocketName = pocket.name;
     }
 
-    const pocket = pockets.find((p) => p.id === selectedPocketId);
-    if (!pocket || pocket.balance < amountNum) {
-      setFeedbackMsg({ text: language === 'id' ? 'Saldo kantong tidak mencukupi' : 'Pocket balance insufficient', isError: true });
-      return;
-    }
-
-    const ok = payDebtInstallment(selectedDebtForPay.id, amountNum, selectedPocketId);
+    const ok = payDebtInstallment(selectedDebtForPay.id, amountNum, selectedPocketId, selectedDebtForPay.title);
     if (ok) {
       if (amountNum >= selectedDebtForPay.remainingAmount) {
         import('canvas-confetti')
@@ -117,7 +119,13 @@ export const DebtManagementModal: React.FC = () => {
           .catch(() => {});
       }
       setFeedbackMsg({
-        text: language === 'id' ? `Berhasil membayar ${formatCurrency(amountNum)} via ${pocket.name}` : `Payment of ${formatCurrency(amountNum)} successful via ${pocket.name}`,
+        text: isManualPay
+          ? language === 'id'
+            ? `Berhasil membayar ${formatCurrency(amountNum)} (Tanpa potong kantong)`
+            : `Payment of ${formatCurrency(amountNum)} successful (Manual / Cash)`
+          : language === 'id'
+          ? `Berhasil membayar ${formatCurrency(amountNum)} via ${pocketName}`
+          : `Payment of ${formatCurrency(amountNum)} successful via ${pocketName}`,
         isError: false,
       });
       setTimeout(() => {
@@ -125,13 +133,15 @@ export const DebtManagementModal: React.FC = () => {
         setPayAmount('');
         setFeedbackMsg(null);
       }, 1500);
+    } else {
+      setFeedbackMsg({ text: language === 'id' ? 'Gagal memproses pembayaran cicilan' : 'Payment failed', isError: true });
     }
   };
 
   // Submit new debt
   const handleAddDebtSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amountNum = parseFloat(newTotalAmount);
+    const amountNum = parseNumberInput(newTotalAmount);
     if (!newTitle.trim() || isNaN(amountNum) || amountNum <= 0) {
       setFormError(language === 'id' ? 'Nama hutang dan nominal wajib diisi' : 'Title and amount are required');
       return;
@@ -301,11 +311,11 @@ export const DebtManagementModal: React.FC = () => {
                     {language === 'id' ? 'Nominal Pembayaran (Rp)' : 'Payment Amount (Rp)'}
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                    placeholder="e.g. 500000"
-                    max={selectedDebtForPay.remainingAmount}
+                    onChange={(e) => setPayAmount(formatNumberInput(e.target.value))}
+                    placeholder="e.g. 500.000"
                     className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     required
                   />
@@ -315,7 +325,9 @@ export const DebtManagementModal: React.FC = () => {
                       type="button"
                       onClick={() =>
                         setPayAmount(
-                          Math.round(selectedDebtForPay.totalAmount / (selectedDebtForPay.installmentCount || 1)).toString()
+                          formatNumberInput(
+                            Math.round(selectedDebtForPay.totalAmount / (selectedDebtForPay.installmentCount || 1))
+                          )
                         )
                       }
                       className="text-[11px] py-1 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-slate-300 font-medium transition-colors"
@@ -324,7 +336,7 @@ export const DebtManagementModal: React.FC = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPayAmount(selectedDebtForPay.remainingAmount.toString())}
+                      onClick={() => setPayAmount(formatNumberInput(selectedDebtForPay.remainingAmount))}
                       className="text-[11px] py-1 px-2 rounded-lg bg-[#635BFF]/10 text-[#635BFF] hover:bg-[#635BFF]/20 font-semibold transition-colors"
                     >
                       {language === 'id' ? 'Lunasi Semua' : 'Pay Full'}
@@ -337,7 +349,29 @@ export const DebtManagementModal: React.FC = () => {
                   <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
                     {language === 'id' ? 'Bayar Melalui Kantong' : 'Pay via Pocket'}
                   </label>
-                  <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-0.5">
+                  <div className="grid grid-cols-1 gap-1.5 max-h-40 overflow-y-auto pr-0.5">
+                    {/* Option 1: Jangan potong kantong manapun */}
+                    <div
+                      onClick={() => setSelectedPocketId('none')}
+                      className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${
+                        selectedPocketId === 'none'
+                          ? 'bg-white dark:bg-[#1C2233] ring-2 ring-[#635BFF] shadow-xs'
+                          : 'bg-slate-50 hover:bg-slate-100 dark:bg-[#111520]'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-[#252E44]">
+                          <span className="text-xs">🚫</span>
+                        </div>
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                          {language === 'id' ? 'Jangan potong kantong (Bayar Manual)' : 'Do not deduct from pocket (Manual)'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        {language === 'id' ? 'Tanpa Potongan' : 'No Deduction'}
+                      </span>
+                    </div>
+
                     {pockets.map((pkt) => {
                       const isSelected = selectedPocketId === pkt.id;
                       return (
@@ -471,12 +505,14 @@ export const DebtManagementModal: React.FC = () => {
                             onClick={() => {
                               setSelectedDebtForPay(d);
                               setPayAmount(
-                                Math.min(
-                                  d.remainingAmount,
-                                  Math.round(d.totalAmount / (d.installmentCount || 1))
-                                ).toString()
+                                formatNumberInput(
+                                  Math.min(
+                                    d.remainingAmount,
+                                    Math.round(d.totalAmount / (d.installmentCount || 1))
+                                  )
+                                )
                               );
-                              if (pockets.length > 0) setSelectedPocketId(pockets[0].id);
+                              setSelectedPocketId(pockets[0]?.id || 'none');
                             }}
                             className="text-xs font-semibold py-1.5 px-3 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] !text-white active:scale-95 transition-all shadow-xs cursor-pointer flex items-center space-x-1"
                           >
@@ -535,9 +571,10 @@ export const DebtManagementModal: React.FC = () => {
                     {language === 'id' ? 'Total Hutang (Rp)' : 'Total Amount (Rp)'}
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={newTotalAmount}
-                    onChange={(e) => setNewTotalAmount(e.target.value)}
+                    onChange={(e) => setNewTotalAmount(formatNumberInput(e.target.value))}
                     placeholder="0"
                     className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     required

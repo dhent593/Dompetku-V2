@@ -38,7 +38,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { NoteItem, WishlistItem, PaymentCard, AssetItem, DebtItem, CategoryBudget, Transaction } from '@/types';
 
 type SubViewType = 'hub' | 'pockets' | 'debts' | 'assets' | 'budgets' | 'bank_accounts' | 'notes' | 'wishlist';
@@ -232,15 +232,15 @@ export const WalletView: React.FC = () => {
   // Add / Edit Asset Submission
   const handleSaveAsset = (e: React.FormEvent) => {
     e.preventDefault();
-    const purchaseNum = parseFloat(newAssetPurchasePrice);
-    const currentNum = parseFloat(newAssetCurrentValue);
-    if (!newAssetName.trim() || isNaN(purchaseNum) || isNaN(currentNum)) return;
+    const purchaseNum = parseNumberInput(newAssetPurchasePrice);
+    const currentNum = parseNumberInput(newAssetCurrentValue);
+    if (!newAssetName.trim() || isNaN(currentNum) || currentNum <= 0) return;
 
     if (editingAsset) {
       updateAsset(editingAsset.id, {
         name: newAssetName.trim(),
         category: newAssetCategory,
-        purchasePrice: purchaseNum,
+        purchasePrice: purchaseNum > 0 ? purchaseNum : currentNum,
         currentValue: currentNum,
         notes: newAssetNotes.trim() || undefined,
       });
@@ -249,7 +249,7 @@ export const WalletView: React.FC = () => {
       addAsset({
         name: newAssetName.trim(),
         category: newAssetCategory,
-        purchasePrice: purchaseNum,
+        purchasePrice: purchaseNum > 0 ? purchaseNum : currentNum,
         currentValue: currentNum,
         purchaseDate: new Date().toISOString().split('T')[0],
         notes: newAssetNotes.trim() || undefined,
@@ -268,7 +268,7 @@ export const WalletView: React.FC = () => {
   // Add / Edit Budget Submission
   const handleSaveBudget = (e: React.FormEvent) => {
     e.preventDefault();
-    const limitNum = parseFloat(newBudgetLimit);
+    const limitNum = parseNumberInput(newBudgetLimit);
     if (isNaN(limitNum) || limitNum <= 0) return;
 
     setCategoryBudget(newBudgetCategory, limitNum);
@@ -306,7 +306,7 @@ export const WalletView: React.FC = () => {
   const handleCreateWishlist = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWishTitle.trim()) return;
-    const parsedPrice = parseFloat(newWishPrice) || 0;
+    const parsedPrice = parseNumberInput(newWishPrice) || 0;
     addWishlistItem({
       title: newWishTitle.trim(),
       estimatedPrice: parsedPrice,
@@ -332,8 +332,8 @@ export const WalletView: React.FC = () => {
     setSelectedDebtDetail(debt);
     const count = debt.installmentCount && debt.installmentCount > 0 ? debt.installmentCount : 12;
     const perInstallment = Math.round(debt.totalAmount / count);
-    setDebtPayAmount(String(Math.min(perInstallment, debt.remainingAmount)));
-    setDebtPayPocketId(pockets[0]?.id || '');
+    setDebtPayAmount(formatNumberInput(Math.min(perInstallment, debt.remainingAmount)));
+    setDebtPayPocketId(pockets[0]?.id || 'none');
     setDebtPayError(null);
   };
 
@@ -341,31 +341,42 @@ export const WalletView: React.FC = () => {
   const handlePayInstallment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDebtDetail) return;
-    const amountNum = parseFloat(debtPayAmount);
+    const amountNum = parseNumberInput(debtPayAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
       setDebtPayError(language === 'id' ? 'Nominal cicilan tidak valid' : 'Invalid payment amount');
       return;
     }
-    const pocket = pockets.find((p) => p.id === debtPayPocketId);
-    if (!pocket) {
-      setDebtPayError(language === 'id' ? 'Pilih kantong sumber saldo' : 'Select source pocket');
-      return;
-    }
-    if (pocket.balance < amountNum) {
-      setDebtPayError(
-        language === 'id'
-          ? `Saldo ${pocket.name} tidak mencukupi (${formatCurrency(pocket.balance)})`
-          : `Insufficient funds in ${pocket.name} (${formatCurrency(pocket.balance)})`
-      );
-      return;
+
+    const isManualPay = !debtPayPocketId || debtPayPocketId === 'none';
+    let pocketName = language === 'id' ? 'Pembayaran Manual / Tunai' : 'Manual / Cash Payment';
+
+    if (!isManualPay) {
+      const pocket = pockets.find((p) => p.id === debtPayPocketId);
+      if (!pocket) {
+        setDebtPayError(language === 'id' ? 'Pilih kantong sumber saldo' : 'Select source pocket');
+        return;
+      }
+      if (pocket.balance < amountNum) {
+        setDebtPayError(
+          language === 'id'
+            ? `Saldo ${pocket.name} tidak mencukupi (${formatCurrency(pocket.balance)})`
+            : `Insufficient funds in ${pocket.name} (${formatCurrency(pocket.balance)})`
+        );
+        return;
+      }
+      pocketName = pocket.name;
     }
 
-    const success = payDebtInstallment(selectedDebtDetail.id, amountNum, debtPayPocketId);
+    const success = payDebtInstallment(selectedDebtDetail.id, amountNum, debtPayPocketId, selectedDebtDetail.title);
     if (success) {
       setToastMessage(
-        language === 'id'
-          ? `Cicilan ${formatCurrency(amountNum)} berhasil dibayar dari ${pocket.name}!`
-          : `Payment of ${formatCurrency(amountNum)} recorded from ${pocket.name}!`
+        isManualPay
+          ? language === 'id'
+            ? `Cicilan ${formatCurrency(amountNum)} berhasil dibayar (Tanpa potong kantong)!`
+            : `Payment of ${formatCurrency(amountNum)} recorded (Manual / Cash)!`
+          : language === 'id'
+          ? `Cicilan ${formatCurrency(amountNum)} berhasil dibayar dari ${pocketName}!`
+          : `Payment of ${formatCurrency(amountNum)} recorded from ${pocketName}!`
       );
       setTimeout(() => setToastMessage(null), 2500);
       setSelectedDebtDetail(null);
@@ -377,7 +388,7 @@ export const WalletView: React.FC = () => {
   // Create New Debt
   const handleCreateDebt = (e: React.FormEvent) => {
     e.preventDefault();
-    const totalNum = parseFloat(newDebtTotal);
+    const totalNum = parseNumberInput(newDebtTotal);
     if (!newDebtTitle.trim() || isNaN(totalNum) || totalNum <= 0) return;
 
     const countNum = parseInt(newDebtInstallments) || 12;
@@ -1184,8 +1195,8 @@ export const WalletView: React.FC = () => {
                           setEditingAsset(asset);
                           setNewAssetName(asset.name);
                           setNewAssetCategory(asset.category);
-                          setNewAssetPurchasePrice(String(asset.purchasePrice));
-                          setNewAssetCurrentValue(String(asset.currentValue));
+                          setNewAssetPurchasePrice(formatNumberInput(asset.purchasePrice));
+                          setNewAssetCurrentValue(formatNumberInput(asset.currentValue));
                           setNewAssetNotes(asset.notes || '');
                           setShowAddAssetModal(true);
                         }}
@@ -1308,7 +1319,7 @@ export const WalletView: React.FC = () => {
                           onClick={() => {
                             setEditingBudget(b);
                             setNewBudgetCategory(b.category);
-                            setNewBudgetLimit(String(b.monthlyLimit));
+                            setNewBudgetLimit(formatNumberInput(b.monthlyLimit));
                             setShowAddBudgetModal(true);
                           }}
                           className="p-4 rounded-[20px] bg-white dark:bg-[#141824] shadow-sm hover:shadow transition-all cursor-pointer group"
@@ -1810,12 +1821,12 @@ export const WalletView: React.FC = () => {
                       {language === 'id' ? 'Harga Beli (Rp)' : 'Purchase Price'}
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       required
-                      min="0"
-                      placeholder="Contoh: 25000000"
+                      placeholder="Contoh: 25.000.000"
                       value={newAssetPurchasePrice}
-                      onChange={(e) => setNewAssetPurchasePrice(e.target.value)}
+                      onChange={(e) => setNewAssetPurchasePrice(formatNumberInput(e.target.value))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>
@@ -1824,12 +1835,12 @@ export const WalletView: React.FC = () => {
                       {language === 'id' ? 'Nilai Sekarang (Rp)' : 'Current Value'}
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       required
-                      min="0"
-                      placeholder="Contoh: 30000000"
+                      placeholder="Contoh: 30.000.000"
                       value={newAssetCurrentValue}
-                      onChange={(e) => setNewAssetCurrentValue(e.target.value)}
+                      onChange={(e) => setNewAssetCurrentValue(formatNumberInput(e.target.value))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>
@@ -1927,12 +1938,12 @@ export const WalletView: React.FC = () => {
                     {language === 'id' ? 'Batas Limit Bulanan (Rp)' : 'Monthly Limit (Rp)'}
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="1000"
-                    placeholder="Contoh: 1500000"
+                    placeholder="Contoh: 1.500.000"
                     value={newBudgetLimit}
-                    onChange={(e) => setNewBudgetLimit(e.target.value)}
+                    onChange={(e) => setNewBudgetLimit(formatNumberInput(e.target.value))}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                   />
                 </div>
@@ -2102,11 +2113,12 @@ export const WalletView: React.FC = () => {
                       Estimasi Harga (Rp)
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       required
-                      placeholder="Contoh: 15000000"
+                      placeholder="Contoh: 15.000.000"
                       value={newWishPrice}
-                      onChange={(e) => setNewWishPrice(e.target.value)}
+                      onChange={(e) => setNewWishPrice(formatNumberInput(e.target.value))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>
@@ -2326,6 +2338,11 @@ export const WalletView: React.FC = () => {
                             onChange={(e) => setDebtPayPocketId(e.target.value)}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-900 dark:text-white outline-none cursor-pointer"
                           >
+                            <option value="none">
+                              {language === 'id'
+                                ? '🚫 Jangan potong dari kantong manapun (Bayar Manual / Tunai)'
+                                : '🚫 Do not deduct from any pocket (Manual / Cash)'}
+                            </option>
                             {pockets.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name} — Saldo: {formatCurrency(p.balance)}
@@ -2345,28 +2362,27 @@ export const WalletView: React.FC = () => {
                                 type="button"
                                 onClick={() => {
                                   const perInst = Math.round(total / totalCount);
-                                  setDebtPayAmount(String(Math.min(perInst, remaining)));
+                                  setDebtPayAmount(formatNumberInput(Math.min(perInst, remaining)));
                                 }}
-                                className="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
+                                className="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-white/20 transition-colors cursor-pointer"
                               >
                                 1x Cicilan
                               </button>
                               <button
                                 type="button"
-                                onClick={() => setDebtPayAmount(String(remaining))}
-                                className="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-white/20 transition-colors"
+                                onClick={() => setDebtPayAmount(formatNumberInput(remaining))}
+                                className="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-white/20 transition-colors cursor-pointer"
                               >
                                 Lunasi Sisa
                               </button>
                             </div>
                           </div>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
                             required
-                            min="1"
-                            max={remaining}
                             value={debtPayAmount}
-                            onChange={(e) => setDebtPayAmount(e.target.value)}
+                            onChange={(e) => setDebtPayAmount(formatNumberInput(e.target.value))}
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                             placeholder="Nominal bayar..."
                           />
@@ -2473,12 +2489,12 @@ export const WalletView: React.FC = () => {
                       Total Hutang (Rp)
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       required
-                      min="1"
-                      placeholder="Contoh: 12000000"
+                      placeholder="Contoh: 12.000.000"
                       value={newDebtTotal}
-                      onChange={(e) => setNewDebtTotal(e.target.value)}
+                      onChange={(e) => setNewDebtTotal(formatNumberInput(e.target.value))}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>

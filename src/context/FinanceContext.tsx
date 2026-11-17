@@ -53,6 +53,7 @@ interface FinanceContextType {
     type: 'income' | 'expense';
     note?: string;
     pocketId?: string;
+    date?: string;
   }) => Transaction;
   updateTransaction: (
     id: string,
@@ -74,7 +75,7 @@ interface FinanceContextType {
   addDebt: (debt: Omit<DebtItem, 'id' | 'createdAt'>) => DebtItem;
   updateDebt: (id: string, updates: Partial<Omit<DebtItem, 'id' | 'createdAt'>>) => DebtItem | null;
   deleteDebt: (id: string) => boolean;
-  payDebtInstallment: (debtId: string, amount: number, pocketId: string) => boolean;
+  payDebtInstallment: (debtId: string, amount: number, pocketId?: string, debtTitle?: string) => boolean;
   addAsset: (asset: Omit<AssetItem, 'id' | 'createdAt'>) => AssetItem;
   updateAsset: (id: string, updates: Partial<Omit<AssetItem, 'id' | 'createdAt'>>) => AssetItem | null;
   deleteAsset: (id: string) => boolean;
@@ -147,6 +148,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       dataService.saveBudgets(sbBudgets || []);
       dataService.saveNotes(sbNotes || []);
       dataService.saveWishlists(sbWishlists || []);
+
+      // Ensure user profile balance strictly matches sum of active pockets
+      const totalPocketsBalance = activePockets.reduce((sum, p) => sum + p.balance, 0);
+      const curUser = dataService.getUser();
+      curUser.balance = totalPocketsBalance;
+      curUser.totalBalance = totalPocketsBalance;
+      dataService.saveUser(curUser);
+      updateUser(curUser);
     } catch (err) {
       console.warn('Sync from Supabase:', err);
     }
@@ -202,22 +211,45 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     type: 'income' | 'expense';
     note?: string;
     pocketId?: string;
+    date?: string;
   }): Transaction => {
     const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const txDate = tx.date && tx.date.trim() ? tx.date.trim() : todayStr;
     const timeStr = now.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
     });
 
+    // Calculate dateGroup dynamically
+    const yesterdayDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+    let dateGroup: string = 'OLDER';
+    if (txDate === todayStr) {
+      dateGroup = 'TODAY';
+    } else if (txDate === yesterdayStr) {
+      dateGroup = 'YESTERDAY';
+    } else {
+      const todayMid = new Date(todayStr).getTime();
+      const txMid = new Date(txDate).getTime();
+      const diffDays = Math.round((todayMid - txMid) / (24 * 60 * 60 * 1000));
+      if (diffDays > 0 && diffDays <= 7) {
+        dateGroup = 'EARLIER THIS WEEK';
+      }
+    }
+
+    const txTimestamp = new Date(`${txDate}T${now.toTimeString().split(' ')[0]}`).getTime() || Date.now();
+
     const newTx = dataService.addTransaction({
       title: tx.title,
       category: tx.category,
       amount: tx.amount,
       type: tx.type,
-      date: now.toISOString().split('T')[0],
-      dateGroup: 'TODAY',
+      date: txDate,
+      dateGroup,
       time: timeStr,
+      timestamp: txTimestamp,
       note: tx.note || '',
       cardNumber: user.cardNumberMask,
       pocketId: tx.pocketId,
@@ -234,6 +266,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           ? 'Building2'
           : tx.category === 'food'
           ? 'Burger'
+          : tx.category === 'health'
+          ? 'Heart'
+          : tx.category === 'education'
+          ? 'GraduationCap'
+          : tx.category === 'entertainment'
+          ? 'Film'
+          : tx.category === 'family'
+          ? 'Home'
+          : tx.category === 'gift'
+          ? 'Gift'
           : tx.category === 'transfer'
           ? 'ArrowRightLeft'
           : tx.type === 'income'
@@ -241,8 +283,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           : 'ArrowUpRight',
     });
 
+    const updatedPockets = dataService.getPockets();
     setTransactions(dataService.getTransactions());
-    setPockets(dataService.getPockets());
+    setPockets(updatedPockets);
     updateUser(dataService.getUser());
 
     if (isSupabaseConfigured) {
@@ -258,9 +301,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         iconName: newTx.iconName,
         cardNumber: newTx.cardNumber,
         note: tx.note,
-        pocketId: tx.pocketId,
+        pocketId: newTx.pocketId,
         pocketName: newTx.pocketName,
       }).catch(console.error);
+
+      // Immediately sync the updated pocket's balance to Supabase
+      if (newTx.pocketId) {
+        const affectedPocket = updatedPockets.find((p) => p.id === newTx.pocketId);
+        if (affectedPocket) {
+          SupabaseService.updatePocket(newTx.pocketId, { balance: affectedPocket.balance }).catch(console.error);
+        }
+      }
     }
 
     return newTx;
@@ -270,23 +321,44 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     id: string,
     updates: Partial<Omit<Transaction, 'id' | 'timestamp'>>
   ): Transaction | null => {
+    const prevTx = dataService.getTransactions().find((t) => t.id === id);
     const updated = dataService.updateTransaction(id, updates);
     if (updated) {
+      const updatedPockets = dataService.getPockets();
       setTransactions(dataService.getTransactions());
-      setPockets(dataService.getPockets());
+      setPockets(updatedPockets);
       updateUser(dataService.getUser());
+      if (isSupabaseConfigured) {
+        const affectedPocketIds = new Set<string>();
+        if (prevTx?.pocketId) affectedPocketIds.add(prevTx.pocketId);
+        if (updated.pocketId) affectedPocketIds.add(updated.pocketId);
+        affectedPocketIds.forEach((pktId) => {
+          const pkt = updatedPockets.find((p) => p.id === pktId);
+          if (pkt) {
+            SupabaseService.updatePocket(pktId, { balance: pkt.balance }).catch(console.error);
+          }
+        });
+      }
     }
     return updated;
   };
 
   const deleteTransaction = (id: string): boolean => {
+    const existingTx = dataService.getTransactions().find((t) => t.id === id);
     const ok = dataService.deleteTransaction(id);
     if (ok) {
+      const updatedPockets = dataService.getPockets();
       setTransactions(dataService.getTransactions());
-      setPockets(dataService.getPockets());
+      setPockets(updatedPockets);
       updateUser(dataService.getUser());
       if (isSupabaseConfigured) {
         SupabaseService.deleteTransaction(id).catch(console.error);
+        if (existingTx?.pocketId) {
+          const pkt = updatedPockets.find((p) => p.id === existingTx.pocketId);
+          if (pkt) {
+            SupabaseService.updatePocket(existingTx.pocketId, { balance: pkt.balance }).catch(console.error);
+          }
+        }
       }
     }
     return ok;
@@ -343,8 +415,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (isSupabaseConfigured) {
       SupabaseService.createPocket(pocketData).then((sbPkt) => {
         if (sbPkt) {
-          // Sync ID if generated by Supabase
-          setPockets((prev) => prev.map((p) => (p.id === created.id ? { ...p, id: sbPkt.id } : p)));
+          // Sync ID if generated by Supabase into both React state and localStorage
+          const allPockets = dataService.getPockets().map((p) => (p.id === created.id ? { ...p, id: sbPkt.id } : p));
+          dataService.savePockets(allPockets);
+          setPockets(allPockets);
         }
       }).catch(console.error);
     }
@@ -470,7 +544,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (isSupabaseConfigured) {
       SupabaseService.createDebt(debt).then((sbDebt) => {
         if (sbDebt) {
-          setDebts((prev) => prev.map((d) => (d.id === created.id ? { ...d, id: sbDebt.id } : d)));
+          const updatedDebts = dataService.getDebts().map((d) => (d.id === created.id ? { ...d, id: sbDebt.id } : d));
+          dataService.saveDebts(updatedDebts);
+          setDebts(updatedDebts);
         }
       }).catch(console.error);
     }
@@ -494,16 +570,19 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
-  const payDebtInstallment = (debtId: string, amount: number, pocketId: string): boolean => {
-    const success = dataService.payDebtInstallment(debtId, amount, pocketId);
+  const payDebtInstallment = (debtId: string, amount: number, pocketId?: string, debtTitle?: string): boolean => {
+    const success = dataService.payDebtInstallment(debtId, amount, pocketId, debtTitle);
     if (success) {
-      setDebts(dataService.getDebts());
-      setPockets(dataService.getPockets());
+      const updatedDebts = dataService.getDebts();
+      const updatedPockets = dataService.getPockets();
+      setDebts(updatedDebts);
+      setPockets(updatedPockets);
       setTransactions(dataService.getTransactions());
       updateUser(dataService.getUser());
       if (isSupabaseConfigured) {
-        const pkt = pockets.find((p) => p.id === pocketId);
-        SupabaseService.payDebtInstallment(debtId, amount, pocketId, pkt?.name).catch(console.error);
+        const isManual = !pocketId || pocketId === 'none';
+        const pkt = isManual ? undefined : updatedPockets.find((p) => p.id === pocketId);
+        SupabaseService.payDebtInstallment(debtId, amount, isManual ? undefined : pocketId, pkt?.name).catch(console.error);
       }
     }
     return success;
@@ -515,7 +594,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     if (isSupabaseConfigured) {
       SupabaseService.createAsset(asset).then((sbAsset) => {
         if (sbAsset) {
-          setAssets((prev) => prev.map((a) => (a.id === created.id ? { ...a, id: sbAsset.id } : a)));
+          const updatedAssets = dataService.getAssets().map((a) => (a.id === created.id ? { ...a, id: sbAsset.id } : a));
+          dataService.saveAssets(updatedAssets);
+          setAssets(updatedAssets);
         }
       }).catch(console.error);
     }

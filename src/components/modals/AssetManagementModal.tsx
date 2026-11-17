@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { AssetItem } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -74,8 +74,8 @@ export const AssetManagementModal: React.FC = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const currVal = parseFloat(currentValue);
-    const purPrice = parseFloat(purchasePrice);
+    const currVal = parseNumberInput(currentValue);
+    const purPrice = parseNumberInput(purchasePrice);
 
     if (!name.trim() || isNaN(currVal) || currVal <= 0) {
       setFormError(language === 'id' ? 'Nama aset dan nilai saat ini wajib diisi' : 'Name and current value are required');
@@ -345,9 +345,10 @@ export const AssetManagementModal: React.FC = () => {
                     {language === 'id' ? 'Nilai Saat Ini (Rp)' : 'Current Value (Rp)'}
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={currentValue}
-                    onChange={(e) => setCurrentValue(e.target.value)}
+                    onChange={(e) => setCurrentValue(formatNumberInput(e.target.value))}
                     placeholder="0"
                     className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                     required
@@ -359,9 +360,10 @@ export const AssetManagementModal: React.FC = () => {
                     {language === 'id' ? 'Harga Beli (Rp)' : 'Purchase Price (Rp)'}
                   </label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={purchasePrice}
-                    onChange={(e) => setPurchasePrice(e.target.value)}
+                    onChange={(e) => setPurchasePrice(formatNumberInput(e.target.value))}
                     placeholder="0"
                     className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   />

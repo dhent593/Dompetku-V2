@@ -28,7 +28,7 @@ import { CHART_DATA } from '@/lib/dummyData';
 import { TimeFilter, AnalyticType, Transaction } from '@/types';
 
 export const AnalyticsView: React.FC = () => {
-  const { setActiveTab, transactions, setSelectedTransaction } = useFinance();
+  const { setActiveTab, transactions, setSelectedTransaction, budgets, setActiveModal } = useFinance();
   const { language, t } = useLanguage();
   const [activeType, setActiveType] = useState<AnalyticType>('expenses');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('monthly');
@@ -517,10 +517,22 @@ export const AnalyticsView: React.FC = () => {
               displayedCategories.map((item, idx) => {
                 const isExpanded = expandedCategory === item.category;
                 const categoryTxs = getCategoryTransactions(item.category);
-                const pct =
-                  totalFilteredAmount > 0
-                    ? Math.round((item.amount / totalFilteredAmount) * 100)
-                    : 0;
+
+                // Budget calculation for expense categories
+                const catBudget =
+                  activeType === 'expenses'
+                    ? budgets.find((b) => b.category === item.category && b.monthlyLimit > 0)
+                    : null;
+                const hasBudget = !!catBudget;
+                const budgetLimit = catBudget ? catBudget.monthlyLimit : 0;
+                const isOverBudget = hasBudget && item.amount > budgetLimit;
+
+                // Percentage: linked to budget for expenses if set; or % of total for income
+                const pct = hasBudget
+                  ? Math.round((item.amount / budgetLimit) * 100)
+                  : activeType === 'income' && totalFilteredAmount > 0
+                  ? Math.round((item.amount / totalFilteredAmount) * 100)
+                  : 0;
 
                 return (
                   <motion.div
@@ -573,9 +585,27 @@ export const AnalyticsView: React.FC = () => {
                               {activeType === 'expenses' ? '-' : '+'}
                               {formatCurrency(item.amount)}
                             </span>
-                            <span className="text-[11px] font-semibold text-slate-500 dark:text-[#7B88A6]">
-                              {pct}%
-                            </span>
+                            {activeType === 'expenses' ? (
+                              hasBudget ? (
+                                <span
+                                  className={`text-[11px] font-bold block ${
+                                    isOverBudget
+                                      ? 'text-[#F43F5E]'
+                                      : 'text-slate-500 dark:text-[#7B88A6]'
+                                  }`}
+                                >
+                                  {pct}% {language === 'id' ? 'budget' : 'budget'}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-medium text-slate-400 dark:text-[#5E6D8B] italic block">
+                                  {language === 'id' ? 'Belum ada budget' : 'No budget'}
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
+                                {pct}%
+                              </span>
+                            )}
                           </div>
 
                           {/* Chevron toggle indicator */}
@@ -591,21 +621,68 @@ export const AnalyticsView: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Bottom Row: Full-width Percentage Bar */}
-                      <div className="w-full h-2 bg-slate-100 dark:bg-[#1E2435] rounded-full mt-3 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${pct}%` }}
-                          transition={{
-                            duration: 0.55,
-                            delay: 0.08 + idx * 0.04,
-                            ease: [0.16, 1, 0.3, 1],
-                          }}
-                          className={`h-full rounded-full ${
-                            activeType === 'expenses' ? 'bg-[#F43F5E]' : 'bg-[#10B981]'
-                          }`}
-                        />
-                      </div>
+                      {/* Bottom Row: Percentage Bar or No-Budget prompt */}
+                      {activeType === 'expenses' ? (
+                        hasBudget ? (
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between text-[10px] mb-1 font-medium text-slate-400 dark:text-[#64728E]">
+                              <span>
+                                {isOverBudget
+                                  ? language === 'id'
+                                    ? 'Melebihi budget!'
+                                    : 'Over budget!'
+                                  : `${language === 'id' ? 'Terpakai' : 'Spent'}: ${formatCurrency(item.amount)}`}
+                              </span>
+                              <span>
+                                {language === 'id' ? 'Batas' : 'Limit'}: {formatCurrency(budgetLimit)}
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-100 dark:bg-[#1E2435] rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(100, pct)}%` }}
+                                transition={{
+                                  duration: 0.55,
+                                  delay: 0.08 + idx * 0.04,
+                                  ease: [0.16, 1, 0.3, 1],
+                                }}
+                                className={`h-full rounded-full ${
+                                  isOverBudget ? 'bg-red-500' : 'bg-[#F43F5E]'
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 dark:border-[#1E2435] text-[11px]">
+                            <span className="text-slate-400 dark:text-[#5E6D8B] text-[10px]">
+                              {language === 'id' ? 'Batasan budget belum ditentukan' : 'Budget limit not set'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveModal('monthlyBudget');
+                              }}
+                              className="text-[#635BFF] hover:underline font-bold text-[10px] flex items-center space-x-1 cursor-pointer"
+                            >
+                              <span>+ {language === 'id' ? 'Atur Budget' : 'Set Budget'}</span>
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full h-2 bg-slate-100 dark:bg-[#1E2435] rounded-full mt-3 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{
+                              duration: 0.55,
+                              delay: 0.08 + idx * 0.04,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
+                            className="h-full rounded-full bg-[#10B981]"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Accordion Content with smooth height animation */}

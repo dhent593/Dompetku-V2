@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { Transaction, CategoryBudget } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -64,7 +64,7 @@ export const MonthlyBudgetModal: React.FC = () => {
   const totalPercent = totalBudgetLimit > 0 ? Math.min(100, Math.round((totalActualSpent / totalBudgetLimit) * 100)) : 0;
 
   const handleSaveBudget = (cat: Transaction['category']) => {
-    const num = parseFloat(limitInput);
+    const num = parseNumberInput(limitInput);
     if (!isNaN(num) && num > 0) {
       setCategoryBudget(cat, num);
     }
@@ -195,7 +195,7 @@ export const MonthlyBudgetModal: React.FC = () => {
                             setEditingCategory(null);
                           } else {
                             setEditingCategory(cat.id);
-                            setLimitInput(limit.toString());
+                            setLimitInput(formatNumberInput(limit));
                           }
                         }}
                         className="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1C2233] text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
@@ -210,9 +210,10 @@ export const MonthlyBudgetModal: React.FC = () => {
                   {isEditing ? (
                     <div className="flex items-center space-x-2 pt-1">
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         value={limitInput}
-                        onChange={(e) => setLimitInput(e.target.value)}
+                        onChange={(e) => setLimitInput(formatNumberInput(e.target.value))}
                         placeholder="Limit Rp"
                         className="flex-1 bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF]"
                       />

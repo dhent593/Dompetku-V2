@@ -23,7 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { POCKET_COLOR_PRESETS } from '@/lib/dummyData';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 
 const AVAILABLE_ICONS = [
   { id: 'Wallet', icon: Wallet, label: 'Dompet' },
@@ -59,13 +59,13 @@ export const AddPocketModal: React.FC = () => {
       return;
     }
 
-    const targetNum = parseFloat(targetAmount);
+    const targetNum = parseNumberInput(targetAmount);
     if (isNaN(targetNum) || targetNum <= 0) {
       setError('Target saldo harus lebih dari 0');
       return;
     }
 
-    const depositNum = initialDeposit.trim() ? parseFloat(initialDeposit) : 0;
+    const depositNum = initialDeposit.trim() ? parseNumberInput(initialDeposit) : 0;
     if (isNaN(depositNum) || depositNum < 0) {
       setError('Setoran awal tidak valid');
       return;
@@ -162,15 +162,14 @@ export const AddPocketModal: React.FC = () => {
                   {t('pocket_target_input')}
                 </label>
                 <input
-                  type="number"
-                  step="1"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
                   value={targetAmount}
                   onChange={(e) => {
-                    setTargetAmount(e.target.value);
+                    setTargetAmount(formatNumberInput(e.target.value));
                     setError(null);
                   }}
-                  placeholder="e.g. 5000000"
+                  placeholder="e.g. 5.000.000"
                   className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                   required
                 />
@@ -187,12 +186,11 @@ export const AddPocketModal: React.FC = () => {
                   </span>
                 </div>
                 <input
-                  type="number"
-                  step="1"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={initialDeposit}
                   onChange={(e) => {
-                    setInitialDeposit(e.target.value);
+                    setInitialDeposit(formatNumberInput(e.target.value));
                     setError(null);
                   }}
                   placeholder="0"

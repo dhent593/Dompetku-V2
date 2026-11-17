@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -35,7 +35,7 @@ export const TransactionDetailModal: React.FC = () => {
   useEffect(() => {
     if (selectedTransaction) {
       setTitle(selectedTransaction.title);
-      setAmount(selectedTransaction.amount.toString());
+      setAmount(formatNumberInput(selectedTransaction.amount));
       setType(selectedTransaction.type);
       setCategory(selectedTransaction.category);
       setEditPocketId(selectedTransaction.pocketId || (pockets.length > 0 ? pockets[0].id : ''));
@@ -50,7 +50,7 @@ export const TransactionDetailModal: React.FC = () => {
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTransaction) return;
-    const num = parseFloat(amount);
+    const num = parseNumberInput(amount);
     if (!title.trim() || isNaN(num) || num <= 0) return;
 
     updateTransaction(selectedTransaction.id, {
@@ -74,14 +74,19 @@ export const TransactionDetailModal: React.FC = () => {
   };
 
   const categories: { id: Transaction['category']; label: string }[] = [
+    { id: 'food', label: language === 'id' ? 'Makanan & Minuman' : 'Food & Dining' },
     { id: 'shopping', label: t('shopping') },
     { id: 'bill', label: t('bill') },
     { id: 'salary', label: t('salary') },
-    { id: 'food', label: t('food') },
     { id: 'travel', label: t('travel') },
+    { id: 'entertainment', label: language === 'id' ? 'Hiburan & Hobi' : 'Entertainment' },
+    { id: 'health', label: language === 'id' ? 'Kesehatan & Medis' : 'Health & Medical' },
+    { id: 'education', label: language === 'id' ? 'Pendidikan & Kursus' : 'Education' },
+    { id: 'family', label: language === 'id' ? 'Keluarga & Rumah Tangga' : 'Family & Household' },
+    { id: 'gift', label: language === 'id' ? 'Hadiah, Amal & Donasi' : 'Gifts & Donations' },
     { id: 'investment', label: t('investment') },
     { id: 'transfer', label: t('transfer') },
-    { id: 'other', label: t('other') },
+    { id: 'other', label: language === 'id' ? 'Lain-lain' : 'Others' },
   ];
 
   return (
@@ -296,11 +301,10 @@ export const TransactionDetailModal: React.FC = () => {
                     {t('amount_label')}
                   </label>
                   <input
-                    type="number"
-                    step="1"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setAmount(formatNumberInput(e.target.value))}
                     className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
                     required
                   />

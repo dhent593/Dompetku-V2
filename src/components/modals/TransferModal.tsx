@@ -7,7 +7,7 @@ import confetti from 'canvas-confetti';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const TransferModal: React.FC = () => {
@@ -24,7 +24,7 @@ export const TransferModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const num = parseFloat(amount);
+    const num = parseNumberInput(amount);
     if (!recipient.trim()) {
       setError(t('recipient_label'));
       return;
@@ -134,12 +134,11 @@ export const TransferModal: React.FC = () => {
                     </span>
                   </div>
                   <input
-                    type="number"
-                    step="1"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
                     value={amount}
                     onChange={(e) => {
-                      setAmount(e.target.value);
+                      setAmount(formatNumberInput(e.target.value));
                       setError(null);
                     }}
                     placeholder="0"
@@ -148,11 +147,11 @@ export const TransferModal: React.FC = () => {
                   />
                   {/* Quick Pills */}
                   <div className="flex items-center space-x-2 mt-2">
-                    {[50, 100, 500, 1000].map((val) => (
+                    {[50000, 100000, 500000, 1000000].map((val) => (
                       <button
                         key={val}
                         type="button"
-                        onClick={() => setAmount(val.toString())}
+                        onClick={() => setAmount(formatNumberInput(val))}
                         className="text-[11px] font-medium py-1 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
                       >
                         {formatCurrency(val)}

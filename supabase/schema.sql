@@ -431,13 +431,6 @@ BEGIN
         (NEW.id, 'BRI', 0, 5000000, '#0284C7', 'Building2'),
         (NEW.id, 'ShoppePay', 0, 2000000, '#EA580C', 'Smartphone');
 
-    -- 3. Provision Default Starter Category Budgets
-    INSERT INTO public.category_budgets (user_id, category, monthly_limit)
-    VALUES
-        (NEW.id, 'shopping', 500000),
-        (NEW.id, 'bill', 300000),
-        (NEW.id, 'food', 600000);
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -447,3 +440,46 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 5.3 Auto Synchronize Pocket Balance when Transactions are Created, Updated, or Deleted
+CREATE OR REPLACE FUNCTION public.sync_pocket_balance_on_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- On DELETE or UPDATE, revert the old transaction effect
+    IF (TG_OP = 'DELETE' OR TG_OP = 'UPDATE') THEN
+        IF OLD.pocket_id IS NOT NULL THEN
+            IF OLD.type = 'income' THEN
+                UPDATE public.pockets 
+                SET balance = GREATEST(0, balance - OLD.amount), updated_at = timezone('utc'::text, now())
+                WHERE id = OLD.pocket_id;
+            ELSIF OLD.type = 'expense' THEN
+                UPDATE public.pockets 
+                SET balance = balance + OLD.amount, updated_at = timezone('utc'::text, now())
+                WHERE id = OLD.pocket_id;
+            END IF;
+        END IF;
+    END IF;
+
+    -- On INSERT or UPDATE, apply the new transaction effect
+    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+        IF NEW.pocket_id IS NOT NULL THEN
+            IF NEW.type = 'income' THEN
+                UPDATE public.pockets 
+                SET balance = balance + NEW.amount, updated_at = timezone('utc'::text, now())
+                WHERE id = NEW.pocket_id;
+            ELSIF NEW.type = 'expense' THEN
+                UPDATE public.pockets 
+                SET balance = GREATEST(0, balance - NEW.amount), updated_at = timezone('utc'::text, now())
+                WHERE id = NEW.pocket_id;
+            END IF;
+        END IF;
+    END IF;
+
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_transaction_balance_sync ON public.transactions;
+CREATE TRIGGER on_transaction_balance_sync
+    AFTER INSERT OR UPDATE OR DELETE ON public.transactions
+    FOR EACH ROW EXECUTE FUNCTION public.sync_pocket_balance_on_transaction();
