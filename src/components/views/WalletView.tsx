@@ -1131,14 +1131,14 @@ export const WalletView: React.FC = () => {
                   </div>
 
                   {/* Filter Pills */}
-                  <div className="flex items-center space-x-2 bg-slate-100 dark:bg-[#111520] p-1 rounded-[14px]">
+                  <div className="tab-container flex items-center space-x-1.5 bg-slate-200/70 dark:bg-[#111520] border border-slate-200/80 dark:border-[#1E2538] p-1.5 rounded-[16px]">
                     <button
                       type="button"
                       onClick={() => setDebtFilter('all')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         debtFilter === 'all'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Semua' : 'All'}
@@ -1146,10 +1146,10 @@ export const WalletView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDebtFilter('active')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         debtFilter === 'active'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Aktif' : 'Active'}
@@ -1157,10 +1157,10 @@ export const WalletView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDebtFilter('paid_off')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         debtFilter === 'paid_off'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Lunas' : 'Paid'}
@@ -1590,14 +1590,14 @@ export const WalletView: React.FC = () => {
                   </div>
 
                   {/* Filter Pills */}
-                  <div className="flex items-center space-x-2 bg-slate-100 dark:bg-[#111520] p-1 rounded-[14px]">
+                  <div className="tab-container flex items-center space-x-1.5 bg-slate-200/70 dark:bg-[#111520] border border-slate-200/80 dark:border-[#1E2538] p-1.5 rounded-[16px]">
                     <button
                       type="button"
                       onClick={() => setWishlistFilter('all')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         wishlistFilter === 'all'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Semua' : 'All'}
@@ -1605,10 +1605,10 @@ export const WalletView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setWishlistFilter('planned')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         wishlistFilter === 'planned'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Rencana' : 'Planned'}
@@ -1616,10 +1616,10 @@ export const WalletView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setWishlistFilter('purchased')}
-                      className={`flex-1 py-1.5 text-xs font-bold rounded-[10px] transition-colors ${
+                      className={`flex-1 py-2 text-xs rounded-xl transition-all cursor-pointer ${
                         wishlistFilter === 'purchased'
-                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-sm'
-                          : 'text-slate-500 dark:text-[#7B88A6]'
+                          ? 'bg-white dark:bg-[#1E2435] text-slate-900 dark:text-white shadow-xs font-bold'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white font-medium'
                       }`}
                     >
                       {language === 'id' ? 'Tercapai' : 'Achieved'}

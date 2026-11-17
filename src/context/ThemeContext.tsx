@@ -46,7 +46,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (typeof document !== 'undefined') {
       const metaTags = document.querySelectorAll('meta[name="theme-color"]');
       if (metaTags.length > 0) {
-        metaTags.forEach((meta) => meta.setAttribute('content', themeColor));
+        metaTags.forEach((meta) => {
+          meta.removeAttribute('media');
+          meta.setAttribute('content', themeColor);
+        });
       } else {
         const meta = document.createElement('meta');
         meta.name = 'theme-color';

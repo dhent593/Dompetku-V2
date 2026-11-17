@@ -90,7 +90,7 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0D15] flex flex-col justify-center items-center px-5 py-12 text-white selection:bg-[#635BFF] selection:text-white">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#0A0D15] flex flex-col justify-center items-center px-5 py-12 text-slate-900 dark:text-white selection:bg-[#635BFF] selection:text-white transition-colors duration-200">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -107,8 +107,8 @@ export const LoginView: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-[#635BFF] flex items-center justify-center shadow-lg shadow-[#635BFF]/25 mb-3.5">
             <Wallet className="w-7 h-7 text-white stroke-[2]" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">MyPocket</h1>
-          <p className="text-xs text-[#7B88A6] mt-1">{t('welcome_sub')}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">MyPocket</h1>
+          <p className="text-xs text-slate-500 dark:text-[#7B88A6] mt-1">{t('welcome_sub')}</p>
         </motion.div>
 
         {/* Auth Mode Tabs: Masuk vs Daftar Baru */}
@@ -116,7 +116,7 @@ export const LoginView: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="flex items-center w-full bg-[#111520] p-1.5 rounded-2xl mb-6 border border-[#1E2435]/60"
+          className="tab-container flex items-center w-full bg-slate-200/80 dark:bg-[#111520] p-1.5 rounded-2xl mb-6 border border-slate-300 dark:border-[#1E2435]/60"
         >
           <button
             type="button"
@@ -126,10 +126,10 @@ export const LoginView: React.FC = () => {
               setPassword('');
               setConfirmPassword('');
             }}
-            className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 text-xs rounded-xl transition-all cursor-pointer ${
               authMode === 'login'
-                ? 'bg-[#1C2233] text-white shadow-sm'
-                : 'text-[#677491] hover:text-white'
+                ? 'bg-white dark:bg-[#1C2233] text-slate-900 dark:text-white shadow-xs font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-[#677491] dark:hover:text-white font-medium'
             }`}
           >
             {t('email_login_tab')}
@@ -142,10 +142,10 @@ export const LoginView: React.FC = () => {
               setPassword('');
               setConfirmPassword('');
             }}
-            className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 text-xs rounded-xl transition-all cursor-pointer ${
               authMode === 'register'
-                ? 'bg-[#1C2233] text-white shadow-sm'
-                : 'text-[#677491] hover:text-white'
+                ? 'bg-white dark:bg-[#1C2233] text-slate-900 dark:text-white shadow-xs font-bold'
+                : 'text-slate-500 hover:text-slate-900 dark:text-[#677491] dark:hover:text-white font-medium'
             }`}
           >
             {t('register_tab')}
@@ -165,36 +165,36 @@ export const LoginView: React.FC = () => {
               className="w-full flex flex-col space-y-4"
             >
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('email_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">{t('email_label')}</label>
                 <div className="relative">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <Mail className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <Mail className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1.5">{t('password_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">{t('password_label')}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <Lock className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-[#64728E] hover:text-white cursor-pointer transition-colors"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 dark:text-[#64728E] dark:hover:text-white cursor-pointer transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -205,7 +205,7 @@ export const LoginView: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-400 bg-red-950/40 border border-red-900/30 p-3 rounded-xl"
+                  className="text-xs text-rose-600 dark:text-red-400 bg-rose-50 dark:bg-red-950/40 border border-rose-200 dark:border-red-900/30 p-3 rounded-xl"
                 >
                   {errorMsg}
                 </motion.div>
@@ -240,10 +240,10 @@ export const LoginView: React.FC = () => {
                     setPassword('');
                     setConfirmPassword('');
                   }}
-                  className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
+                  className="text-xs text-slate-500 dark:text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
                 >
                   {t('dont_have_account')}{' '}
-                  <span className="font-semibold text-white underline underline-offset-2">{t('create_account')}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white underline underline-offset-2">{t('create_account')}</span>
                 </button>
               </div>
             </motion.form>
@@ -261,51 +261,51 @@ export const LoginView: React.FC = () => {
               className="w-full flex flex-col space-y-3.5"
             >
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('full_name')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('full_name')}</label>
                 <div className="relative">
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Contoh: Arif Setiawan"
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <User className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <User className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('email_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('email_label')}</label>
                 <div className="relative">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="nama@email.com"
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-4 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <Mail className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <Mail className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('password_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('password_label')}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Minimal 6 karakter"
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <Lock className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-[#64728E] hover:text-white cursor-pointer transition-colors"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 dark:text-[#64728E] dark:hover:text-white cursor-pointer transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -313,21 +313,21 @@ export const LoginView: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs text-[#7B88A6] font-medium block mb-1">{t('repeat_password_label')}</label>
+                <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">{t('repeat_password_label')}</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder={t('repeat_password_placeholder')}
-                    className="w-full bg-[#141824] border border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-white placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all"
+                    className="w-full bg-white dark:bg-[#141824] border border-slate-200 dark:border-[#1E2435] rounded-xl pl-10 pr-10 py-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#64728E] focus:outline-none focus:border-[#635BFF] transition-all shadow-xs"
                     required
                   />
-                  <Lock className="w-4 h-4 text-[#64728E] absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-slate-400 dark:text-[#64728E] absolute left-3.5 top-3.5" />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3.5 top-3.5 text-[#64728E] hover:text-white cursor-pointer transition-colors"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 dark:text-[#64728E] dark:hover:text-white cursor-pointer transition-colors"
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -338,7 +338,7 @@ export const LoginView: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-400 bg-red-950/40 border border-red-900/30 p-3 rounded-xl"
+                  className="text-xs text-rose-600 dark:text-red-400 bg-rose-50 dark:bg-red-950/40 border border-rose-200 dark:border-red-900/30 p-3 rounded-xl"
                 >
                   {errorMsg}
                 </motion.div>
@@ -373,10 +373,10 @@ export const LoginView: React.FC = () => {
                     setPassword('');
                     setConfirmPassword('');
                   }}
-                  className="text-xs text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
+                  className="text-xs text-slate-500 dark:text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer"
                 >
                   {t('already_registered')}{' '}
-                  <span className="font-semibold text-white underline underline-offset-2">{t('email_login_tab')}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white underline underline-offset-2">{t('email_login_tab')}</span>
                 </button>
               </div>
             </motion.form>

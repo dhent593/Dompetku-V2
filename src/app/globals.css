@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -31,7 +31,7 @@ html.dark {
 body {
   color: rgb(var(--foreground-rgb));
   min-height: 100vh;
-  font-family: 'Plus Jakarta Sans', 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-feature-settings: "tnum" 1;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -349,18 +349,34 @@ button:focus,
 
 /* 3. All Cards, Widgets, and Container Surfaces: borderless */
 .card,
-[class*="rounded-[14px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[16px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[18px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[20px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[22px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[24px]"]:not(input):not(textarea):not(select),
-[class*="rounded-[28px]"]:not(input):not(textarea):not(select),
-[class*="rounded-xl"]:not(input):not(textarea):not(select),
-[class*="rounded-2xl"]:not(input):not(textarea):not(select),
-[class*="rounded-3xl"]:not(input):not(textarea):not(select) {
+[class*="rounded-[14px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[16px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[18px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[20px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[22px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[24px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-[28px]"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-xl"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-2xl"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border),
+[class*="rounded-3xl"]:not(input):not(textarea):not(select):not(.tab-container):not(.has-border) {
   border: none !important;
   border-width: 0 !important;
+}
+
+/* Tab Segmented Control Container Styling */
+.tab-container {
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+html:not(.dark) .tab-container {
+  background-color: rgba(226, 232, 240, 0.75) !important;
+  border-color: rgba(203, 213, 225, 0.85) !important;
+}
+
+html.dark .tab-container {
+  background-color: #111520 !important;
+  border-color: #1E2538 !important;
 }
 
 /* Prevent hover border flash on cards, buttons & widgets */

@@ -29,10 +29,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#0A0D15' },
-  ],
+  themeColor: '#FFFFFF',
 };
 
 export default function RootLayout({
@@ -46,7 +43,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
         <script
@@ -65,7 +62,10 @@ export default function RootLayout({
                 const themeColor = isLight ? '#FFFFFF' : '#0A0D15';
                 const metaTheme = document.querySelectorAll('meta[name="theme-color"]');
                 if (metaTheme.length > 0) {
-                  metaTheme.forEach(function(m) { m.setAttribute('content', themeColor); });
+                  metaTheme.forEach(function(m) {
+                    m.removeAttribute('media');
+                    m.setAttribute('content', themeColor);
+                  });
                 } else {
                   const m = document.createElement('meta');
                   m.name = 'theme-color';
