@@ -51,19 +51,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             }`}
           />
         </div>
-
-        {/* Active Indicator Dot directly underneath icon */}
-        <div className="h-1.5 flex items-center justify-center mt-1">
-          {isActive ? (
-            <motion.div
-              layoutId="activeNavDot"
-              className="w-1.5 h-1.5 rounded-full bg-slate-900 dark:bg-white shadow-sm"
-              transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-            />
-          ) : (
-            <div className="w-1.5 h-1.5" />
-          )}
-        </div>
       </button>
     );
   };

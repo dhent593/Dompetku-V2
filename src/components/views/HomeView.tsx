@@ -158,7 +158,10 @@ export const HomeView: React.FC = () => {
             <span className="text-xs text-white/80 font-medium tracking-wide">
               {t('total_balance_available')}
             </span>
-            <span className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full">
+            <span
+              suppressHydrationWarning
+              className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full"
+            >
               {liveDate || (language === 'id' ? 'Hari ini' : 'Today')}
             </span>
           </div>
@@ -168,7 +171,10 @@ export const HomeView: React.FC = () => {
             <span className="text-xl sm:text-2xl font-bold text-white/80 select-none">
               Rp
             </span>
-            <span className="text-3xl sm:text-[38px] font-extrabold text-white tracking-tight tabular-nums font-sans">
+            <span
+              suppressHydrationWarning
+              className="text-3xl sm:text-[38px] font-extrabold text-white tracking-tight tabular-nums font-sans"
+            >
               {Math.abs(Math.round(totalPocketBalance)).toLocaleString('id-ID')}
             </span>
           </div>
