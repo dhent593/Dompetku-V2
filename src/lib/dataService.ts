@@ -721,6 +721,29 @@ class DataService {
     };
     assets.unshift(newAsset);
     this.saveAssets(assets);
+
+    // If funded from a pocket, deduct pocket balance and record expense transaction
+    if (asset.pocketId && asset.pocketId !== 'none') {
+      const pockets = this.getPockets();
+      const pocket = pockets.find((p) => p.id === asset.pocketId);
+      if (pocket && newAsset.purchasePrice > 0) {
+        this.addTransaction({
+          title: `Beli Aset: ${newAsset.name}`,
+          category: 'investment',
+          amount: newAsset.purchasePrice,
+          type: 'expense',
+          date: newAsset.purchaseDate || new Date().toISOString().split('T')[0],
+          dateGroup: 'TODAY',
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          note: newAsset.notes
+            ? `Beli aset ${newAsset.name}: ${newAsset.notes}`
+            : `Pembelian aset portofolio (${newAsset.category}) via ${pocket.name}`,
+          pocketId: asset.pocketId,
+          pocketName: pocket.name,
+        });
+      }
+    }
+
     return newAsset;
   }
 

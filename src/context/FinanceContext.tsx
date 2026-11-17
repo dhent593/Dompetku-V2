@@ -628,6 +628,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const addAsset = (asset: Omit<AssetItem, 'id' | 'createdAt'>): AssetItem => {
     const created = dataService.addAsset(asset);
     setAssets(dataService.getAssets());
+    if (asset.pocketId && asset.pocketId !== 'none') {
+      setPockets(dataService.getPockets());
+      setTransactions(dataService.getTransactions());
+      updateUser(dataService.getUser());
+    }
     if (isSupabaseConfigured) {
       SupabaseService.createAsset(asset).then((sbAsset) => {
         if (sbAsset) {
@@ -636,6 +641,29 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           setAssets(updatedAssets);
         }
       }).catch(console.error);
+
+      if (asset.pocketId && asset.pocketId !== 'none') {
+        const pockets = dataService.getPockets();
+        const pkt = pockets.find((p) => p.id === asset.pocketId);
+        const txDate = asset.purchaseDate || new Date().toISOString().split('T')[0];
+        SupabaseService.createTransaction({
+          title: `Beli Aset: ${asset.name}`,
+          category: 'investment',
+          amount: asset.purchasePrice,
+          type: 'expense',
+          date: txDate,
+          dateGroup: 'TODAY',
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          timestamp: Date.now(),
+          note: asset.notes || `Pembelian aset portofolio (${asset.category})`,
+          pocketId: asset.pocketId,
+          pocketName: pkt?.name,
+        }).catch(console.error);
+
+        if (pkt) {
+          SupabaseService.updatePocket(pkt.id, { balance: pkt.balance }).catch(console.error);
+        }
+      }
     }
     return created;
   };

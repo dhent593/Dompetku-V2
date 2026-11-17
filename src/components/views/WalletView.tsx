@@ -164,7 +164,9 @@ export const WalletView: React.FC = () => {
   const [newAssetCategory, setNewAssetCategory] = useState<AssetItem['category']>('investment');
   const [newAssetPurchasePrice, setNewAssetPurchasePrice] = useState('');
   const [newAssetCurrentValue, setNewAssetCurrentValue] = useState('');
+  const [newAssetPocketId, setNewAssetPocketId] = useState<string>('none');
   const [newAssetNotes, setNewAssetNotes] = useState('');
+  const [newAssetError, setNewAssetError] = useState<string | null>(null);
 
   // Form states for Budget
   const [newBudgetCategory, setNewBudgetCategory] = useState<Transaction['category']>('food');
@@ -292,9 +294,17 @@ export const WalletView: React.FC = () => {
   // Add / Edit Asset Submission
   const handleSaveAsset = (e: React.FormEvent) => {
     e.preventDefault();
+    setNewAssetError(null);
     const purchaseNum = parseNumberInput(newAssetPurchasePrice);
     const currentNum = parseNumberInput(newAssetCurrentValue);
-    if (!newAssetName.trim() || isNaN(currentNum) || currentNum <= 0) return;
+    if (!newAssetName.trim() || isNaN(currentNum) || currentNum <= 0) {
+      setNewAssetError(
+        language === 'id'
+          ? 'Nama aset dan nilai sekarang wajib diisi dengan benar'
+          : 'Asset name and current value are required'
+      );
+      return;
+    }
 
     if (editingAsset) {
       updateAsset(editingAsset.id, {
@@ -306,12 +316,32 @@ export const WalletView: React.FC = () => {
       });
       setToastMessage(language === 'id' ? `Aset "${newAssetName}" berhasil diperbarui!` : `Asset "${newAssetName}" updated!`);
     } else {
+      const finalPurchasePrice = purchaseNum > 0 ? purchaseNum : currentNum;
+
+      // Validate pocket balance if deducting from a pocket
+      if (newAssetPocketId && newAssetPocketId !== 'none') {
+        const pocket = pockets.find((p) => p.id === newAssetPocketId);
+        if (!pocket) {
+          setNewAssetError(language === 'id' ? 'Kantong sumber tidak ditemukan' : 'Funding pocket not found');
+          return;
+        }
+        if (pocket.balance < finalPurchasePrice) {
+          setNewAssetError(
+            language === 'id'
+              ? `Saldo kantong "${pocket.name}" tidak mencukupi (Tersedia: ${formatCurrency(pocket.balance)})`
+              : `Insufficient balance in pocket "${pocket.name}" (Available: ${formatCurrency(pocket.balance)})`
+          );
+          return;
+        }
+      }
+
       addAsset({
         name: newAssetName.trim(),
         category: newAssetCategory,
-        purchasePrice: purchaseNum > 0 ? purchaseNum : currentNum,
+        purchasePrice: finalPurchasePrice,
         currentValue: currentNum,
         purchaseDate: new Date().toISOString().split('T')[0],
+        pocketId: newAssetPocketId && newAssetPocketId !== 'none' ? newAssetPocketId : undefined,
         notes: newAssetNotes.trim() || undefined,
       });
       setToastMessage(language === 'id' ? `Aset "${newAssetName}" berhasil ditambahkan!` : `Asset "${newAssetName}" added!`);
@@ -319,7 +349,9 @@ export const WalletView: React.FC = () => {
     setNewAssetName('');
     setNewAssetPurchasePrice('');
     setNewAssetCurrentValue('');
+    setNewAssetPocketId('none');
     setNewAssetNotes('');
+    setNewAssetError(null);
     setEditingAsset(null);
     setShowAddAssetModal(false);
     setTimeout(() => setToastMessage(null), 2400);
@@ -1843,6 +1875,12 @@ export const WalletView: React.FC = () => {
                   : language === 'id' ? 'Tambah Aset Baru' : 'Add New Asset'}
               </h3>
               <form onSubmit={handleSaveAsset} className="space-y-3.5">
+                {newAssetError && (
+                  <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-500 dark:text-rose-400 text-xs font-medium text-center">
+                    {newAssetError}
+                  </div>
+                )}
+
                 <div>
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-1">
                     {language === 'id' ? 'Nama Aset' : 'Asset Name'}
@@ -1852,7 +1890,10 @@ export const WalletView: React.FC = () => {
                     required
                     placeholder="Contoh: Logam Mulia Antam 25gr"
                     value={newAssetName}
-                    onChange={(e) => setNewAssetName(e.target.value)}
+                    onChange={(e) => {
+                      setNewAssetName(e.target.value);
+                      setNewAssetError(null);
+                    }}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                   />
                 </div>
@@ -1886,7 +1927,10 @@ export const WalletView: React.FC = () => {
                       required
                       placeholder="Contoh: 25.000.000"
                       value={newAssetPurchasePrice}
-                      onChange={(e) => setNewAssetPurchasePrice(formatNumberInput(e.target.value))}
+                      onChange={(e) => {
+                        setNewAssetPurchasePrice(formatNumberInput(e.target.value));
+                        setNewAssetError(null);
+                      }}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>
@@ -1900,11 +1944,52 @@ export const WalletView: React.FC = () => {
                       required
                       placeholder="Contoh: 30.000.000"
                       value={newAssetCurrentValue}
-                      onChange={(e) => setNewAssetCurrentValue(formatNumberInput(e.target.value))}
+                      onChange={(e) => {
+                        setNewAssetCurrentValue(formatNumberInput(e.target.value));
+                        setNewAssetError(null);
+                      }}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
                     />
                   </div>
                 </div>
+
+                {/* Sumber Dana (Ambil Saldo Dari Kantong) - hanya untuk aset baru */}
+                {!editingAsset && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">
+                        {language === 'id' ? 'Ambil Saldo Dari Kantong' : 'Deduct from Pocket'}
+                      </label>
+                      {newAssetPocketId && newAssetPocketId !== 'none' && (
+                        <span className="text-[10px] font-semibold text-[#635BFF]">
+                          {(() => {
+                            const p = pockets.find((pkt) => pkt.id === newAssetPocketId);
+                            return p ? `Saldo: ${formatCurrency(p.balance)}` : '';
+                          })()}
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={newAssetPocketId}
+                      onChange={(e) => {
+                        setNewAssetPocketId(e.target.value);
+                        setNewAssetError(null);
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
+                    >
+                      <option value="none">
+                        {language === 'id'
+                          ? 'Jangan potong dari kantong manapun'
+                          : 'Do not deduct from any pocket'}
+                      </option>
+                      {pockets.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} — Saldo: {formatCurrency(p.balance)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-1">
@@ -1925,6 +2010,8 @@ export const WalletView: React.FC = () => {
                     onClick={() => {
                       setShowAddAssetModal(false);
                       setEditingAsset(null);
+                      setNewAssetPocketId('none');
+                      setNewAssetError(null);
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/20 active:scale-95 transition-all cursor-pointer"
                   >

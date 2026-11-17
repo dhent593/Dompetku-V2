@@ -112,6 +112,7 @@ export interface AssetItem {
   currentValue: number;
   purchasePrice: number;
   purchaseDate: string; // YYYY-MM-DD
+  pocketId?: string;
   notes?: string;
   createdAt: number;
 }

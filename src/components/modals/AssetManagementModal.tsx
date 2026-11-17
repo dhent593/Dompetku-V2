@@ -24,7 +24,7 @@ import { AssetItem } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
 export const AssetManagementModal: React.FC = () => {
-  const { activeModal, setActiveModal, assets, addAsset, deleteAsset } = useFinance();
+  const { activeModal, setActiveModal, assets, addAsset, deleteAsset, pockets } = useFinance();
   const { language } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'list' | 'add'>('list');
@@ -36,6 +36,7 @@ export const AssetManagementModal: React.FC = () => {
   const [currentValue, setCurrentValue] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
+  const [fundingPocketId, setFundingPocketId] = useState<string>('none');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -74,6 +75,7 @@ export const AssetManagementModal: React.FC = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     const currVal = parseNumberInput(currentValue);
     const purPrice = parseNumberInput(purchasePrice);
 
@@ -82,12 +84,32 @@ export const AssetManagementModal: React.FC = () => {
       return;
     }
 
+    const finalPurPrice = !isNaN(purPrice) && purPrice > 0 ? purPrice : currVal;
+
+    // Validate pocket balance if deducting from a pocket
+    if (fundingPocketId && fundingPocketId !== 'none') {
+      const pocket = pockets.find((p) => p.id === fundingPocketId);
+      if (!pocket) {
+        setFormError(language === 'id' ? 'Kantong sumber tidak ditemukan' : 'Funding pocket not found');
+        return;
+      }
+      if (pocket.balance < finalPurPrice) {
+        setFormError(
+          language === 'id'
+            ? `Saldo kantong "${pocket.name}" tidak mencukupi (Tersedia: ${formatCurrency(pocket.balance)})`
+            : `Insufficient balance in pocket "${pocket.name}" (Available: ${formatCurrency(pocket.balance)})`
+        );
+        return;
+      }
+    }
+
     addAsset({
       name: name.trim(),
       category,
       currentValue: currVal,
-      purchasePrice: !isNaN(purPrice) && purPrice > 0 ? purPrice : currVal,
+      purchasePrice: finalPurPrice,
       purchaseDate: purchaseDate || new Date().toISOString().split('T')[0],
+      pocketId: fundingPocketId && fundingPocketId !== 'none' ? fundingPocketId : undefined,
       notes: notes.trim(),
     });
 
@@ -96,6 +118,7 @@ export const AssetManagementModal: React.FC = () => {
     setPurchasePrice('');
     setPurchaseDate('');
     setNotes('');
+    setFundingPocketId('none');
     setFormError(null);
     setActiveTab('list');
   };
@@ -380,6 +403,41 @@ export const AssetManagementModal: React.FC = () => {
                   onChange={(e) => setPurchaseDate(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
                 />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block">
+                    {language === 'id' ? 'Ambil Saldo Dari Kantong' : 'Deduct from Pocket'}
+                  </label>
+                  {fundingPocketId && fundingPocketId !== 'none' && (
+                    <span className="text-[10px] font-semibold text-[#635BFF]">
+                      {(() => {
+                        const p = pockets.find((pkt) => pkt.id === fundingPocketId);
+                        return p ? `Saldo: ${formatCurrency(p.balance)}` : '';
+                      })()}
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={fundingPocketId}
+                  onChange={(e) => {
+                    setFundingPocketId(e.target.value);
+                    setFormError(null);
+                  }}
+                  className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
+                >
+                  <option value="none">
+                    {language === 'id'
+                      ? 'Jangan potong dari kantong manapun'
+                      : 'Do not deduct from any pocket'}
+                  </option>
+                  {pockets.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — Saldo: {formatCurrency(p.balance)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
