@@ -31,12 +31,34 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const applyTheme = (t: Theme) => {
     const root = document.documentElement;
-    if (t === 'dark') {
+    const isDark = t === 'dark';
+    const themeColor = isDark ? '#0A0D15' : '#FFFFFF';
+
+    if (isDark) {
       root.classList.add('dark');
       root.classList.remove('light');
     } else {
       root.classList.remove('dark');
       root.classList.add('light');
+    }
+
+    // Update meta theme-color for Android status bar & system navigation bar
+    if (typeof document !== 'undefined') {
+      const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+      if (metaTags.length > 0) {
+        metaTags.forEach((meta) => meta.setAttribute('content', themeColor));
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = themeColor;
+        document.head.appendChild(meta);
+      }
+
+      // Update iOS status bar appearance
+      const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (appleMeta) {
+        appleMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+      }
     }
   };
 

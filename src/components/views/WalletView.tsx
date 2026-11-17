@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { registerBackHandler } from '@/hooks/useSystemBackHandler';
 import {
   ChevronLeft,
   User,
@@ -98,6 +99,65 @@ export const WalletView: React.FC = () => {
   const [debtPayAmount, setDebtPayAmount] = useState<string>('');
   const [debtPayPocketId, setDebtPayPocketId] = useState<string>('');
   const [debtPayError, setDebtPayError] = useState<string | null>(null);
+
+  // Register system back button handler for WalletView sub-views and internal modals
+  useEffect(() => {
+    return registerBackHandler(() => {
+      // 1. Close internal sub-modals if open
+      if (selectedDebtDetail) {
+        setSelectedDebtDetail(null);
+        return true;
+      }
+      if (showAddCardModal || editingCard) {
+        setShowAddCardModal(false);
+        setEditingCard(null);
+        return true;
+      }
+      if (showAddNoteModal) {
+        setShowAddNoteModal(false);
+        return true;
+      }
+      if (showAddWishlistModal) {
+        setShowAddWishlistModal(false);
+        return true;
+      }
+      if (showAddDebtModal) {
+        setShowAddDebtModal(false);
+        return true;
+      }
+      if (showAddAssetModal || editingAsset) {
+        setShowAddAssetModal(false);
+        setEditingAsset(null);
+        return true;
+      }
+      if (showAddBudgetModal || editingBudget) {
+        setShowAddBudgetModal(false);
+        setEditingBudget(null);
+        return true;
+      }
+
+      // 2. Return from sub-view to 'hub'
+      if (currentSubView !== 'hub') {
+        setCurrentSubView('hub');
+        return true;
+      }
+
+      // 3. Delegate to tab history (which will navigate back to 'home')
+      return false;
+    });
+  }, [
+    selectedDebtDetail,
+    showAddCardModal,
+    editingCard,
+    showAddNoteModal,
+    showAddWishlistModal,
+    showAddDebtModal,
+    showAddAssetModal,
+    editingAsset,
+    showAddBudgetModal,
+    editingBudget,
+    currentSubView,
+  ]);
 
   // Form states for Asset
   const [newAssetName, setNewAssetName] = useState('');

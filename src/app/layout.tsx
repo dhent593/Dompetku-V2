@@ -28,7 +28,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0A0D15',
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0D15' },
+  ],
 };
 
 export default function RootLayout({
@@ -50,12 +54,23 @@ export default function RootLayout({
             __html: `
               try {
                 const savedTheme = localStorage.getItem('mypocket_theme');
-                if (savedTheme === 'light') {
+                const isLight = savedTheme === 'light';
+                if (isLight) {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.classList.add('light');
                 } else {
                   document.documentElement.classList.add('dark');
                   document.documentElement.classList.remove('light');
+                }
+                const themeColor = isLight ? '#FFFFFF' : '#0A0D15';
+                const metaTheme = document.querySelectorAll('meta[name="theme-color"]');
+                if (metaTheme.length > 0) {
+                  metaTheme.forEach(function(m) { m.setAttribute('content', themeColor); });
+                } else {
+                  const m = document.createElement('meta');
+                  m.name = 'theme-color';
+                  m.content = themeColor;
+                  document.head.appendChild(m);
                 }
               } catch (e) {}
             `,

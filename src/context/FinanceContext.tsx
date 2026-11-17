@@ -40,6 +40,8 @@ interface FinanceContextType {
   deleteWishlistItem: (id: string) => boolean;
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
+  goBackTab: () => boolean;
+  tabHistory: NavTab[];
   activeModal: string | null;
   setActiveModal: (modal: string | null) => void;
   selectedTransaction: Transaction | null;
@@ -99,7 +101,42 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useState<NoteItem[]>(() => dataService.getNotes());
   const [wishlists, setWishlists] = useState<WishlistItem[]>(() => dataService.getWishlists());
   const [categories, setCategories] = useState<CategorySummary[]>(CATEGORY_SUMMARIES);
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [activeTab, setActiveTabState] = useState<NavTab>('home');
+  const [tabHistory, setTabHistory] = useState<NavTab[]>(['home']);
+
+  const setActiveTab = useCallback((tab: NavTab) => {
+    setActiveTabState((prev) => {
+      if (prev !== tab) {
+        setTabHistory((h) => {
+          if (h[h.length - 1] === tab) return h;
+          return [...h, tab];
+        });
+      }
+      return tab;
+    });
+  }, []);
+
+  const goBackTab = useCallback((): boolean => {
+    let handled = false;
+    setTabHistory((h) => {
+      if (h.length > 1) {
+        const next = [...h];
+        next.pop();
+        const prevTab = next[next.length - 1] || 'home';
+        setActiveTabState(prevTab);
+        handled = true;
+        return next;
+      }
+      return h;
+    });
+
+    if (!handled && activeTab !== 'home') {
+      setActiveTabState('home');
+      setTabHistory(['home']);
+      return true;
+    }
+    return handled;
+  }, [activeTab]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -778,6 +815,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         deleteWishlistItem,
         activeTab,
         setActiveTab,
+        goBackTab,
+        tabHistory,
         activeModal,
         setActiveModal,
         selectedTransaction,

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { useSystemBackHandler, ExitConfirmToast } from '@/hooks/useSystemBackHandler';
 import { LoginView } from '@/components/auth/LoginView';
 import { HomeView } from '@/components/views/HomeView';
 import { AnalyticsView } from '@/components/views/AnalyticsView';
@@ -31,8 +33,18 @@ import { ResetDatabaseModal } from '@/components/modals/ResetDatabaseModal';
 
 export default function App() {
   const { isLoggedIn } = useAuth();
-  const { activeTab, setActiveTab } = useFinance();
+  const { activeTab, setActiveTab, activeModal, setActiveModal, goBackTab } = useFinance();
+  const { language } = useLanguage();
   const [mounted, setMounted] = useState(false);
+
+  // System back button & gesture navigation handler
+  const { showExitToast } = useSystemBackHandler({
+    activeModal,
+    closeModal: () => setActiveModal(null),
+    activeTab,
+    goBackTab,
+    language,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -113,7 +125,10 @@ export default function App() {
       </main>
 
       {/* Direct Bottom Navigation Bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200">
+      <div
+        className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
         <div className="max-w-md mx-auto pb-1">
           <BottomNav currentTab={activeTab} onSelectTab={setActiveTab} />
         </div>
@@ -139,6 +154,9 @@ export default function App() {
 
       {/* Security Overlay / mPIN Lock Screen */}
       <LockScreen />
+
+      {/* System Back Double-Tap Exit Toast */}
+      <ExitConfirmToast show={showExitToast} language={language} />
     </div>
   );
 }

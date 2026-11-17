@@ -105,26 +105,26 @@ export const AddTransactionModal: React.FC = () => {
   };
 
   const expenseCategories: { id: Transaction['category']; label: string }[] = [
-    { id: 'food', label: language === 'id' ? '🍔 Makanan & Minuman' : '🍔 Food & Dining' },
-    { id: 'shopping', label: language === 'id' ? '🛍️ Belanja & Kebutuhan' : '🛍️ Shopping & Groceries' },
-    { id: 'bill', label: language === 'id' ? '⚡ Tagihan & Utilitas (Listrik, Air, Wifi)' : '⚡ Bills & Utilities' },
-    { id: 'travel', label: language === 'id' ? '🚗 Transportasi & Perjalanan' : '🚗 Transportation & Travel' },
-    { id: 'entertainment', label: language === 'id' ? '🎬 Hiburan, Langganan & Hobi' : '🎬 Entertainment & Hobbies' },
-    { id: 'health', label: language === 'id' ? '💊 Kesehatan & Medis' : '💊 Health & Medical' },
-    { id: 'education', label: language === 'id' ? '📚 Pendidikan & Kursus' : '📚 Education & Courses' },
-    { id: 'family', label: language === 'id' ? '🏠 Kebutuhan Rumah & Keluarga' : '🏠 Household & Family' },
-    { id: 'gift', label: language === 'id' ? '🎁 Hadiah, Donasi & Sedekah' : '🎁 Gifts & Donations' },
-    { id: 'investment', label: language === 'id' ? '📈 Investasi & Tabungan' : '📈 Investments' },
-    { id: 'transfer', label: language === 'id' ? '🔄 Transfer Keluar' : '🔄 Transfer Out' },
-    { id: 'other', label: language === 'id' ? '📦 Lain-lain' : '📦 Others' },
+    { id: 'food', label: language === 'id' ? 'Makanan & Minuman' : 'Food & Dining' },
+    { id: 'shopping', label: language === 'id' ? 'Belanja & Kebutuhan' : 'Shopping & Groceries' },
+    { id: 'bill', label: language === 'id' ? 'Tagihan & Utilitas (Listrik, Air, Wifi)' : 'Bills & Utilities' },
+    { id: 'travel', label: language === 'id' ? 'Transportasi & Perjalanan' : 'Transportation & Travel' },
+    { id: 'entertainment', label: language === 'id' ? 'Hiburan, Langganan & Hobi' : 'Entertainment & Hobbies' },
+    { id: 'health', label: language === 'id' ? 'Kesehatan & Medis' : 'Health & Medical' },
+    { id: 'education', label: language === 'id' ? 'Pendidikan & Kursus' : 'Education & Courses' },
+    { id: 'family', label: language === 'id' ? 'Kebutuhan Rumah & Keluarga' : 'Household & Family' },
+    { id: 'gift', label: language === 'id' ? 'Hadiah, Donasi & Sedekah' : 'Gifts & Donations' },
+    { id: 'investment', label: language === 'id' ? 'Investasi & Tabungan' : 'Investments' },
+    { id: 'transfer', label: language === 'id' ? 'Transfer Keluar' : 'Transfer Out' },
+    { id: 'other', label: language === 'id' ? 'Lain-lain' : 'Others' },
   ];
 
   const incomeCategories: { id: Transaction['category']; label: string }[] = [
-    { id: 'salary', label: language === 'id' ? '💰 Gaji & Upah Bulanan' : '💰 Salary & Wages' },
-    { id: 'investment', label: language === 'id' ? '📈 Hasil Investasi & Dividen' : '📈 Investment Profits' },
-    { id: 'gift', label: language === 'id' ? '🎁 Bonus, THR & Hadiah' : '🎁 Bonus & Gifts' },
-    { id: 'transfer', label: language === 'id' ? '🔄 Transfer Masuk' : '🔄 Transfer In' },
-    { id: 'other', label: language === 'id' ? '📦 Lain-lain' : '📦 Others' },
+    { id: 'salary', label: language === 'id' ? 'Gaji & Upah Bulanan' : 'Salary & Wages' },
+    { id: 'investment', label: language === 'id' ? 'Hasil Investasi & Dividen' : 'Investment Profits' },
+    { id: 'gift', label: language === 'id' ? 'Bonus, THR & Hadiah' : 'Bonus & Gifts' },
+    { id: 'transfer', label: language === 'id' ? 'Transfer Masuk' : 'Transfer In' },
+    { id: 'other', label: language === 'id' ? 'Lain-lain' : 'Others' },
   ];
 
   const selectedPocket = pockets.find((p) => p.id === selectedPocketId);
@@ -272,33 +272,11 @@ export const AddTransactionModal: React.FC = () => {
                 />
               </div>
 
-              {/* Tanggal Transaksi (Manual Date Picker with Quick Chips) */}
+              {/* Tanggal Transaksi (Manual Date Picker) */}
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block">
-                    {language === 'id' ? 'Tanggal Transaksi' : 'Transaction Date'}
-                  </label>
-                  <div className="flex items-center space-x-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setDate(new Date().toISOString().split('T')[0])}
-                      className="text-[10px] font-semibold text-[#635BFF] hover:underline cursor-pointer"
-                    >
-                      {language === 'id' ? 'Hari Ini' : 'Today'}
-                    </button>
-                    <span className="text-[10px] text-slate-400">•</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const y = new Date(Date.now() - 24 * 60 * 60 * 1000);
-                        setDate(y.toISOString().split('T')[0]);
-                      }}
-                      className="text-[10px] font-semibold text-slate-500 hover:text-slate-700 dark:text-[#7B88A6] dark:hover:text-white cursor-pointer"
-                    >
-                      {language === 'id' ? 'Kemarin' : 'Yesterday'}
-                    </button>
-                  </div>
-                </div>
+                <label className="text-xs text-slate-600 dark:text-[#7B88A6] font-medium block mb-1">
+                  {language === 'id' ? 'Tanggal Transaksi' : 'Transaction Date'}
+                </label>
                 <div className="relative flex items-center">
                   <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
                   <input

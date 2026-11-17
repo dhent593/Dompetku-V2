@@ -181,7 +181,7 @@ export const AnalyticsView: React.FC = () => {
 
         {/* Expenses / Income Tab Switcher (Fixed) */}
         <LayoutGroup id="analyticsTabGroup">
-          <div className="flex items-center bg-slate-100 dark:bg-[#111520] p-1.5 rounded-[18px] relative">
+          <div className="flex items-center bg-slate-200/70 dark:bg-[#111520] border border-slate-200/80 dark:border-[#1E2538] p-1.5 rounded-[18px] relative">
             <button
               type="button"
               onClick={() => {
