@@ -9,6 +9,13 @@ export const metadata: Metadata = {
   title: 'MyPocket - Smart Personal Finance',
   description: 'Next-generation personal finance tracking with clean aesthetic, mPIN security, and bilingual support.',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
