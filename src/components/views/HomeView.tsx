@@ -24,7 +24,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatTxDateTime } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 export const HomeView: React.FC = () => {
@@ -324,12 +324,8 @@ export const HomeView: React.FC = () => {
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">
                     {tx.title}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#6B7894] mt-0.5">
-                    {tx.date.includes('2023-04-19')
-                      ? (language === 'id' ? '19 Apr' : 'Apr 19')
-                      : tx.date.includes('2023-04-18')
-                      ? (language === 'id' ? '18 Apr' : 'Apr 18')
-                      : tx.dateGroup}, {tx.time}
+                  <p className="text-[11px] text-slate-500 dark:text-[#7B88A6] mt-0.5 font-medium">
+                    {formatTxDateTime(tx.date, tx.time, language)}
                   </p>
                 </div>
               </div>

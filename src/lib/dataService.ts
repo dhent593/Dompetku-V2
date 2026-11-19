@@ -1,5 +1,6 @@
 import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
 import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS, INITIAL_DEBTS, INITIAL_ASSETS, INITIAL_BUDGETS, INITIAL_NOTES, INITIAL_WISHLISTS } from './dummyData';
+import { computeTxDateGroup, getLocalDateString } from './utils';
 
 export const STARTER_POCKETS: Pocket[] = [
   {
@@ -215,14 +216,28 @@ class DataService {
   // --- Transactions (CRUD) ---
   // READ
   getTransactions(): Transaction[] {
-    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_TRANSACTIONS : [];
+    if (!this.isBrowser()) {
+      return (this.isDemoUser() ? INITIAL_TRANSACTIONS : []).map((t) => ({
+        ...t,
+        dateGroup: computeTxDateGroup(t.date),
+      }));
+    }
     try {
       const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.TRANSACTIONS));
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed: Transaction[] = JSON.parse(stored);
+        return parsed.map((t) => ({
+          ...t,
+          dateGroup: computeTxDateGroup(t.date),
+        }));
+      }
     } catch (e) {
       console.error('Failed to load transactions from storage', e);
     }
-    return this.isDemoUser() ? INITIAL_TRANSACTIONS : [];
+    return (this.isDemoUser() ? INITIAL_TRANSACTIONS : []).map((t) => ({
+      ...t,
+      dateGroup: computeTxDateGroup(t.date),
+    }));
   }
 
   saveTransactions(transactions: Transaction[]): void {
@@ -540,14 +555,15 @@ class DataService {
     pocket.balance += amount;
     this.savePockets(pockets);
 
+    const localDate = getLocalDateString();
     // Create a transaction record for this allocation (addTransaction will adjust user balance)
     this.addTransaction({
       title: `Alokasi ke ${pocket.name}`,
       category: 'other',
       amount: amount,
       type: 'expense',
-      date: new Date().toISOString().split('T')[0],
-      dateGroup: 'TODAY',
+      date: localDate,
+      dateGroup: computeTxDateGroup(localDate),
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       note: `Top Up Kantong ${pocket.name}`,
     });
@@ -563,14 +579,15 @@ class DataService {
     pocket.balance -= amount;
     this.savePockets(pockets);
 
+    const localDate = getLocalDateString();
     // Create a transaction record for this withdrawal (addTransaction will adjust user balance)
     this.addTransaction({
       title: `Tarik dari ${pocket.name}`,
       category: 'other',
       amount: amount,
       type: 'income',
-      date: new Date().toISOString().split('T')[0],
-      dateGroup: 'TODAY',
+      date: localDate,
+      dateGroup: computeTxDateGroup(localDate),
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       note: `Pencairan Kantong ${pocket.name}`,
     });
@@ -683,7 +700,7 @@ class DataService {
       debt.status = 'paid_off';
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
     const newHistory = debt.paymentHistory || [];
     newHistory.unshift({
       id: `dp_${Date.now()}`,
@@ -701,7 +718,7 @@ class DataService {
       amount: actualPay,
       type: 'expense',
       date: todayStr,
-      dateGroup: 'TODAY',
+      dateGroup: computeTxDateGroup(todayStr),
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       note: isManualPay
         ? `Bayar cicilan ke ${debt.lender} (Manual / Tanpa Kantong)`
@@ -754,8 +771,8 @@ class DataService {
           category: 'investment',
           amount: newAsset.purchasePrice,
           type: 'expense',
-          date: newAsset.purchaseDate || new Date().toISOString().split('T')[0],
-          dateGroup: 'TODAY',
+          date: newAsset.purchaseDate || getLocalDateString(),
+          dateGroup: computeTxDateGroup(newAsset.purchaseDate || getLocalDateString()),
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           note: newAsset.notes
             ? `Beli aset ${newAsset.name}: ${newAsset.notes}`

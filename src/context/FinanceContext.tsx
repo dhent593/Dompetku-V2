@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
 import { dataService, STARTER_POCKETS } from '@/lib/dataService';
+import { computeTxDateGroup, getLocalDateString } from '@/lib/utils';
 import {
   CATEGORY_SUMMARIES,
   INITIAL_TRANSACTIONS,
@@ -169,7 +170,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
       const activePockets = finalPockets && finalPockets.length > 0 ? finalPockets : STARTER_POCKETS;
       setPockets(activePockets);
-      setTransactions(sbTx || []);
+      const mappedSbTx = (sbTx || []).map((t) => ({
+        ...t,
+        dateGroup: computeTxDateGroup(t.date),
+      }));
+      setTransactions(mappedSbTx);
       setCards(sbCards || []);
       setDebts(sbDebts || []);
       setAssets(sbAssets || []);
@@ -178,7 +183,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setWishlists(sbWishlists || []);
 
       dataService.savePockets(activePockets);
-      dataService.saveTransactions(sbTx || []);
+      dataService.saveTransactions(mappedSbTx);
       dataService.saveCards(sbCards || []);
       dataService.saveDebts(sbDebts || []);
       dataService.saveAssets(sbAssets || []);
@@ -264,31 +269,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     date?: string;
   }): Transaction => {
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    const todayStr = getLocalDateString(now);
     const txDate = tx.date && tx.date.trim() ? tx.date.trim() : todayStr;
     const timeStr = now.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
     });
-
-    // Calculate dateGroup dynamically
-    const yesterdayDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
-    let dateGroup: string = 'OLDER';
-    if (txDate === todayStr) {
-      dateGroup = 'TODAY';
-    } else if (txDate === yesterdayStr) {
-      dateGroup = 'YESTERDAY';
-    } else {
-      const todayMid = new Date(todayStr).getTime();
-      const txMid = new Date(txDate).getTime();
-      const diffDays = Math.round((todayMid - txMid) / (24 * 60 * 60 * 1000));
-      if (diffDays > 0 && diffDays <= 7) {
-        dateGroup = 'EARLIER THIS WEEK';
-      }
-    }
-
+    const dateGroup = computeTxDateGroup(txDate);
     const txTimestamp = new Date(`${txDate}T${now.toTimeString().split(' ')[0]}`).getTime() || Date.now();
 
     const newTx = dataService.addTransaction({
@@ -658,14 +646,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       if (asset.pocketId && asset.pocketId !== 'none') {
         const pockets = dataService.getPockets();
         const pkt = pockets.find((p) => p.id === asset.pocketId);
-        const txDate = asset.purchaseDate || new Date().toISOString().split('T')[0];
+        const txDate = asset.purchaseDate || getLocalDateString();
         SupabaseService.createTransaction({
           title: `Beli Aset: ${asset.name}`,
           category: 'investment',
           amount: asset.purchasePrice,
           type: 'expense',
           date: txDate,
-          dateGroup: 'TODAY',
+          dateGroup: computeTxDateGroup(txDate),
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           timestamp: Date.now(),
           note: asset.notes || `Pembelian aset portofolio (${asset.category})`,

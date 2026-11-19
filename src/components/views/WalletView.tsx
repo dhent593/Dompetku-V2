@@ -30,6 +30,12 @@ import {
   Clock,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  Building2,
+  Car,
+  Laptop,
+  Package,
+  Coins,
   Info,
   Gift,
   DollarSign,
@@ -43,6 +49,75 @@ import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils
 import { NoteItem, WishlistItem, PaymentCard, AssetItem, DebtItem, CategoryBudget, Transaction } from '@/types';
 
 type SubViewType = 'hub' | 'pockets' | 'debts' | 'assets' | 'budgets' | 'bank_accounts' | 'notes' | 'wishlist';
+
+export const ASSET_CATEGORIES = [
+  {
+    id: 'precious_metal' as const,
+    labelId: 'Emas & Logam Mulia',
+    labelEn: 'Precious Metals & Gold',
+    icon: Coins,
+    colorClasses: {
+      bg: 'bg-amber-500/10 dark:bg-amber-500/15',
+      text: 'text-amber-600 dark:text-amber-400',
+      badge: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/60',
+    },
+  },
+  {
+    id: 'investment' as const,
+    labelId: 'Investasi / Saham / Reksadana',
+    labelEn: 'Investments & Stocks',
+    icon: TrendingUp,
+    colorClasses: {
+      bg: 'bg-emerald-500/10 dark:bg-emerald-500/15',
+      text: 'text-emerald-600 dark:text-emerald-400',
+      badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/60',
+    },
+  },
+  {
+    id: 'property' as const,
+    labelId: 'Properti / Rumah / Tanah',
+    labelEn: 'Property & Real Estate',
+    icon: Building2,
+    colorClasses: {
+      bg: 'bg-indigo-500/10 dark:bg-indigo-500/15',
+      text: 'text-indigo-600 dark:text-indigo-400',
+      badge: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/60',
+    },
+  },
+  {
+    id: 'vehicle' as const,
+    labelId: 'Kendaraan (Mobil / Motor)',
+    labelEn: 'Vehicles',
+    icon: Car,
+    colorClasses: {
+      bg: 'bg-blue-500/10 dark:bg-blue-500/15',
+      text: 'text-blue-600 dark:text-blue-400',
+      badge: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60',
+    },
+  },
+  {
+    id: 'electronics' as const,
+    labelId: 'Elektronik / Gadget',
+    labelEn: 'Electronics & Gadgets',
+    icon: Laptop,
+    colorClasses: {
+      bg: 'bg-purple-500/10 dark:bg-purple-500/15',
+      text: 'text-purple-600 dark:text-purple-400',
+      badge: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800/60',
+    },
+  },
+  {
+    id: 'other' as const,
+    labelId: 'Lainnya',
+    labelEn: 'Other Assets',
+    icon: Package,
+    colorClasses: {
+      bg: 'bg-slate-500/10 dark:bg-slate-500/15',
+      text: 'text-slate-600 dark:text-slate-400',
+      badge: 'bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-slate-800/60',
+    },
+  },
+];
 
 export const WalletView: React.FC = () => {
   const { user } = useAuth();
@@ -93,6 +168,8 @@ export const WalletView: React.FC = () => {
   const [showAddDebtModal, setShowAddDebtModal] = useState(false);
   const [showAddAssetModal, setShowAddAssetModal] = useState(false);
   const [editingAsset, setEditingAsset] = useState<AssetItem | null>(null);
+  const [assetCategoryDropdownOpen, setAssetCategoryDropdownOpen] = useState(false);
+  const [assetPocketDropdownOpen, setAssetPocketDropdownOpen] = useState(false);
   const [showAddBudgetModal, setShowAddBudgetModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState<CategoryBudget | null>(null);
   const [selectedDebtDetail, setSelectedDebtDetail] = useState<DebtItem | null>(null);
@@ -125,9 +202,19 @@ export const WalletView: React.FC = () => {
         setShowAddDebtModal(false);
         return true;
       }
+      if (assetCategoryDropdownOpen) {
+        setAssetCategoryDropdownOpen(false);
+        return true;
+      }
+      if (assetPocketDropdownOpen) {
+        setAssetPocketDropdownOpen(false);
+        return true;
+      }
       if (showAddAssetModal || editingAsset) {
         setShowAddAssetModal(false);
         setEditingAsset(null);
+        setAssetCategoryDropdownOpen(false);
+        setAssetPocketDropdownOpen(false);
         return true;
       }
       if (showAddBudgetModal || editingBudget) {
@@ -157,7 +244,26 @@ export const WalletView: React.FC = () => {
     showAddBudgetModal,
     editingBudget,
     currentSubView,
+    assetCategoryDropdownOpen,
+    assetPocketDropdownOpen,
   ]);
+
+  // Accordion state for Portofolio Aset
+  const [expandedAssetCategories, setExpandedAssetCategories] = useState<Record<string, boolean>>({
+    precious_metal: true,
+    investment: true,
+    property: true,
+    vehicle: true,
+    electronics: true,
+    other: true,
+  });
+
+  const toggleAssetCategory = (categoryKey: string) => {
+    setExpandedAssetCategories((prev) => ({
+      ...prev,
+      [categoryKey]: prev[categoryKey] === undefined ? false : !prev[categoryKey],
+    }));
+  };
 
   // Form states for Asset
   const [newAssetName, setNewAssetName] = useState('');
@@ -995,16 +1101,16 @@ export const WalletView: React.FC = () => {
                             setNewCardHolder(card.accountHolder || card.cardHolder || user?.name || '');
                             setShowAddCardModal(true);
                           }}
-                          className="relative overflow-hidden rounded-[22px] bg-[#141824] p-5 text-white shadow-md cursor-pointer transition-all group"
+                          className="relative overflow-hidden rounded-[22px] bg-white dark:bg-[#141824] p-5 text-slate-900 dark:text-white shadow-sm dark:shadow-md border border-slate-100/90 dark:border-slate-800/60 cursor-pointer transition-all group"
                         >
                           {/* Top Row: Bank Name & Copy Pill */}
                           <div className="flex items-center justify-between relative z-10">
                             <div className="flex items-center space-x-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-white/90">
+                              <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-700 dark:text-white/90">
                                 <Landmark className="w-4 h-4 stroke-[2]" />
                               </div>
                               <div>
-                                <h3 className="text-sm font-bold text-white tracking-wide">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide">
                                   {bankName}
                                 </h3>
                               </div>
@@ -1016,7 +1122,7 @@ export const WalletView: React.FC = () => {
                               className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer ${
                                 isCopied
                                   ? 'bg-emerald-500 text-white'
-                                  : 'bg-white/10 hover:bg-white/20 text-white'
+                                  : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white'
                               }`}
                             >
                               {isCopied ? (
@@ -1035,21 +1141,21 @@ export const WalletView: React.FC = () => {
 
                           {/* Center: Large Account Number */}
                           <div className="mt-5 mb-4 relative z-10">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
                               {language === 'id' ? 'Nomor Rekening' : 'Account Number'}
                             </div>
-                            <div className="text-xl sm:text-2xl font-mono font-bold tracking-wider text-white mt-1">
+                            <div className="text-xl sm:text-2xl font-mono font-bold tracking-wider text-slate-900 dark:text-white mt-1">
                               {accNumber}
                             </div>
                           </div>
 
                           {/* Bottom: Account Holder & Delete Button */}
-                          <div className="flex items-center justify-between pt-3 border-t border-white/10 relative z-10">
+                          <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-white/10 relative z-10">
                             <div>
-                              <div className="text-[9px] text-slate-400 uppercase tracking-wider">
+                              <div className="text-[9px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium">
                                 {language === 'id' ? 'Atas Nama (Pemilik)' : 'Account Holder'}
                               </div>
-                              <div className="text-xs font-semibold text-slate-200 mt-0.5">
+                              <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
                                 {card.accountHolder || card.cardHolder || user?.name}
                               </div>
                             </div>
@@ -1066,7 +1172,7 @@ export const WalletView: React.FC = () => {
                                 );
                                 setTimeout(() => setToastMessage(null), 2400);
                               }}
-                              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer"
                               title={language === 'id' ? 'Hapus Rekening' : 'Delete Account'}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1244,6 +1350,10 @@ export const WalletView: React.FC = () => {
                       setNewAssetPurchasePrice('');
                       setNewAssetCurrentValue('');
                       setNewAssetNotes('');
+                      setNewAssetPocketId('none');
+                      setNewAssetError(null);
+                      setAssetCategoryDropdownOpen(false);
+                      setAssetPocketDropdownOpen(false);
                       setShowAddAssetModal(true);
                     }}
                     className="w-10 h-10 rounded-full bg-white dark:bg-[#161B26] flex items-center justify-center text-slate-700 dark:text-white/90 hover:bg-slate-50 dark:hover:bg-[#1E2433] active:scale-95 transition-all shadow-sm cursor-pointer"
@@ -1278,60 +1388,187 @@ export const WalletView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Asset List (Borderless) */}
-                  <div className="space-y-3">
-                    {assets.map((asset) => (
-                      <div
-                        key={asset.id}
-                        onClick={() => {
-                          setEditingAsset(asset);
-                          setNewAssetName(asset.name);
-                          setNewAssetCategory(asset.category);
-                          setNewAssetPurchasePrice(formatNumberInput(asset.purchasePrice));
-                          setNewAssetCurrentValue(formatNumberInput(asset.currentValue));
-                          setNewAssetNotes(asset.notes || '');
-                          setShowAddAssetModal(true);
-                        }}
-                        className="p-4 rounded-[20px] bg-white dark:bg-[#141824] shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-between group"
-                      >
-                        <div className="flex-1 min-w-0 pr-3">
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                            {asset.name}
-                          </h4>
-                          <p className="text-xs text-slate-500 dark:text-[#7B88A6] mt-0.5 capitalize truncate">
-                            {asset.notes || asset.category}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-3 flex-shrink-0">
-                          <div className="text-right">
-                            <div className="text-sm font-extrabold text-slate-900 dark:text-white">
-                              {formatCurrency(asset.currentValue)}
-                            </div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">
-                              Beli: {formatCurrency(asset.purchasePrice)}
-                            </div>
+                  {/* Asset List by Category (Accordion) */}
+                  {(() => {
+                    const groupedAssets = ASSET_CATEGORIES.map((cat) => {
+                      const items = assets.filter((a) => (a.category || 'other') === cat.id);
+                      const totalValue = items.reduce((sum, a) => sum + (Number(a.currentValue) || 0), 0);
+                      const totalPurchase = items.reduce((sum, a) => sum + (Number(a.purchasePrice) || 0), 0);
+                      const gain = totalValue - totalPurchase;
+                      const gainPercent = totalPurchase > 0 ? ((gain / totalPurchase) * 100).toFixed(1) : '0';
+                      return {
+                        ...cat,
+                        items,
+                        totalValue,
+                        totalPurchase,
+                        gain,
+                        gainPercent,
+                      };
+                    }).filter((group) => group.items.length > 0);
+
+                    if (assets.length === 0) {
+                      return (
+                        <div className="py-12 px-6 rounded-[24px] bg-white dark:bg-[#141824] shadow-sm text-center flex flex-col items-center justify-center">
+                          <div className="w-14 h-14 rounded-2xl bg-[#635BFF]/10 text-[#635BFF] flex items-center justify-center mb-3">
+                            <Coins className="w-7 h-7" />
                           </div>
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                            {language === 'id' ? 'Belum Ada Aset' : 'No Assets Yet'}
+                          </h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[260px]">
+                            {language === 'id'
+                              ? 'Mulai catat portofolio emas, saham, kendaraan, atau properti Anda untuk memantau kekayaan.'
+                              : 'Start tracking your precious metals, stocks, vehicles, or property to monitor your wealth.'}
+                          </p>
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteAsset(asset.id);
-                              setToastMessage(
-                                language === 'id'
-                                  ? `Aset "${asset.name}" berhasil dihapus!`
-                                  : `Asset "${asset.name}" deleted!`
-                              );
-                              setTimeout(() => setToastMessage(null), 2400);
+                            onClick={() => {
+                              setEditingAsset(null);
+                              setNewAssetName('');
+                              setNewAssetCategory('investment');
+                              setNewAssetPurchasePrice('');
+                              setNewAssetCurrentValue('');
+                              setNewAssetNotes('');
+                              setNewAssetPocketId('none');
+                              setNewAssetError(null);
+                              setAssetCategoryDropdownOpen(false);
+                              setAssetPocketDropdownOpen(false);
+                              setShowAddAssetModal(true);
                             }}
-                            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer"
-                            title={language === 'id' ? 'Hapus Aset' : 'Delete Asset'}
+                            className="mt-4 px-4 py-2 rounded-xl bg-[#635BFF] text-white text-xs font-bold shadow-sm hover:bg-[#564EE6] active:scale-95 transition-all cursor-pointer"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            + {language === 'id' ? 'Tambah Aset' : 'Add Asset'}
                           </button>
                         </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-3">
+                        {groupedAssets.map((group) => {
+                          const isExpanded = expandedAssetCategories[group.id] !== false;
+                          const CatIcon = group.icon;
+
+                          return (
+                            <div
+                              key={group.id}
+                              className="rounded-[20px] bg-white dark:bg-[#141824] shadow-sm overflow-hidden transition-all duration-200 border border-slate-100/60 dark:border-slate-800/40"
+                            >
+                              {/* Accordion Header */}
+                              <button
+                                type="button"
+                                onClick={() => toggleAssetCategory(group.id)}
+                                className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50/70 dark:hover:bg-[#181E2E]/60 transition-colors cursor-pointer"
+                              >
+                                <div className="flex items-center space-x-3 min-w-0 pr-2">
+                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${group.colorClasses.bg} ${group.colorClasses.text}`}>
+                                    <CatIcon className="w-5 h-5 stroke-[2.2]" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center space-x-2">
+                                      <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                        {language === 'id' ? group.labelId : group.labelEn}
+                                      </h3>
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                        {group.items.length} Aset
+                                      </span>
+                                    </div>
+                                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                                      {language === 'id' ? 'Total' : 'Total'}:{' '}
+                                      <span className="font-extrabold text-slate-900 dark:text-white">
+                                        {formatCurrency(group.totalValue)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-2 flex-shrink-0">
+                                  <div
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-transform duration-200 transform-gpu ${
+                                      isExpanded ? 'rotate-180 text-[#635BFF] dark:text-[#827CFF]' : ''
+                                    }`}
+                                  >
+                                    <ChevronDown className="w-4 h-4" />
+                                  </div>
+                                </div>
+                              </button>
+
+                              {/* Accordion Collapsible Items */}
+                              <AnimatePresence initial={false}>
+                                {isExpanded && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.22 }}
+                                    className="overflow-hidden border-t border-slate-100 dark:border-slate-800/80"
+                                  >
+                                    <div className="p-3 space-y-2 bg-slate-50/50 dark:bg-[#0F131D]/40">
+                                      {group.items.map((asset) => (
+                                        <div
+                                          key={asset.id}
+                                          onClick={() => {
+                                            setEditingAsset(asset);
+                                            setNewAssetName(asset.name);
+                                            setNewAssetCategory(asset.category);
+                                            setNewAssetPurchasePrice(formatNumberInput(asset.purchasePrice));
+                                            setNewAssetCurrentValue(formatNumberInput(asset.currentValue));
+                                            setNewAssetNotes(asset.notes || '');
+                                            setNewAssetPocketId(asset.pocketId || 'none');
+                                            setNewAssetError(null);
+                                            setAssetCategoryDropdownOpen(false);
+                                            setAssetPocketDropdownOpen(false);
+                                            setShowAddAssetModal(true);
+                                          }}
+                                          className="p-3.5 rounded-[16px] bg-white dark:bg-[#141824] shadow-xs hover:shadow-sm border border-slate-100/90 dark:border-slate-800/60 transition-all cursor-pointer flex items-center justify-between group"
+                                        >
+                                          <div className="flex-1 min-w-0 pr-3">
+                                            <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                              {asset.name}
+                                            </h4>
+                                            <p className="text-[11px] text-slate-500 dark:text-[#7B88A6] mt-0.5 capitalize truncate">
+                                              {asset.notes || (language === 'id' ? group.labelId : group.labelEn)}
+                                            </p>
+                                          </div>
+                                          <div className="flex items-center space-x-2.5 flex-shrink-0">
+                                            <div className="text-right">
+                                              <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                                                {formatCurrency(asset.currentValue)}
+                                              </div>
+                                              <div className="text-[10px] text-slate-400 mt-0.5">
+                                                Beli: {formatCurrency(asset.purchasePrice)}
+                                              </div>
+                                            </div>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteAsset(asset.id);
+                                                setToastMessage(
+                                                  language === 'id'
+                                                    ? `Aset "${asset.name}" berhasil dihapus!`
+                                                    : `Asset "${asset.name}" deleted!`
+                                                );
+                                                setTimeout(() => setToastMessage(null), 2400);
+                                              }}
+                                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer"
+                                              title={language === 'id' ? 'Hapus Aset' : 'Delete Asset'}
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -1859,6 +2096,8 @@ export const WalletView: React.FC = () => {
               onClick={() => {
                 setShowAddAssetModal(false);
                 setEditingAsset(null);
+                setAssetCategoryDropdownOpen(false);
+                setAssetPocketDropdownOpen(false);
               }}
               className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
@@ -1866,8 +2105,8 @@ export const WalletView: React.FC = () => {
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="relative w-full max-w-md bg-white dark:bg-[#141824] rounded-t-[28px] sm:rounded-[28px] p-6 shadow-2xl z-10"
+              transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.28 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#141824] rounded-t-[28px] sm:rounded-[28px] p-6 shadow-2xl z-10 max-h-[90vh] overflow-y-auto scrollbar-none transform-gpu will-change-transform"
             >
               <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">
                 {editingAsset
@@ -1898,23 +2137,89 @@ export const WalletView: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-1">
-                    {language === 'id' ? 'Kategori Aset' : 'Asset Category'}
-                  </label>
-                  <select
-                    value={newAssetCategory}
-                    onChange={(e) => setNewAssetCategory(e.target.value as AssetItem['category'])}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
-                  >
-                    <option value="investment">Investasi / Saham / Reksadana</option>
-                    <option value="precious_metal">Emas & Logam Mulia</option>
-                    <option value="property">Properti / Rumah / Tanah</option>
-                    <option value="vehicle">Kendaraan (Mobil / Motor)</option>
-                    <option value="electronics">Elektronik / Gadget</option>
-                    <option value="other">Lainnya</option>
-                  </select>
-                </div>
+                {/* Custom In-App Dropdown: Kategori Aset */}
+                {(() => {
+                  const selectedCategoryMeta = ASSET_CATEGORIES.find((c) => c.id === newAssetCategory) || ASSET_CATEGORIES[0];
+                  const SelectedCatIcon = selectedCategoryMeta.icon;
+
+                  return (
+                    <div className="relative">
+                      <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-1">
+                        {language === 'id' ? 'Kategori Aset' : 'Asset Category'}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAssetCategoryDropdownOpen(!assetCategoryDropdownOpen);
+                          setAssetPocketDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border transition-all cursor-pointer ${
+                          assetCategoryDropdownOpen
+                            ? 'border-[#635BFF] ring-2 ring-[#635BFF]/20'
+                            : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5 truncate">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedCategoryMeta.colorClasses.bg} ${selectedCategoryMeta.colorClasses.text}`}>
+                            <SelectedCatIcon className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                            {language === 'id' ? selectedCategoryMeta.labelId : selectedCategoryMeta.labelEn}
+                          </span>
+                        </div>
+                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${assetCategoryDropdownOpen ? 'rotate-180 text-[#635BFF]' : ''}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {assetCategoryDropdownOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setAssetCategoryDropdownOpen(false)}
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl p-1.5 shadow-2xl z-50 max-h-56 overflow-y-auto scrollbar-none transform-gpu"
+                            >
+                              {ASSET_CATEGORIES.map((cat) => {
+                                const isSelected = newAssetCategory === cat.id;
+                                const CatIcon = cat.icon;
+                                return (
+                                  <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setNewAssetCategory(cat.id);
+                                      setAssetCategoryDropdownOpen(false);
+                                    }}
+                                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#635BFF]/10 text-[#635BFF] dark:text-[#827CFF]'
+                                        : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-2.5 truncate">
+                                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${cat.colorClasses.bg} ${cat.colorClasses.text}`}>
+                                        <CatIcon className="w-3.5 h-3.5" />
+                                      </div>
+                                      <span className="truncate">
+                                        {language === 'id' ? cat.labelId : cat.labelEn}
+                                      </span>
+                                    </div>
+                                    {isSelected && <Check className="w-4 h-4 text-[#635BFF] flex-shrink-0 ml-2" />}
+                                  </button>
+                                );
+                              })}
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
@@ -1955,7 +2260,7 @@ export const WalletView: React.FC = () => {
 
                 {/* Sumber Dana (Ambil Saldo Dari Kantong) - hanya untuk aset baru */}
                 {!editingAsset && (
-                  <div>
+                  <div className="relative">
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block">
                         {language === 'id' ? 'Ambil Saldo Dari Kantong' : 'Deduct from Pocket'}
@@ -1969,25 +2274,112 @@ export const WalletView: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <select
-                      value={newAssetPocketId}
-                      onChange={(e) => {
-                        setNewAssetPocketId(e.target.value);
-                        setNewAssetError(null);
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAssetPocketDropdownOpen(!assetPocketDropdownOpen);
+                        setAssetCategoryDropdownOpen(false);
                       }}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm font-semibold text-slate-900 dark:text-white outline-none"
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border transition-all cursor-pointer ${
+                        assetPocketDropdownOpen
+                          ? 'border-[#635BFF] ring-2 ring-[#635BFF]/20'
+                          : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
+                      }`}
                     >
-                      <option value="none">
-                        {language === 'id'
-                          ? 'Jangan potong dari kantong manapun'
-                          : 'Do not deduct from any pocket'}
-                      </option>
-                      {pockets.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} — Saldo: {formatCurrency(p.balance)}
-                        </option>
-                      ))}
-                    </select>
+                      <div className="flex items-center space-x-2.5 truncate">
+                        <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 flex-shrink-0">
+                          <WalletCards className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                          {newAssetPocketId === 'none'
+                            ? language === 'id'
+                              ? 'Jangan potong dari kantong manapun'
+                              : 'Do not deduct from any pocket'
+                            : (() => {
+                                const p = pockets.find((pkt) => pkt.id === newAssetPocketId);
+                                return p ? `${p.name} — Saldo: ${formatCurrency(p.balance)}` : 'Pilih Kantong';
+                              })()}
+                        </span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${assetPocketDropdownOpen ? 'rotate-180 text-[#635BFF]' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {assetPocketDropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setAssetPocketDropdownOpen(false)}
+                          />
+                          <motion.div
+                            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl p-1.5 shadow-2xl z-50 max-h-56 overflow-y-auto scrollbar-none transform-gpu"
+                          >
+                            {/* Opsi: Jangan potong saldo */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNewAssetPocketId('none');
+                                setNewAssetError(null);
+                                setAssetPocketDropdownOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                newAssetPocketId === 'none'
+                                  ? 'bg-[#635BFF]/10 text-[#635BFF] dark:text-[#827CFF]'
+                                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 truncate">
+                                <span className="text-slate-400 font-bold">—</span>
+                                <span className="truncate">
+                                  {language === 'id'
+                                    ? 'Jangan potong dari kantong manapun'
+                                    : 'Do not deduct from any pocket'}
+                                </span>
+                              </div>
+                              {newAssetPocketId === 'none' && <Check className="w-4 h-4 text-[#635BFF] flex-shrink-0 ml-2" />}
+                            </button>
+
+                            {/* Daftar Kantong Pengguna */}
+                            {pockets.map((p) => {
+                              const isSelected = newAssetPocketId === p.id;
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setNewAssetPocketId(p.id);
+                                    setNewAssetError(null);
+                                    setAssetPocketDropdownOpen(false);
+                                  }}
+                                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#635BFF]/10 text-[#635BFF] dark:text-[#827CFF]'
+                                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 active:bg-slate-200 dark:active:bg-slate-700'
+                                  }`}
+                                >
+                                  <div className="flex items-center space-x-2 truncate min-w-0 pr-2">
+                                    <span className="font-bold truncate text-slate-900 dark:text-white">
+                                      {p.name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-2 flex-shrink-0">
+                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                      Saldo: {formatCurrency(p.balance)}
+                                    </span>
+                                    {isSelected && <Check className="w-4 h-4 text-[#635BFF] ml-1" />}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </motion.div>
+                        </>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
 
@@ -2012,6 +2404,8 @@ export const WalletView: React.FC = () => {
                       setEditingAsset(null);
                       setNewAssetPocketId('none');
                       setNewAssetError(null);
+                      setAssetCategoryDropdownOpen(false);
+                      setAssetPocketDropdownOpen(false);
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/20 active:scale-95 transition-all cursor-pointer"
                   >

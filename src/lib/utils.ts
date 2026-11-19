@@ -40,3 +40,84 @@ export function parseNumberInput(value: string | number | undefined | null): num
   return digits ? parseInt(digits, 10) : 0;
 }
 
+/**
+ * Returns local YYYY-MM-DD string without UTC offset issues
+ */
+export function getLocalDateString(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Formats a transaction date string (YYYY-MM-DD) into readable localized format
+ * Example: "2026-11-19" -> "19 Nov 2026" (ID) or "Nov 19, 2026" (EN)
+ */
+export function formatTxDate(dateStr: string, language: 'id' | 'en' = 'id'): string {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+    const d = new Date(year, month, day);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  }
+  const d = new Date(dateStr);
+  if (!isNaN(d.getTime())) {
+    return d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+  return dateStr;
+}
+
+/**
+ * Formats full transaction date & time for clean card display
+ * Example: "19 Nov 2026, 09:50 AM"
+ */
+export function formatTxDateTime(dateStr: string, timeStr?: string, language: 'id' | 'en' = 'id'): string {
+  const formattedDate = formatTxDate(dateStr, language);
+  if (!formattedDate) return timeStr || '';
+  if (!timeStr) return formattedDate;
+  return `${formattedDate}, ${timeStr}`;
+}
+
+/**
+ * Dynamically computes date group based on current local date vs tx.date
+ * Returns: 'TODAY' | 'YESTERDAY' | 'EARLIER THIS WEEK' | 'OLDER'
+ */
+export function computeTxDateGroup(dateStr: string): 'TODAY' | 'YESTERDAY' | 'EARLIER THIS WEEK' | 'OLDER' {
+  if (!dateStr) return 'OLDER';
+  const now = new Date();
+  const todayStr = getLocalDateString(now);
+
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const yesterdayStr = getLocalDateString(yesterday);
+
+  if (dateStr === todayStr) return 'TODAY';
+  if (dateStr === yesterdayStr) return 'YESTERDAY';
+
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const txDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffTime = todayDate.getTime() - txDate.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 1 && diffDays <= 7) {
+      return 'EARLIER THIS WEEK';
+    }
+  }
+
+  return 'OLDER';
+}
+

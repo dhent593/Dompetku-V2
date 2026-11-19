@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput, formatTxDateTime } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -161,7 +161,7 @@ export const TransactionDetailModal: React.FC = () => {
                       <span>{t('date_time')}</span>
                     </span>
                     <span className="font-semibold text-slate-800 dark:text-white">
-                      {selectedTransaction.date}, {selectedTransaction.time}
+                      {formatTxDateTime(selectedTransaction.date, selectedTransaction.time, language)}
                     </span>
                   </div>
 

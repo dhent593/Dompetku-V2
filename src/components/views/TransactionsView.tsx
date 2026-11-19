@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage, TranslationKey } from '@/context/LanguageContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatTxDateTime, computeTxDateGroup } from '@/lib/utils';
 import { Transaction } from '@/types';
 
 export const TransactionsView: React.FC = () => {
@@ -32,7 +32,7 @@ export const TransactionsView: React.FC = () => {
     searchQuery,
     setSearchQuery,
   } = useFinance();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [filterPeriod, setFilterPeriod] = useState<'all' | 'week' | 'month' | 'year'>('all');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
@@ -81,7 +81,8 @@ export const TransactionsView: React.FC = () => {
 
       if (filterPeriod === 'week') {
         const isWithin7Days = diffMs <= 7 * oneDay;
-        const isGroupWeek = ['TODAY', 'YESTERDAY', 'EARLIER THIS WEEK'].includes(tx.dateGroup);
+        const dynamicGroup = computeTxDateGroup(tx.date);
+        const isGroupWeek = ['TODAY', 'YESTERDAY', 'EARLIER THIS WEEK'].includes(dynamicGroup);
         if (!isWithin7Days && !isGroupWeek) return false;
       } else if (filterPeriod === 'month') {
         const isWithin30Days = diffMs <= 30 * oneDay;
@@ -110,7 +111,7 @@ export const TransactionsView: React.FC = () => {
   });
 
   const grouped = finalFiltered.reduce((acc, tx) => {
-    const group = tx.dateGroup || 'OLDER';
+    const group = computeTxDateGroup(tx.date);
     if (!acc[group]) acc[group] = [];
     acc[group].push(tx);
     return acc;
@@ -314,7 +315,9 @@ export const TransactionsView: React.FC = () => {
                           </div>
                           <div>
                             <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">{tx.title}</h3>
-                            <p className="text-xs text-slate-500 dark:text-[#667390] mt-0.5">{tx.time}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-[#7B88A6] mt-0.5 font-medium">
+                              {formatTxDateTime(tx.date, tx.time, language)}
+                            </p>
                           </div>
                         </div>
 
