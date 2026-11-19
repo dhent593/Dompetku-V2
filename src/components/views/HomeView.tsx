@@ -183,7 +183,7 @@ export const HomeView: React.FC = () => {
           <div
             onClick={() => setActiveTab('analytics')}
             className="pt-3 border-t border-white/15 flex items-center justify-between text-xs cursor-pointer hover:bg-white/5 -mx-6 -mb-6 px-6 pb-4 pt-3 transition-colors group"
-            title="Lihat Analisis Keuangan"
+            title={language === 'id' ? 'Lihat Analisis Keuangan' : 'View Financial Analytics'}
           >
             {/* Pemasukan */}
             <div className="flex items-center space-x-2">

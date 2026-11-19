@@ -45,7 +45,7 @@ export const ScanQRModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-[2px]"
         >
           <motion.div
             key="scanqr-modal"
@@ -54,7 +54,7 @@ export const ScanQRModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative flex flex-col items-center"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative flex flex-col items-center transform-gpu will-change-transform"
           >
             <button
               onClick={() => setActiveModal(null)}

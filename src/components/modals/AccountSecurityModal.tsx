@@ -11,7 +11,7 @@ import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig
 export const AccountSecurityModal: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { activeModal, setActiveModal } = useFinance();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -21,21 +21,35 @@ export const AccountSecurityModal: React.FC = () => {
 
   const handleChangePin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (oldPin !== user.mPinHash && oldPin !== '1234') {
-      setMsg({ text: 'Current mPIN salah / Current mPIN is incorrect.', isError: true });
+    const isDemo = user.email === 'smith@example.com';
+    const isOldPinCorrect = oldPin === user.mPinHash || (isDemo && oldPin === '1234');
+    if (!isOldPinCorrect) {
+      setMsg({
+        text: language === 'id' ? 'mPIN saat ini salah.' : 'Current mPIN is incorrect.',
+        isError: true,
+      });
       return;
     }
     if (newPin.length !== 4 || !/^\d+$/.test(newPin)) {
-      setMsg({ text: 'PIN harus 4 digit angka / PIN must be 4 digits.', isError: true });
+      setMsg({
+        text: language === 'id' ? 'PIN harus 4 digit angka.' : 'PIN must be 4 digits.',
+        isError: true,
+      });
       return;
     }
     if (newPin !== confirmPin) {
-      setMsg({ text: 'PIN baru tidak cocok / New PINs do not match.', isError: true });
+      setMsg({
+        text: language === 'id' ? 'Konfirmasi PIN baru tidak cocok.' : 'New PINs do not match.',
+        isError: true,
+      });
       return;
     }
 
     updateUser({ mPinHash: newPin });
-    setMsg({ text: 'mPIN berhasil diperbarui! / mPIN updated successfully!', isError: false });
+    setMsg({
+      text: language === 'id' ? 'mPIN berhasil diperbarui!' : 'mPIN updated successfully!',
+      isError: false,
+    });
     setTimeout(() => {
       setActiveModal(null);
       setOldPin('');
@@ -60,7 +74,7 @@ export const AccountSecurityModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
         >
           <motion.div
             key="security-modal"
@@ -69,7 +83,7 @@ export const AccountSecurityModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative transform-gpu will-change-transform"
           >
             <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">

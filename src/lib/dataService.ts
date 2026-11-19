@@ -60,6 +60,19 @@ const STORAGE_KEYS = {
   IS_LOCKED: 'mypocket_is_locked_v1',
 };
 
+export function hashCredential(pass: string): string {
+  let hash1 = 0x811c9dc5;
+  let hash2 = 0x9e3779b9;
+  const salted = `mypocket_salt_sec_${pass}_v2026`;
+  for (let i = 0; i < salted.length; i++) {
+    const code = salted.charCodeAt(i);
+    hash1 ^= code;
+    hash1 = (hash1 * 0x01000193) >>> 0;
+    hash2 = (hash2 + code + (hash2 << 6) + (hash2 >> 2)) >>> 0;
+  }
+  return `${hash1.toString(16).padStart(8, '0')}${hash2.toString(16).padStart(8, '0')}`;
+}
+
 class DataService {
   private isBrowser(): boolean {
     return typeof window !== 'undefined';
@@ -112,20 +125,25 @@ class DataService {
     }
   }
 
-  // --- Registered Accounts Local Registry (Fallback) ---
+  // --- Registered Accounts Local Registry (Secure Hashed) ---
   saveRegisteredAccount(account: { name: string; email: string; pass: string }): void {
     if (!this.isBrowser()) return;
     try {
       const list = this.getRegisteredAccounts();
       const filtered = list.filter((a) => a.email.toLowerCase() !== account.email.toLowerCase());
-      filtered.push(account);
+      // Store hashed password, NEVER plaintext
+      filtered.push({
+        name: account.name,
+        email: account.email,
+        passHash: hashCredential(account.pass),
+      });
       localStorage.setItem(STORAGE_KEYS.REGISTERED_ACCOUNTS, JSON.stringify(filtered));
     } catch (e) {
       console.error('Failed to save registered account', e);
     }
   }
 
-  getRegisteredAccounts(): Array<{ name: string; email: string; pass: string }> {
+  getRegisteredAccounts(): Array<{ name: string; email: string; pass?: string; passHash?: string }> {
     if (!this.isBrowser()) return [];
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.REGISTERED_ACCOUNTS);
@@ -134,12 +152,16 @@ class DataService {
     return [];
   }
 
-  verifyLocalCredentials(email: string, pass: string): { name: string; email: string; pass: string } | null {
+  verifyLocalCredentials(email: string, pass: string): { name: string; email: string } | null {
     const list = this.getRegisteredAccounts();
-    const found = list.find(
-      (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim() && a.pass === pass
-    );
-    return found || null;
+    const targetHash = hashCredential(pass);
+    const found = list.find((a) => {
+      const emailMatches = a.email.toLowerCase().trim() === email.toLowerCase().trim();
+      if (!emailMatches) return false;
+      // Supports both hashed credentials and legacy plaintext
+      return a.passHash === targetHash || a.pass === pass;
+    });
+    return found ? { name: found.name, email: found.email } : null;
   }
 
   getAppLocked(): boolean {

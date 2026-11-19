@@ -182,7 +182,7 @@ export const DebtManagementModal: React.FC = () => {
         animate="animate"
         exit="exit"
         onClick={() => setActiveModal(null)}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
       >
         <motion.div
           key="debt-modal"
@@ -191,7 +191,7 @@ export const DebtManagementModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
+          className="w-full max-w-md rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto transform-gpu will-change-transform"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-3">

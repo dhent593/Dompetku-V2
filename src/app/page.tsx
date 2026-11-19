@@ -32,7 +32,7 @@ import { MonthlyBudgetModal } from '@/components/modals/MonthlyBudgetModal';
 import { ResetDatabaseModal } from '@/components/modals/ResetDatabaseModal';
 
 export default function App() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isAuthLoading } = useAuth();
   const { activeTab, setActiveTab, activeModal, setActiveModal, goBackTab } = useFinance();
   const { language } = useLanguage();
   const [mounted, setMounted] = useState(false);
@@ -50,10 +50,16 @@ export default function App() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[#0A0D15] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#635BFF] border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#0A0D15] flex flex-col items-center justify-center space-y-4 transition-colors duration-200">
+        <div className="w-14 h-14 rounded-2xl bg-[#635BFF] flex items-center justify-center shadow-lg shadow-[#635BFF]/25 animate-pulse">
+          <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+            <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+          </svg>
+        </div>
+        <div className="w-6 h-6 border-2 border-[#635BFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

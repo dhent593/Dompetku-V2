@@ -23,7 +23,7 @@ export const RecordActionSheet: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
         >
           <motion.div
             key="record-actionsheet-container"
@@ -32,7 +32,7 @@ export const RecordActionSheet: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-white dark:bg-[#121622] rounded-t-[32px] px-6 pt-3 pb-8 shadow-2xl text-slate-900 dark:text-white relative"
+            className="w-full max-w-md bg-white dark:bg-[#121622] rounded-t-[32px] px-6 pt-3 pb-8 shadow-2xl text-slate-900 dark:text-white relative transform-gpu will-change-transform"
           >
             {/* Top Drag Indicator */}
             <div className="w-10 h-1 bg-slate-300 dark:bg-white/15 rounded-full mx-auto mb-4" />

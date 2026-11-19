@@ -199,6 +199,19 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // 0. If user is logged out, clear memory state cleanly
+    if (!user?.email) {
+      setTransactions([]);
+      setCards([]);
+      setPockets([]);
+      setDebts([]);
+      setAssets([]);
+      setBudgets([]);
+      setNotes([]);
+      setWishlists([]);
+      return;
+    }
+
     // 1. Sync with persistent local data
     const isDemo = user?.email === 'smith@example.com';
     const loadedTx = dataService.getTransactions();

@@ -30,16 +30,16 @@ import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig
 import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
 
 const AVAILABLE_ICONS = [
-  { id: 'Wallet', icon: Wallet, label: 'Dompet' },
-  { id: 'Landmark', icon: Landmark, label: 'Bank' },
-  { id: 'Shield', icon: Shield, label: 'Darurat' },
-  { id: 'Plane', icon: Plane, label: 'Liburan' },
-  { id: 'Smartphone', icon: Smartphone, label: 'Gadget' },
-  { id: 'Heart', icon: Heart, label: 'Kesehatan' },
-  { id: 'ShoppingBag', icon: ShoppingBag, label: 'Belanja' },
-  { id: 'Car', icon: Car, label: 'Kendaraan' },
-  { id: 'Home', icon: Home, label: 'Rumah' },
-  { id: 'Briefcase', icon: Briefcase, label: 'Bisnis' },
+  { id: 'Wallet', icon: Wallet, labelId: 'Dompet', labelEn: 'Wallet' },
+  { id: 'Landmark', icon: Landmark, labelId: 'Bank', labelEn: 'Bank' },
+  { id: 'Shield', icon: Shield, labelId: 'Darurat', labelEn: 'Emergency' },
+  { id: 'Plane', icon: Plane, labelId: 'Liburan', labelEn: 'Vacation' },
+  { id: 'Smartphone', icon: Smartphone, labelId: 'Gadget', labelEn: 'Gadget' },
+  { id: 'Heart', icon: Heart, labelId: 'Kesehatan', labelEn: 'Health' },
+  { id: 'ShoppingBag', icon: ShoppingBag, labelId: 'Belanja', labelEn: 'Shopping' },
+  { id: 'Car', icon: Car, labelId: 'Kendaraan', labelEn: 'Vehicle' },
+  { id: 'Home', icon: Home, labelId: 'Rumah', labelEn: 'Home' },
+  { id: 'Briefcase', icon: Briefcase, labelId: 'Bisnis', labelEn: 'Business' },
 ];
 
 export const PocketDetailModal: React.FC = () => {
@@ -52,7 +52,7 @@ export const PocketDetailModal: React.FC = () => {
     transferBetweenPockets,
   } = useFinance();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [mode, setMode] = useState<'view' | 'transfer' | 'edit'>('view');
   const [targetPocketId, setTargetPocketId] = useState<string>('');
@@ -119,15 +119,24 @@ export const PocketDetailModal: React.FC = () => {
     e.preventDefault();
     const num = parseNumberInput(amountInput);
     if (isNaN(num) || num <= 0) {
-      setFeedbackMsg({ text: 'Nominal transfer tidak valid', isError: true });
+      setFeedbackMsg({
+        text: language === 'id' ? 'Nominal transfer tidak valid' : 'Invalid transfer amount',
+        isError: true,
+      });
       return;
     }
     if (num > selectedPocket.balance) {
-      setFeedbackMsg({ text: 'Saldo kantong tidak mencukupi', isError: true });
+      setFeedbackMsg({
+        text: language === 'id' ? 'Saldo kantong tidak mencukupi' : 'Insufficient pocket balance',
+        isError: true,
+      });
       return;
     }
     if (!targetPocketId) {
-      setFeedbackMsg({ text: 'Pilih kantong tujuan', isError: true });
+      setFeedbackMsg({
+        text: language === 'id' ? 'Pilih kantong tujuan' : 'Select destination pocket',
+        isError: true,
+      });
       return;
     }
 
@@ -188,7 +197,7 @@ export const PocketDetailModal: React.FC = () => {
         animate="animate"
         exit="exit"
         onClick={() => setSelectedPocket(null)}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
       >
         <motion.div
           key="pocketdetail-modal"
@@ -197,7 +206,7 @@ export const PocketDetailModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto"
+          className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto transform-gpu will-change-transform"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4">
@@ -617,7 +626,7 @@ export const PocketDetailModal: React.FC = () => {
                             ? 'bg-slate-200 dark:bg-[#1C2233] text-slate-900 dark:text-white border-slate-400 dark:border-white/40 shadow-sm'
                             : 'bg-slate-50 dark:bg-[#141824] border-slate-200 dark:border-[#1E2435] text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white hover:border-slate-300 dark:hover:border-[#2A344A]'
                         }`}
-                        title={item.label}
+                        title={language === 'id' ? item.labelId : item.labelEn}
                       >
                         <IconComp
                           className="w-4 h-4 stroke-[2]"

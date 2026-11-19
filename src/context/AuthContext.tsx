@@ -10,11 +10,13 @@ import { SupabaseService } from '@/lib/supabaseService';
 interface AuthContextType {
   user: UserProfile;
   isLoggedIn: boolean;
+  isAuthLoading: boolean;
   isLocked: boolean;
   pinInput: string;
   pinError: string | null;
   biometricLoading: boolean;
   pinAttempts: number;
+  pinLockoutRemaining: number;
   handleKeypadPress: (char: string) => void;
   handleKeypadBackspace: () => void;
   handleKeypadClear: () => void;
@@ -34,44 +36,69 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile>(EMPTY_USER);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [biometricLoading, setBiometricLoading] = useState<boolean>(false);
   const [pinAttempts, setPinAttempts] = useState<number>(0);
+  const [pinLockoutUntil, setPinLockoutUntil] = useState<number | null>(null);
+  const [pinLockoutRemaining, setPinLockoutRemaining] = useState<number>(0);
+
+  // Keypad Lockout Countdown Timer
+  useEffect(() => {
+    if (!pinLockoutUntil) return;
+    const interval = setInterval(() => {
+      const diff = Math.ceil((pinLockoutUntil - Date.now()) / 1000);
+      if (diff <= 0) {
+        setPinLockoutUntil(null);
+        setPinLockoutRemaining(0);
+        setPinAttempts(0);
+        setPinError(null);
+        clearInterval(interval);
+      } else {
+        setPinLockoutRemaining(diff);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [pinLockoutUntil]);
 
   useEffect(() => {
     // If Supabase is configured, listen to active session
     if (isSupabaseConfigured) {
       supabase.auth.getSession().then(async ({ data: { session } }) => {
-        if (session?.user) {
-          setIsLoggedIn(true);
-          dataService.setAuthState(true);
-          const profile = await SupabaseService.getProfile();
-          if (profile) {
-            setUser(profile);
-            dataService.saveUser(profile);
-          } else {
-            const fallback: UserProfile = {
-              ...EMPTY_USER,
-              id: session.user.id,
-              name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-            };
-            setUser(fallback);
-            dataService.saveUser(fallback);
-          }
-        } else {
-          // If no Supabase session, check stored auth state
-          const storedAuth = dataService.getAuthState();
-          if (storedAuth) {
-            const initialUser = dataService.getUser();
-            setUser(initialUser);
+        try {
+          if (session?.user) {
             setIsLoggedIn(true);
+            dataService.setAuthState(true);
+            const profile = await SupabaseService.getProfile();
+            if (profile) {
+              setUser(profile);
+              dataService.saveUser(profile);
+            } else {
+              const fallback: UserProfile = {
+                ...EMPTY_USER,
+                id: session.user.id,
+                name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+                email: session.user.email || '',
+              };
+              setUser(fallback);
+              dataService.saveUser(fallback);
+            }
           } else {
-            setIsLoggedIn(false);
-            setUser(EMPTY_USER);
+            // If no Supabase session, check stored auth state
+            const storedAuth = dataService.getAuthState();
+            if (storedAuth) {
+              const initialUser = dataService.getUser();
+              setUser(initialUser);
+              setIsLoggedIn(true);
+            } else {
+              setIsLoggedIn(false);
+              setUser(EMPTY_USER);
+            }
           }
+        } finally {
+          setIsAuthLoading(false);
         }
       });
 
@@ -103,10 +130,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(EMPTY_USER);
         setIsLoggedIn(false);
       }
+      setIsAuthLoading(false);
     }
   }, []);
 
   const handleKeypadPress = (char: string) => {
+    if (pinLockoutUntil && Date.now() < pinLockoutUntil) return;
     if (pinInput.length < 4) {
       const nextPin = pinInput + char;
       setPinInput(nextPin);
@@ -122,28 +151,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const handleKeypadBackspace = () => {
+    if (pinLockoutUntil && Date.now() < pinLockoutUntil) return;
     setPinInput((prev) => prev.slice(0, -1));
     setPinError(null);
   };
 
   const handleKeypadClear = () => {
+    if (pinLockoutUntil && Date.now() < pinLockoutUntil) return;
     setPinInput('');
     setPinError(null);
   };
 
   const verifyPin = (pinToTest: string): boolean => {
-    if (pinToTest === user.mPinHash || pinToTest === '1234') {
+    if (pinLockoutUntil && Date.now() < pinLockoutUntil) {
+      const diff = Math.ceil((pinLockoutUntil - Date.now()) / 1000);
+      setPinError(`Keypad terkunci. Coba lagi dalam ${diff} detik.`);
+      return false;
+    }
+
+    const isDemo = user.email === 'smith@example.com';
+    const isValid = pinToTest === user.mPinHash || (isDemo && pinToTest === '1234');
+
+    if (isValid) {
       setIsLocked(false);
       setIsLoggedIn(true);
       dataService.setAuthState(true);
       setPinInput('');
       setPinError(null);
       setPinAttempts(0);
+      setPinLockoutUntil(null);
+      setPinLockoutRemaining(0);
       dataService.setAppLocked(false);
       return true;
     } else {
-      setPinError('Invalid 4-digit mPIN. Demo PIN is 1234');
-      setPinAttempts((prev) => prev + 1);
+      const nextAttempts = pinAttempts + 1;
+      setPinAttempts(nextAttempts);
+      if (nextAttempts >= 5) {
+        const lockUntil = Date.now() + 30000;
+        setPinLockoutUntil(lockUntil);
+        setPinLockoutRemaining(30);
+        setPinError('Terlalu banyak percobaan gagal. Keypad terkunci 30 detik.');
+      } else {
+        setPinError(`mPIN salah (${nextAttempts}/5).`);
+      }
       setTimeout(() => {
         setPinInput('');
       }, 600);
@@ -411,11 +461,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isLoggedIn,
+        isAuthLoading,
         isLocked,
         pinInput,
         pinError,
         biometricLoading,
         pinAttempts,
+        pinLockoutRemaining,
         handleKeypadPress,
         handleKeypadBackspace,
         handleKeypadClear,

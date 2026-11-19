@@ -12,8 +12,8 @@ import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig
 export const WithdrawModal: React.FC = () => {
   const { user } = useAuth();
   const { activeModal, setActiveModal, withdrawMoney } = useFinance();
-  const { t } = useLanguage();
-  const [bank, setBank] = useState('Chase Bank (•••• 8912)');
+  const { t, language } = useLanguage();
+  const [bank, setBank] = useState('BCA (•••• 4120)');
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -24,7 +24,7 @@ export const WithdrawModal: React.FC = () => {
     e.preventDefault();
     const num = parseNumberInput(amount);
     if (isNaN(num) || num <= 0) {
-      setError('Nominal tidak valid / Invalid amount');
+      setError(language === 'id' ? 'Nominal tidak valid' : 'Invalid amount');
       return;
     }
     if (num > user.totalBalance) {
@@ -53,7 +53,7 @@ export const WithdrawModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
         >
           <motion.div
             key="withdraw-modal"
@@ -62,7 +62,7 @@ export const WithdrawModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative"
+            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative transform-gpu will-change-transform"
           >
             <div className="flex items-center justify-between pb-4">
               <div className="flex items-center space-x-2.5">

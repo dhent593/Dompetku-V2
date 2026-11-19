@@ -1761,7 +1761,7 @@ export const WalletView: React.FC = () => {
                 setShowAddCardModal(false);
                 setEditingCard(null);
               }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -1860,7 +1860,7 @@ export const WalletView: React.FC = () => {
                 setShowAddAssetModal(false);
                 setEditingAsset(null);
               }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -2044,7 +2044,7 @@ export const WalletView: React.FC = () => {
                 setShowAddBudgetModal(false);
                 setEditingBudget(null);
               }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -2130,7 +2130,7 @@ export const WalletView: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAddNoteModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -2227,7 +2227,7 @@ export const WalletView: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAddWishlistModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -2361,7 +2361,7 @@ export const WalletView: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedDebtDetail(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -2589,7 +2589,7 @@ export const WalletView: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAddDebtModal(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ y: '100%' }}

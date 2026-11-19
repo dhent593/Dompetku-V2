@@ -139,7 +139,7 @@ export const AddTransactionModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-[2px]"
         >
           <motion.div
             key="addtx-modal"
@@ -148,7 +148,7 @@ export const AddTransactionModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[28px] bg-white dark:bg-[#121622] p-5 sm:p-6 shadow-2xl border border-slate-200/80 dark:border-[#222A3E] text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none"
+            className="w-full max-w-sm rounded-[28px] bg-white dark:bg-[#121622] p-5 sm:p-6 shadow-2xl border border-slate-200/80 dark:border-[#222A3E] text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none transform-gpu will-change-transform"
           >
             {/* Header: Clean & Typographic */}
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-[#1E2538]">
