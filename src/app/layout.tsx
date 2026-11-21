@@ -29,7 +29,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  colorScheme: 'dark light',
   themeColor: '#07090F',
 };
 
@@ -53,6 +52,9 @@ export default function RootLayout({
               try {
                 const savedTheme = localStorage.getItem('mypocket_theme');
                 const isLight = savedTheme === 'light';
+                const schemeValue = isLight ? 'light' : 'dark';
+                const themeColor = isLight ? '#FFFFFF' : '#07090F';
+                
                 if (isLight) {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.classList.add('light');
@@ -60,20 +62,26 @@ export default function RootLayout({
                   document.documentElement.classList.add('dark');
                   document.documentElement.classList.remove('light');
                 }
-                const themeColor = isLight ? '#F1F5F9' : '#07090F';
+
+                document.documentElement.style.colorScheme = schemeValue;
                 document.documentElement.style.backgroundColor = themeColor;
-                const metaTheme = document.querySelectorAll('meta[name="theme-color"]');
-                if (metaTheme.length > 0) {
-                  metaTheme.forEach(function(m) {
-                    m.removeAttribute('media');
-                    m.setAttribute('content', themeColor);
-                  });
-                } else {
-                  const m = document.createElement('meta');
-                  m.name = 'theme-color';
-                  m.content = themeColor;
-                  document.head.appendChild(m);
+
+                // Meta color-scheme
+                let csMeta = document.querySelector('meta[name="color-scheme"]');
+                if (!csMeta) {
+                  csMeta = document.createElement('meta');
+                  csMeta.name = 'color-scheme';
+                  document.head.appendChild(csMeta);
                 }
+                csMeta.content = schemeValue;
+
+                // Meta theme-color: clean and re-append
+                const metaTheme = document.querySelectorAll('meta[name="theme-color"]');
+                metaTheme.forEach(function(m) { m.remove(); });
+                const m = document.createElement('meta');
+                m.name = 'theme-color';
+                m.content = themeColor;
+                document.head.appendChild(m);
               } catch (e) {}
             `,
           }}

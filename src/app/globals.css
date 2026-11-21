@@ -21,17 +21,9 @@ html {
   color-scheme: light;
 }
 
-html.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 13, 21;
-  --background-end-rgb: 7, 9, 15;
-  --card-bg: #141824;
-  --card-border: #1E2435;
-  --inner-bg: #1C2233;
-  --text-primary: #FFFFFF;
-  --text-secondary: #7B88A6;
-  background-color: #07090F !important;
-  color-scheme: dark;
+html.light {
+  color-scheme: light !important;
+  background-color: #FFFFFF !important;
 }
 
 body {
@@ -45,8 +37,27 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html.light body {
+  color-scheme: light !important;
+  background-color: #F1F5F9;
+}
+
+html.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 13, 21;
+  --background-end-rgb: 7, 9, 15;
+  --card-bg: #141824;
+  --card-border: #1E2435;
+  --inner-bg: #1C2233;
+  --text-primary: #FFFFFF;
+  --text-secondary: #7B88A6;
+  background-color: #07090F !important;
+  color-scheme: dark !important;
+}
+
 html.dark body {
   background-color: #07090F !important;
+  color-scheme: dark !important;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

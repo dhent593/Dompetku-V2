@@ -32,8 +32,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const applyTheme = (t: Theme) => {
     const root = document.documentElement;
     const isDark = t === 'dark';
-    const themeColor = isDark ? '#07090F' : '#F1F5F9';
+    const themeColor = isDark ? '#07090F' : '#FFFFFF';
+    const schemeValue = isDark ? 'dark' : 'light';
+
+    root.style.colorScheme = schemeValue;
     root.style.backgroundColor = themeColor;
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.style.colorScheme = schemeValue;
+    }
 
     if (isDark) {
       root.classList.add('dark');
@@ -43,22 +49,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.add('light');
     }
 
-    // Update meta theme-color for Android status bar & system navigation bar
+    // Forcefully update meta tags for Android 15/16 WindowInsetsController & iOS
     if (typeof document !== 'undefined') {
-      const metaTags = document.querySelectorAll('meta[name="theme-color"]');
-      if (metaTags.length > 0) {
-        metaTags.forEach((meta) => {
-          meta.removeAttribute('media');
-          meta.setAttribute('content', themeColor);
-        });
-      } else {
-        const meta = document.createElement('meta');
-        meta.name = 'theme-color';
-        meta.content = themeColor;
-        document.head.appendChild(meta);
+      // 1. Meta color-scheme: forces Chrome Android to toggle APPEARANCE_LIGHT_NAVIGATION_BARS
+      let colorSchemeMeta = document.querySelector('meta[name="color-scheme"]');
+      if (!colorSchemeMeta) {
+        colorSchemeMeta = document.createElement('meta');
+        colorSchemeMeta.setAttribute('name', 'color-scheme');
+        document.head.appendChild(colorSchemeMeta);
       }
+      colorSchemeMeta.setAttribute('content', schemeValue);
 
-      // Update iOS status bar appearance
+      // 2. Meta theme-color: remove old ones and append fresh element to force Blink repaint of system bars
+      const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+      metaTags.forEach((meta) => meta.remove());
+
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = themeColor;
+      document.head.appendChild(meta);
+
+      // 3. Update iOS status bar appearance
       const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
       if (appleMeta) {
         appleMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
