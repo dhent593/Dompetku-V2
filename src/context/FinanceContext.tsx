@@ -160,16 +160,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         SupabaseService.getWishlists(),
       ]);
 
-      // If brand new user without pockets in Supabase, provision the 3 starter pockets
-      let finalPockets = sbPockets;
-      if (!sbPockets || sbPockets.length === 0) {
-        for (const sp of STARTER_POCKETS) {
-          await SupabaseService.createPocket(sp);
-        }
-        finalPockets = await SupabaseService.getPockets();
-      }
-
-      const activePockets = finalPockets && finalPockets.length > 0 ? finalPockets : STARTER_POCKETS;
+      // If pockets fetched from Supabase, use them directly without forcing starter pockets
+      const activePockets = sbPockets || [];
       setPockets(activePockets);
       const mappedSbTx = (sbTx || []).map((t) => ({
         ...t,
@@ -227,7 +219,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     setCards(loadedCards !== null && loadedCards !== undefined ? loadedCards : (isDemo ? INITIAL_CARDS : []));
 
     const loadedPockets = dataService.getPockets();
-    setPockets(loadedPockets && loadedPockets.length > 0 ? loadedPockets : (isDemo ? INITIAL_POCKETS : STARTER_POCKETS));
+    setPockets(loadedPockets !== null && loadedPockets !== undefined ? loadedPockets : (isDemo ? INITIAL_POCKETS : []));
 
     const loadedDebts = dataService.getDebts();
     setDebts(loadedDebts !== null && loadedDebts !== undefined ? loadedDebts : (isDemo ? INITIAL_DEBTS : []));
@@ -495,6 +487,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deletePocket = (id: string): boolean => {
+    const target = pockets.find((p) => p.id === id);
     const ok = dataService.deletePocket(id);
     if (ok) {
       setPockets(dataService.getPockets());
@@ -504,7 +497,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setSelectedPocket(null);
       }
       if (isSupabaseConfigured) {
-        SupabaseService.deletePocket(id).catch(console.error);
+        SupabaseService.deletePocket(id, target?.name).catch(console.error);
       }
     }
     return ok;
@@ -812,7 +805,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       dataService.clearUserData(user.email);
       setTransactions([]);
       setCards([]);
-      setPockets(STARTER_POCKETS);
+      setPockets([]);
       setDebts([]);
       setAssets([]);
       setBudgets([]);
@@ -820,7 +813,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setWishlists([]);
       setCategories(CATEGORY_SUMMARIES);
       setSelectedPocket(null);
-      dataService.savePockets(STARTER_POCKETS);
+      dataService.savePockets([]);
       dataService.saveTransactions([]);
       dataService.saveCards([]);
       dataService.saveDebts([]);

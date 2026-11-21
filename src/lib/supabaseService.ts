@@ -143,14 +143,40 @@ export class SupabaseService {
     return !error;
   }
 
-  static async deletePocket(id: string): Promise<boolean> {
+  static async deletePocket(id: string, name?: string): Promise<boolean> {
     if (!this.isConfigured()) return false;
-    const { error } = await supabase
-      .from('pockets')
-      .delete()
-      .eq('id', id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
 
-    return !error;
+    // Check if id is a valid UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+
+    if (isUuid) {
+      const { error } = await supabase
+        .from('pockets')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      return !error;
+    } else if (name) {
+      // Legacy or starter string ID (e.g. 'pkt_mandiri'), match by name & user_id
+      const { error } = await supabase
+        .from('pockets')
+        .delete()
+        .eq('name', name)
+        .eq('user_id', user.id);
+
+      return !error;
+    } else {
+      const { error } = await supabase
+        .from('pockets')
+        .delete()
+        .eq('name', id)
+        .eq('user_id', user.id);
+
+      return !error;
+    }
   }
 
   // ========================================================

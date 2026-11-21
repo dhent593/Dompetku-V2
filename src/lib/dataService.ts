@@ -470,14 +470,14 @@ class DataService {
 
   // --- Pockets (Kantong Saya) CRUD ---
   getPockets(): Pocket[] {
-    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_POCKETS : STARTER_POCKETS;
+    if (!this.isBrowser()) return this.isDemoUser() ? INITIAL_POCKETS : [];
     try {
       const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.POCKETS));
-      if (stored) return JSON.parse(stored);
+      if (stored !== null) return JSON.parse(stored);
     } catch (e) {
       console.error('Failed to load pockets', e);
     }
-    return this.isDemoUser() ? INITIAL_POCKETS : STARTER_POCKETS;
+    return this.isDemoUser() ? INITIAL_POCKETS : [];
   }
 
   savePockets(pockets: Pocket[]): void {
