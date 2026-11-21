@@ -268,8 +268,8 @@ export const TransactionsView: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* 2. Grouped Transaction List (Scrollable Items ONLY) */}
-      <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-5 pb-6 sm:pb-8 pt-1 pr-0.5">
+      {/* 2. Grouped Transaction List (Scrollable Items ONLY with unclipped shadow) */}
+      <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-5 pb-6 sm:pb-8 pt-1 -mx-2 px-2">
         {Object.keys(grouped).length === 0 ? (
           <div className="text-center py-12 text-slate-400 dark:text-[#64728E] text-xs flex flex-col items-center space-y-3">
             <p>{t('no_tx_found')}</p>

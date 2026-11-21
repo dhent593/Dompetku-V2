@@ -21,6 +21,7 @@ import {
   Building2,
   Utensils,
   Plus,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
@@ -57,14 +58,17 @@ interface PocketCardProps {
   pocket: Pocket;
   onSelect: () => void;
   targetLabel: string;
+  isReorderMode: boolean;
+  onStartReorder: () => void;
 }
 
 const ReorderablePocketCard: React.FC<PocketCardProps> = ({
   pocket,
   onSelect,
   targetLabel,
+  isReorderMode,
+  onStartReorder,
 }) => {
-  const dragControls = useDragControls();
   const [isDragging, setIsDragging] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -84,24 +88,24 @@ const ReorderablePocketCard: React.FC<PocketCardProps> = ({
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    if (isReorderMode) return;
     isLongPressRef.current = false;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
 
     timerRef.current = setTimeout(() => {
       isLongPressRef.current = true;
-      setIsDragging(true);
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
           navigator.vibrate(50);
         } catch (_) {}
       }
-      dragControls.start(e);
-    }, 380);
+      onStartReorder();
+    }, 350);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!startPosRef.current || isLongPressRef.current) return;
+    if (isReorderMode || !startPosRef.current || isLongPressRef.current) return;
     const dx = Math.abs(e.clientX - startPosRef.current.x);
     const dy = Math.abs(e.clientY - startPosRef.current.y);
     if (dx > 8 || dy > 8) {
@@ -112,7 +116,7 @@ const ReorderablePocketCard: React.FC<PocketCardProps> = ({
   const handlePointerUp = () => {
     clearTimer();
     startPosRef.current = null;
-    if (!isLongPressRef.current) {
+    if (!isReorderMode && !isLongPressRef.current) {
       onSelect();
     }
   };
@@ -125,29 +129,49 @@ const ReorderablePocketCard: React.FC<PocketCardProps> = ({
   return (
     <Reorder.Item
       value={pocket}
-      dragListener={false}
-      dragControls={dragControls}
+      dragListener={isReorderMode}
+      onDragStart={() => setIsDragging(true)}
       onDragEnd={() => {
         setIsDragging(false);
-        isLongPressRef.current = false;
         if (typeof window !== 'undefined' && 'vibrate' in navigator) {
           try {
             navigator.vibrate(25);
           } catch (_) {}
         }
       }}
+      animate={
+        isDragging
+          ? { scale: 1.08, rotate: 0, zIndex: 50 }
+          : isReorderMode
+            ? {
+                rotate: [-1.4, 1.4, -1.4],
+                transition: {
+                  repeat: Infinity,
+                  duration: 0.22,
+                  ease: 'easeInOut',
+                },
+              }
+            : { scale: 1, rotate: 0, zIndex: 1 }
+      }
+      whileDrag={{
+        scale: 1.08,
+        rotate: 0,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+        zIndex: 50,
+      }}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      whileDrag={{
-        scale: 1.05,
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
-        zIndex: 50,
-      }}
-      className={`pocket-card min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] transition-shadow cursor-grab active:cursor-grabbing flex flex-col justify-between group relative overflow-hidden select-none touch-pan-x ${
-        isDragging ? 'ring-2 ring-white/70 shadow-2xl z-50' : 'shadow-sm active:scale-[0.98]'
+      className={`pocket-card min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] transition-shadow select-none ${
+        isReorderMode ? 'cursor-grab active:cursor-grabbing touch-none' : 'cursor-pointer active:scale-[0.98]'
+      } flex flex-col justify-between group relative overflow-hidden ${
+        isDragging
+          ? 'ring-2 ring-white/90 shadow-2xl z-50'
+          : isReorderMode
+            ? 'ring-2 ring-white/60 shadow-lg'
+            : 'shadow-sm'
       }`}
       style={{ backgroundColor: pocket.color }}
       title={pocket.name}
@@ -199,6 +223,7 @@ export const HomeView: React.FC = () => {
   } = useFinance();
   const { language, t } = useLanguage();
   const [liveDate, setLiveDate] = useState<string>('');
+  const [isReorderMode, setIsReorderMode] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -286,7 +311,7 @@ export const HomeView: React.FC = () => {
       </div>
 
       {/* 2. Main Balance Solid Card (Fixed) */}
-      <div className="relative overflow-hidden rounded-[24px] p-5 sm:p-6 text-white bg-[#635BFF] shadow-lg shadow-[#635BFF]/15 flex-shrink-0">
+      <div className="relative overflow-hidden rounded-[24px] p-5 sm:p-6 text-white bg-[#0F172A] dark:bg-[#635BFF] shadow-lg shadow-slate-900/10 dark:shadow-[#635BFF]/20 flex-shrink-0 transition-colors duration-200">
         <div className="relative z-10 flex flex-col justify-between space-y-3.5">
           {/* Card Top: Label & Live Date */}
           <div className="flex items-center justify-between">
@@ -358,13 +383,30 @@ export const HomeView: React.FC = () => {
       {/* 3. Kantong Saya (My Pockets - Fixed Vertical, Horizontal Scroll) */}
       <div className="flex flex-col space-y-2.5 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('my_pockets')}</h2>
-          <button
-            onClick={() => setActiveModal('addPocket')}
-            className="text-xs text-slate-500 dark:text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer font-medium flex items-center space-x-1"
-          >
-            <span>{t('add_pocket_btn')}</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{t('my_pockets')}</h2>
+            {isReorderMode && (
+              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full animate-pulse">
+                {language === 'id' ? 'Atur Urutan' : 'Reordering'}
+              </span>
+            )}
+          </div>
+          {isReorderMode ? (
+            <button
+              onClick={() => setIsReorderMode(false)}
+              className="text-xs px-2.5 py-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all flex items-center space-x-1 shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>{language === 'id' ? 'Selesai' : 'Done'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveModal('addPocket')}
+              className="text-xs text-slate-500 dark:text-[#7B88A6] hover:text-[#635BFF] transition-colors cursor-pointer font-medium flex items-center space-x-1"
+            >
+              <span>{t('add_pocket_btn')}</span>
+            </button>
+          )}
         </div>
 
         {/* Horizontal Scrollable Pocket Cards (Long-press to Reorder) */}
@@ -372,7 +414,7 @@ export const HomeView: React.FC = () => {
           axis="x"
           values={pockets}
           onReorder={reorderPockets}
-          className="flex space-x-3 overflow-x-auto pb-1 scrollbar-none snap-x -mx-1 px-1"
+          className="flex space-x-3 overflow-x-auto pb-2 pt-1 scrollbar-none -mx-2 px-2"
         >
           {pockets.map((pocket) => (
             <ReorderablePocketCard
@@ -380,6 +422,8 @@ export const HomeView: React.FC = () => {
               pocket={pocket}
               onSelect={() => setSelectedPocket(pocket)}
               targetLabel={t('pocket_target_label')}
+              isReorderMode={isReorderMode}
+              onStartReorder={() => setIsReorderMode(true)}
             />
           ))}
 
@@ -409,8 +453,8 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        {/* Scrollable Transaction Cards List ONLY (Aligned directly to navbar border) */}
-        <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-6 sm:pb-8 -mr-1 pr-1">
+        {/* Scrollable Transaction Cards List ONLY (Aligned directly to navbar border with unclipped shadow) */}
+        <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-6 sm:pb-8 -mx-2 px-2 pt-1">
           {transactions.map((tx) => (
             <div
               key={tx.id}

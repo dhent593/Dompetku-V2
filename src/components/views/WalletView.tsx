@@ -124,6 +124,8 @@ interface WalletPocketItemProps {
   language: string;
   formatCurrency: (val: number) => string;
   onSelect: () => void;
+  isReorderMode: boolean;
+  onStartReorder: () => void;
 }
 
 const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
@@ -131,8 +133,9 @@ const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
   language,
   formatCurrency,
   onSelect,
+  isReorderMode,
+  onStartReorder,
 }) => {
-  const dragControls = useDragControls();
   const [isDragging, setIsDragging] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -149,24 +152,24 @@ const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    if (isReorderMode) return;
     isLongPressRef.current = false;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
 
     timerRef.current = setTimeout(() => {
       isLongPressRef.current = true;
-      setIsDragging(true);
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
           navigator.vibrate(50);
         } catch (_) {}
       }
-      dragControls.start(e);
-    }, 380);
+      onStartReorder();
+    }, 350);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!startPosRef.current || isLongPressRef.current) return;
+    if (isReorderMode || !startPosRef.current || isLongPressRef.current) return;
     const dx = Math.abs(e.clientX - startPosRef.current.x);
     const dy = Math.abs(e.clientY - startPosRef.current.y);
     if (dx > 8 || dy > 8) {
@@ -177,7 +180,7 @@ const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
   const handlePointerUp = () => {
     clearTimer();
     startPosRef.current = null;
-    if (!isLongPressRef.current) {
+    if (!isReorderMode && !isLongPressRef.current) {
       onSelect();
     }
   };
@@ -190,29 +193,49 @@ const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
   return (
     <Reorder.Item
       value={pkt}
-      dragListener={false}
-      dragControls={dragControls}
+      dragListener={isReorderMode}
+      onDragStart={() => setIsDragging(true)}
       onDragEnd={() => {
         setIsDragging(false);
-        isLongPressRef.current = false;
         if (typeof window !== 'undefined' && 'vibrate' in navigator) {
           try {
             navigator.vibrate(25);
           } catch (_) {}
         }
       }}
+      animate={
+        isDragging
+          ? { scale: 1.04, rotate: 0, zIndex: 50 }
+          : isReorderMode
+            ? {
+                rotate: [-0.9, 0.9, -0.9],
+                transition: {
+                  repeat: Infinity,
+                  duration: 0.22,
+                  ease: 'easeInOut',
+                },
+              }
+            : { scale: 1, rotate: 0, zIndex: 1 }
+      }
+      whileDrag={{
+        scale: 1.04,
+        rotate: 0,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+        zIndex: 50,
+      }}
       onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      whileDrag={{
-        scale: 1.02,
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
-        zIndex: 50,
-      }}
-      className={`p-4 rounded-[20px] bg-white dark:bg-[#141824] transition-shadow cursor-grab active:cursor-grabbing select-none relative ${
-        isDragging ? 'ring-2 ring-[#635BFF] shadow-2xl z-50' : 'shadow-sm hover:shadow'
+      className={`p-4 rounded-[20px] bg-white dark:bg-[#141824] transition-shadow select-none relative ${
+        isReorderMode ? 'cursor-grab active:cursor-grabbing touch-none' : 'cursor-pointer'
+      } ${
+        isDragging
+          ? 'ring-2 ring-[#635BFF] shadow-2xl z-50'
+          : isReorderMode
+            ? 'ring-2 ring-[#635BFF]/50 shadow-md'
+            : 'shadow-sm hover:shadow'
       }`}
     >
       <div className="flex items-center justify-between">
@@ -298,6 +321,7 @@ export const WalletView: React.FC = () => {
 
   // Active Sub-view state
   const [currentSubView, setCurrentSubView] = useState<SubViewType>('hub');
+  const [isPocketReorderMode, setIsPocketReorderMode] = useState(false);
 
   // Copy feedback and toast state
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
@@ -1119,13 +1143,25 @@ export const WalletView: React.FC = () => {
                         {formatCurrency(totalPocketsBalance)}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setActiveModal('movePocketFunds')}
-                      className="px-3 py-2 rounded-[14px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold flex items-center space-x-1.5 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all shadow-sm cursor-pointer"
-                    >
-                      <ArrowLeftRight className="w-3.5 h-3.5 stroke-[2.2]" />
-                      <span>{language === 'id' ? 'Pindah Dana' : 'Transfer'}</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      {isPocketReorderMode ? (
+                        <button
+                          onClick={() => setIsPocketReorderMode(false)}
+                          className="px-3 py-2 rounded-[14px] bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>{language === 'id' ? 'Selesai' : 'Done'}</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setActiveModal('movePocketFunds')}
+                          className="px-3 py-2 rounded-[14px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold flex items-center space-x-1.5 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all shadow-sm cursor-pointer"
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 stroke-[2.2]" />
+                          <span>{language === 'id' ? 'Pindah Dana' : 'Transfer'}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Pockets List (Borderless - Long-press to Reorder) */}
@@ -1133,7 +1169,7 @@ export const WalletView: React.FC = () => {
                     axis="y"
                     values={pockets}
                     onReorder={reorderPockets}
-                    className="space-y-3"
+                    className="space-y-3 -mx-2 px-2 py-1"
                   >
                     {pockets.map((pkt) => (
                       <ReorderableWalletPocketItem
@@ -1141,6 +1177,8 @@ export const WalletView: React.FC = () => {
                         pkt={pkt}
                         language={language}
                         formatCurrency={formatCurrency}
+                        isReorderMode={isPocketReorderMode}
+                        onStartReorder={() => setIsPocketReorderMode(true)}
                         onSelect={() => {
                           setSelectedPocket(pkt);
                           setActiveModal('pocketDetail');
