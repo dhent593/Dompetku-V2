@@ -81,6 +81,7 @@ export interface Pocket {
   color: string;
   iconName: string;
   createdAt: number;
+  order?: number;
 }
 
 export interface DebtPaymentRecord {

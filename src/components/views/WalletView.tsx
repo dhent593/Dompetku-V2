@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { registerBackHandler } from '@/hooks/useSystemBackHandler';
 import {
   ChevronLeft,
@@ -46,7 +46,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
-import { NoteItem, WishlistItem, PaymentCard, AssetItem, DebtItem, CategoryBudget, Transaction } from '@/types';
+import { NoteItem, WishlistItem, PaymentCard, AssetItem, DebtItem, CategoryBudget, Transaction, Pocket } from '@/types';
 
 type SubViewType = 'hub' | 'pockets' | 'debts' | 'assets' | 'budgets' | 'bank_accounts' | 'notes' | 'wishlist';
 
@@ -119,12 +119,155 @@ export const ASSET_CATEGORIES = [
   },
 ];
 
+interface WalletPocketItemProps {
+  pkt: Pocket;
+  language: string;
+  formatCurrency: (val: number) => string;
+  onSelect: () => void;
+}
+
+const ReorderableWalletPocketItem: React.FC<WalletPocketItemProps> = ({
+  pkt,
+  language,
+  formatCurrency,
+  onSelect,
+}) => {
+  const dragControls = useDragControls();
+  const [isDragging, setIsDragging] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
+  const isLongPressRef = useRef(false);
+
+  const percent = pkt.targetAmount > 0 ? Math.min(100, Math.round((pkt.balance / pkt.targetAmount) * 100)) : 100;
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    isLongPressRef.current = false;
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    clearTimer();
+
+    timerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setIsDragging(true);
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(50);
+        } catch (_) {}
+      }
+      dragControls.start(e);
+    }, 380);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!startPosRef.current || isLongPressRef.current) return;
+    const dx = Math.abs(e.clientX - startPosRef.current.x);
+    const dy = Math.abs(e.clientY - startPosRef.current.y);
+    if (dx > 8 || dy > 8) {
+      clearTimer();
+    }
+  };
+
+  const handlePointerUp = () => {
+    clearTimer();
+    startPosRef.current = null;
+    if (!isLongPressRef.current) {
+      onSelect();
+    }
+  };
+
+  const handlePointerCancel = () => {
+    clearTimer();
+    startPosRef.current = null;
+  };
+
+  return (
+    <Reorder.Item
+      value={pkt}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={() => {
+        setIsDragging(false);
+        isLongPressRef.current = false;
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          try {
+            navigator.vibrate(25);
+          } catch (_) {}
+        }
+      }}
+      onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      whileDrag={{
+        scale: 1.02,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+        zIndex: 50,
+      }}
+      className={`p-4 rounded-[20px] bg-white dark:bg-[#141824] transition-shadow cursor-grab active:cursor-grabbing select-none relative ${
+        isDragging ? 'ring-2 ring-[#635BFF] shadow-2xl z-50' : 'shadow-sm hover:shadow'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div
+            className="w-10 h-10 rounded-[14px] flex items-center justify-center text-white flex-shrink-0"
+            style={{ backgroundColor: pkt.color || '#635BFF' }}
+          >
+            <WalletCards className="w-5 h-5 stroke-[2]" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+              {pkt.name}
+            </h4>
+            <p className="text-[11px] text-slate-400 dark:text-[#7B88A6] mt-0.5">
+              {language === 'id' ? 'Target: ' : 'Goal: '}
+              {pkt.targetAmount > 0 ? formatCurrency(pkt.targetAmount) : '-'}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-right">
+          <div className="text-sm font-extrabold text-slate-900 dark:text-white">
+            {formatCurrency(pkt.balance)}
+          </div>
+          {pkt.targetAmount > 0 && (
+            <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {percent}% tercapai
+            </div>
+          )}
+        </div>
+      </div>
+
+      {pkt.targetAmount > 0 && (
+        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${percent}%`,
+              backgroundColor: pkt.color || '#635BFF',
+            }}
+          />
+        </div>
+      )}
+    </Reorder.Item>
+  );
+};
+
 export const WalletView: React.FC = () => {
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const {
     pockets,
     setSelectedPocket,
+    reorderPockets,
     debts,
     addDebt,
     payDebtInstallment,
@@ -985,65 +1128,26 @@ export const WalletView: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Pockets List (Borderless) */}
-                  <div className="space-y-3">
-                    {pockets.map((pkt) => {
-                      const percent = pkt.targetAmount > 0 ? Math.min(100, Math.round((pkt.balance / pkt.targetAmount) * 100)) : 100;
-                      return (
-                        <div
-                          key={pkt.id}
-                          onClick={() => {
-                            setSelectedPocket(pkt);
-                            setActiveModal('pocketDetail');
-                          }}
-                          className="p-4 rounded-[20px] bg-white dark:bg-[#141824] shadow-sm hover:shadow transition-all cursor-pointer"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div
-                                className="w-10 h-10 rounded-[14px] flex items-center justify-center text-white"
-                                style={{ backgroundColor: pkt.color || '#635BFF' }}
-                              >
-                                <WalletCards className="w-5 h-5 stroke-[2]" />
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                  {pkt.name}
-                                </h4>
-                                <p className="text-[11px] text-slate-400 dark:text-[#7B88A6] mt-0.5">
-                                  {language === 'id' ? 'Target: ' : 'Goal: '}
-                                  {pkt.targetAmount > 0 ? formatCurrency(pkt.targetAmount) : '-'}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="text-right">
-                              <div className="text-sm font-extrabold text-slate-900 dark:text-white">
-                                {formatCurrency(pkt.balance)}
-                              </div>
-                              {pkt.targetAmount > 0 && (
-                                <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                                  {percent}% tercapai
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {pkt.targetAmount > 0 && (
-                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${percent}%`,
-                                  backgroundColor: pkt.color || '#635BFF',
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {/* Pockets List (Borderless - Long-press to Reorder) */}
+                  <Reorder.Group
+                    axis="y"
+                    values={pockets}
+                    onReorder={reorderPockets}
+                    className="space-y-3"
+                  >
+                    {pockets.map((pkt) => (
+                      <ReorderableWalletPocketItem
+                        key={pkt.id}
+                        pkt={pkt}
+                        language={language}
+                        formatCurrency={formatCurrency}
+                        onSelect={() => {
+                          setSelectedPocket(pkt);
+                          setActiveModal('pocketDetail');
+                        }}
+                      />
+                    ))}
+                  </Reorder.Group>
                 </div>
               </div>
             )}

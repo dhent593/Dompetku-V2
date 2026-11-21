@@ -67,12 +67,16 @@ export const AddPocketModal: React.FC = () => {
 
     const depositNum = initialDeposit.trim() ? parseNumberInput(initialDeposit) : 0;
     if (isNaN(depositNum) || depositNum < 0) {
-      setError('Setoran awal tidak valid');
+      setError(language === 'id' ? 'Setoran awal tidak valid' : 'Invalid initial deposit');
       return;
     }
 
-    if (depositNum > user.balance) {
-      setError(`Setoran awal melebihi saldo tersedia (${formatCurrency(user.balance)})`);
+    if (targetNum > 0 && depositNum > targetNum) {
+      setError(
+        language === 'id'
+          ? 'Setoran awal tidak boleh melebihi target saldo'
+          : 'Initial deposit cannot exceed target amount'
+      );
       return;
     }
 
@@ -181,9 +185,11 @@ export const AddPocketModal: React.FC = () => {
                   <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">
                     {t('pocket_initial_deposit')}
                   </label>
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
-                    {t('available_label')}: {formatCurrency(user.balance)}
-                  </span>
+                  {initialDeposit && (
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
+                      Saldo: Rp{initialDeposit}
+                    </span>
+                  )}
                 </div>
                 <input
                   type="text"

@@ -132,7 +132,7 @@ export default function App() {
 
       {/* Direct Bottom Navigation Bar */}
       <div
-        className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200"
+        className="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#111520]/95 backdrop-blur-2xl border-t border-slate-200 dark:border-[#1C2233] transition-colors duration-200 before:absolute before:inset-x-0 before:top-full before:h-24 before:bg-white dark:before:bg-[#111520]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="max-w-md mx-auto pb-1">

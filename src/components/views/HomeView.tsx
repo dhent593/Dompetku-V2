@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Reorder, useDragControls } from 'framer-motion';
 import {
   User,
   Shield,
@@ -25,7 +26,165 @@ import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency, formatTxDateTime } from '@/lib/utils';
-import { Transaction } from '@/types';
+import { Transaction, Pocket } from '@/types';
+
+const renderPocketIcon = (name: string) => {
+  switch (name) {
+    case 'Wallet':
+      return <Wallet className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Landmark':
+      return <Landmark className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Plane':
+      return <Plane className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Smartphone':
+      return <Smartphone className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Heart':
+      return <Heart className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'ShoppingBag':
+      return <ShoppingBag className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Car':
+      return <Car className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Home':
+      return <HomeIcon className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    case 'Briefcase':
+      return <Briefcase className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+    default:
+      return <Shield className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
+  }
+};
+
+interface PocketCardProps {
+  pocket: Pocket;
+  onSelect: () => void;
+  targetLabel: string;
+}
+
+const ReorderablePocketCard: React.FC<PocketCardProps> = ({
+  pocket,
+  onSelect,
+  targetLabel,
+}) => {
+  const dragControls = useDragControls();
+  const [isDragging, setIsDragging] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startPosRef = useRef<{ x: number; y: number } | null>(null);
+  const isLongPressRef = useRef(false);
+
+  const progressPercent = Math.min(
+    100,
+    Math.max(0, Math.round((pocket.balance / (pocket.targetAmount || 1)) * 100))
+  );
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    isLongPressRef.current = false;
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    clearTimer();
+
+    timerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      setIsDragging(true);
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(50);
+        } catch (_) {}
+      }
+      dragControls.start(e);
+    }, 380);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!startPosRef.current || isLongPressRef.current) return;
+    const dx = Math.abs(e.clientX - startPosRef.current.x);
+    const dy = Math.abs(e.clientY - startPosRef.current.y);
+    if (dx > 8 || dy > 8) {
+      clearTimer();
+    }
+  };
+
+  const handlePointerUp = () => {
+    clearTimer();
+    startPosRef.current = null;
+    if (!isLongPressRef.current) {
+      onSelect();
+    }
+  };
+
+  const handlePointerCancel = () => {
+    clearTimer();
+    startPosRef.current = null;
+  };
+
+  return (
+    <Reorder.Item
+      value={pocket}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={() => {
+        setIsDragging(false);
+        isLongPressRef.current = false;
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          try {
+            navigator.vibrate(25);
+          } catch (_) {}
+        }
+      }}
+      onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      whileDrag={{
+        scale: 1.05,
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+        zIndex: 50,
+      }}
+      className={`pocket-card min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] transition-shadow cursor-grab active:cursor-grabbing flex flex-col justify-between group relative overflow-hidden select-none touch-pan-x ${
+        isDragging ? 'ring-2 ring-white/70 shadow-2xl z-50' : 'shadow-sm active:scale-[0.98]'
+      }`}
+      style={{ backgroundColor: pocket.color }}
+      title={pocket.name}
+    >
+      <div>
+        <div className="flex items-center justify-between">
+          <div className="w-7 h-7 rounded-[10px] pocket-card-badge flex items-center justify-center shadow-xs">
+            {renderPocketIcon(pocket.iconName)}
+          </div>
+          <span className="text-[10px] font-bold pocket-card-badge px-2 py-0.5 rounded-full">
+            {progressPercent}%
+          </span>
+        </div>
+
+        <h3 className="text-sm font-bold text-white tracking-tight truncate mt-2.5">
+          {pocket.name}
+        </h3>
+        <p className="text-sm font-black text-white tracking-tight mt-0.5">
+          {formatCurrency(pocket.balance)}
+        </p>
+        <p className="text-[11px] text-white/80 mt-0.5 truncate">
+          {targetLabel}: {formatCurrency(pocket.targetAmount)}
+        </p>
+      </div>
+
+      {/* Mini progress bar */}
+      <div className="w-full h-1.5 rounded-full bg-black/20 overflow-hidden mt-3">
+        <div
+          className="h-full rounded-full transition-all duration-500 bg-white"
+          style={{
+            width: `${progressPercent}%`,
+          }}
+        />
+      </div>
+    </Reorder.Item>
+  );
+};
 
 export const HomeView: React.FC = () => {
   const { user } = useAuth();
@@ -36,6 +195,7 @@ export const HomeView: React.FC = () => {
     setActiveTab,
     setActiveModal,
     setSelectedTransaction,
+    reorderPockets,
   } = useFinance();
   const { language, t } = useLanguage();
   const [liveDate, setLiveDate] = useState<string>('');
@@ -103,31 +263,6 @@ export const HomeView: React.FC = () => {
     if (cat === 'investment') return t('investment');
     if (cat === 'food') return t('food');
     return cat;
-  };
-
-  const renderPocketIcon = (name: string) => {
-    switch (name) {
-      case 'Wallet':
-        return <Wallet className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Landmark':
-        return <Landmark className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Plane':
-        return <Plane className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Smartphone':
-        return <Smartphone className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Heart':
-        return <Heart className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'ShoppingBag':
-        return <ShoppingBag className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Car':
-        return <Car className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Home':
-        return <HomeIcon className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      case 'Briefcase':
-        return <Briefcase className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-      default:
-        return <Shield className="w-3.5 h-3.5 text-white stroke-white stroke-[2.2]" />;
-    }
   };
 
   const displayTransactions = transactions.slice(0, 3);
@@ -232,54 +367,21 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        {/* Horizontal Scrollable Pocket Cards */}
-        <div className="flex space-x-3 overflow-x-auto pb-1 scrollbar-none snap-x -mx-1 px-1">
-          {pockets.map((pocket) => {
-            const progressPercent = Math.min(
-              100,
-              Math.max(0, Math.round((pocket.balance / (pocket.targetAmount || 1)) * 100))
-            );
-            return (
-              <div
-                key={pocket.id}
-                onClick={() => setSelectedPocket(pocket)}
-                className="pocket-card min-w-[165px] sm:min-w-[175px] max-w-[190px] flex-shrink-0 snap-start p-3.5 rounded-[20px] transition-all cursor-pointer flex flex-col justify-between group shadow-sm active:scale-[0.98] relative overflow-hidden"
-                style={{ backgroundColor: pocket.color }}
-                title={pocket.name}
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="w-7 h-7 rounded-[10px] pocket-card-badge flex items-center justify-center shadow-xs">
-                      {renderPocketIcon(pocket.iconName)}
-                    </div>
-                    <span className="text-[10px] font-bold pocket-card-badge px-2 py-0.5 rounded-full">
-                      {progressPercent}%
-                    </span>
-                  </div>
-
-                  <h3 className="text-sm font-bold text-white tracking-tight truncate mt-2.5">
-                    {pocket.name}
-                  </h3>
-                  <p className="text-sm font-black text-white tracking-tight mt-0.5">
-                    {formatCurrency(pocket.balance)}
-                  </p>
-                  <p className="text-[11px] text-white/80 mt-0.5 truncate">
-                    {t('pocket_target_label')}: {formatCurrency(pocket.targetAmount)}
-                  </p>
-                </div>
-
-                {/* Mini progress bar */}
-                <div className="w-full h-1.5 rounded-full bg-black/20 overflow-hidden mt-3">
-                  <div
-                    className="h-full rounded-full transition-all duration-500 bg-white"
-                    style={{
-                      width: `${progressPercent}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+        {/* Horizontal Scrollable Pocket Cards (Long-press to Reorder) */}
+        <Reorder.Group
+          axis="x"
+          values={pockets}
+          onReorder={reorderPockets}
+          className="flex space-x-3 overflow-x-auto pb-1 scrollbar-none snap-x -mx-1 px-1"
+        >
+          {pockets.map((pocket) => (
+            <ReorderablePocketCard
+              key={pocket.id}
+              pocket={pocket}
+              onSelect={() => setSelectedPocket(pocket)}
+              targetLabel={t('pocket_target_label')}
+            />
+          ))}
 
           {pockets.length === 0 && (
             <div
@@ -292,7 +394,7 @@ export const HomeView: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </Reorder.Group>
       </div>
 
       {/* 4. Transactions Section (Scrollable Vertically) */}

@@ -506,6 +506,28 @@ class DataService {
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
+    // If initial deposit was set, record an income transaction for financial history
+    if (newPocket.balance > 0) {
+      const transactions = this.getTransactions();
+      const localDate = getLocalDateString();
+      const tx: Transaction = {
+        id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        title: `Setoran Awal: ${newPocket.name}`,
+        category: 'other',
+        amount: newPocket.balance,
+        type: 'income',
+        date: localDate,
+        dateGroup: computeTxDateGroup(localDate),
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: Date.now(),
+        note: `Saldo awal pembukaan kantong ${newPocket.name}`,
+        pocketId: newPocket.id,
+        pocketName: newPocket.name,
+      };
+      transactions.unshift(tx);
+      this.saveTransactions(transactions);
+    }
+
     return newPocket;
   }
 

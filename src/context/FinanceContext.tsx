@@ -70,6 +70,7 @@ interface FinanceContextType {
   addPocket: (pocket: Omit<Pocket, 'id' | 'createdAt'>) => Pocket;
   updatePocket: (id: string, updates: Partial<Omit<Pocket, 'id' | 'createdAt'>>) => Pocket | null;
   deletePocket: (id: string) => boolean;
+  reorderPockets: (newPockets: Pocket[]) => void;
   transferToPocket: (pocketId: string, amount: number) => boolean;
   withdrawFromPocket: (pocketId: string, amount: number) => boolean;
   transferBetweenPockets: (fromPocketId: string, toPocketId: string, amount: number) => boolean;
@@ -459,6 +460,22 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           setPockets(allPockets);
         }
       }).catch(console.error);
+
+      if (pocketData.balance > 0) {
+        SupabaseService.createTransaction({
+          title: `Setoran Awal: ${created.name}`,
+          category: 'other',
+          amount: created.balance,
+          type: 'income',
+          date: getLocalDateString(),
+          dateGroup: computeTxDateGroup(getLocalDateString()),
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          timestamp: Date.now(),
+          note: `Saldo awal pembukaan kantong ${created.name}`,
+          pocketId: created.id,
+          pocketName: created.name,
+        }).catch(console.error);
+      }
     }
     return created;
   };
@@ -492,6 +509,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }
     return ok;
   };
+
+  const reorderPockets = useCallback((newPockets: Pocket[]): void => {
+    const ordered = newPockets.map((p, idx) => ({ ...p, order: idx }));
+    setPockets(ordered);
+    dataService.savePockets(ordered);
+  }, []);
 
   const transferToPocket = (pocketId: string, amount: number): boolean => {
     const ok = dataService.transferToPocket(pocketId, amount);
@@ -862,6 +885,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         addPocket,
         updatePocket,
         deletePocket,
+        reorderPockets,
         transferToPocket,
         withdrawFromPocket,
         transferBetweenPockets,

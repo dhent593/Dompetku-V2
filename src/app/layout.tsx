@@ -29,7 +29,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#FFFFFF',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#07090F' },
+    { media: '(prefers-color-scheme: light)', color: '#F1F5F9' },
+  ],
 };
 
 export default function RootLayout({
@@ -59,7 +62,8 @@ export default function RootLayout({
                   document.documentElement.classList.add('dark');
                   document.documentElement.classList.remove('light');
                 }
-                const themeColor = isLight ? '#FFFFFF' : '#0A0D15';
+                const themeColor = isLight ? '#F1F5F9' : '#07090F';
+                document.documentElement.style.backgroundColor = themeColor;
                 const metaTheme = document.querySelectorAll('meta[name="theme-color"]');
                 if (metaTheme.length > 0) {
                   metaTheme.forEach(function(m) {

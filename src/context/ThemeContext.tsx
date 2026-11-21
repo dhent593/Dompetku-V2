@@ -32,7 +32,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const applyTheme = (t: Theme) => {
     const root = document.documentElement;
     const isDark = t === 'dark';
-    const themeColor = isDark ? '#0A0D15' : '#FFFFFF';
+    const themeColor = isDark ? '#07090F' : '#F1F5F9';
+    root.style.backgroundColor = themeColor;
 
     if (isDark) {
       root.classList.add('dark');
