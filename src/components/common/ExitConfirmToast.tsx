@@ -32,7 +32,7 @@ export const ExitConfirmToast: React.FC<ExitConfirmToastProps> = ({
           transition={{ type: 'spring', stiffness: 500, damping: 32 }}
           className="fixed bottom-24 inset-x-0 mx-auto w-max max-w-[90vw] z-50 pointer-events-none select-none flex justify-center"
         >
-          <div className="toast-capsule bg-[#0F172A]/95 dark:bg-[#161B26]/95 text-white text-[12.5px] font-semibold px-4.5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(15,23,42,0.28)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl border border-white/10 dark:border-white/10 flex items-center space-x-2.5 transition-colors">
+          <div className="toast-capsule bg-[#0F172A]/95 dark:bg-[#161B26]/95 text-white text-[12.5px] font-semibold pl-3.5 pr-5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(15,23,42,0.28)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl border border-white/10 dark:border-white/10 flex items-center space-x-2.5 whitespace-nowrap transition-colors">
             {/* Glowing Accent Indicator */}
             <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
               <LogOut className="w-3 h-3 text-white stroke-[2.4]" />

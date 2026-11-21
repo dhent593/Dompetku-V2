@@ -789,7 +789,7 @@ export const WalletView: React.FC = () => {
             transition={{ type: 'spring', stiffness: 500, damping: 32 }}
             className="fixed top-5 inset-x-0 mx-auto w-max max-w-[90vw] z-50 pointer-events-none select-none flex justify-center"
           >
-            <div className="toast-capsule bg-[#0F172A]/95 dark:bg-[#161B26]/95 text-white text-[12.5px] font-semibold px-4.5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(15,23,42,0.28)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl border border-white/10 dark:border-white/10 flex items-center space-x-2.5 transition-colors">
+            <div className="toast-capsule bg-[#0F172A]/95 dark:bg-[#161B26]/95 text-white text-[12.5px] font-semibold pl-3.5 pr-5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(15,23,42,0.28)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl border border-white/10 dark:border-white/10 flex items-center space-x-2.5 whitespace-nowrap transition-colors">
               <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
                 <Check className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
@@ -830,7 +830,52 @@ export const WalletView: React.FC = () => {
 
         {/* Scrollable Hub Content */}
         <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-3.5 pb-24 pr-0.5">
-          {/* 1. 4 Core Financial Cards (2-Column Grid on Top) */}
+          {/* 1. Total Kekayaan Card (Matte Fintech Card - Paling Atas) */}
+          <div className="relative overflow-hidden rounded-[24px] bg-white dark:bg-[#141824] p-5 shadow-sm">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-[#8C98B3] uppercase tracking-wider">
+                  {language === 'id' ? 'Total Kekayaan' : 'Total Net Worth'}
+                </span>
+              </div>
+
+              <div className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                {formatCurrency(netWorth)}
+              </div>
+
+              {/* Sub-metrics: Saldo Kantong + Aset vs Hutang (Semua Warna Putih / Monokrom) */}
+              <div className="grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
+                <div>
+                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
+                    {language === 'id' ? 'Kantong' : 'Pockets'}
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
+                    {formatCurrency(totalPocketsBalance)}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
+                    {language === 'id' ? 'Aset' : 'Assets'}
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
+                    {formatCurrency(totalAssetsValue)}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
+                    {language === 'id' ? 'Hutang' : 'Debts'}
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
+                    {formatCurrency(totalDebtsRemaining)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. 4 Core Financial Cards (2-Column Grid) */}
           <div className="grid grid-cols-2 gap-3">
             {/* Card 1: Catat Hutang */}
             <motion.div
@@ -942,51 +987,6 @@ export const WalletView: React.FC = () => {
                 </p>
               </div>
             </motion.div>
-          </div>
-
-          {/* 2. Total Kekayaan Card (Matte Fintech Card - Borderless) */}
-          <div className="relative overflow-hidden rounded-[24px] bg-white dark:bg-[#141824] p-5 shadow-sm">
-            <div className="relative z-10">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-[#8C98B3] uppercase tracking-wider">
-                  {language === 'id' ? 'Total Kekayaan' : 'Total Net Worth'}
-                </span>
-              </div>
-
-              <div className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                {formatCurrency(netWorth)}
-              </div>
-
-              {/* Sub-metrics: Saldo Kantong + Aset vs Hutang (Semua Warna Putih / Monokrom) */}
-              <div className="grid grid-cols-3 gap-2 mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
-                <div>
-                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
-                    {language === 'id' ? 'Kantong' : 'Pockets'}
-                  </div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {formatCurrency(totalPocketsBalance)}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
-                    {language === 'id' ? 'Aset' : 'Assets'}
-                  </div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {formatCurrency(totalAssetsValue)}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[10px] font-normal text-slate-500 dark:text-white/60">
-                    {language === 'id' ? 'Hutang' : 'Debts'}
-                  </div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {formatCurrency(totalDebtsRemaining)}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* 3. Featured Card: Kelola Kantong (Full Width - Borderless, Soft Tinted Icon) */}

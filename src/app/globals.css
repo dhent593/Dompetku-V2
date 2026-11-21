@@ -303,13 +303,27 @@ html:not(.dark) {
 .bg-red-600 *,
 .bg-emerald-600,
 .bg-emerald-600 *,
-.toast-capsule,
+.\!text-white,
+.\!text-white * {
+  color: #FFFFFF !important;
+}
+
+/* Standalone, isolated Toast Capsule styling */
+.toast-capsule {
+  padding-left: 14px !important;
+  padding-right: 20px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #FFFFFF !important;
+}
+
 .toast-capsule *,
 .toast-capsule span,
 .toast-capsule p,
-.toast-capsule svg,
-.\!text-white,
-.\!text-white * {
+.toast-capsule svg {
   color: #FFFFFF !important;
 }
 
