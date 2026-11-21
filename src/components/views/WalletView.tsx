@@ -290,6 +290,7 @@ export const WalletView: React.FC = () => {
   const {
     pockets,
     setSelectedPocket,
+    updatePocket,
     reorderPockets,
     debts,
     addDebt,
@@ -335,6 +336,9 @@ export const WalletView: React.FC = () => {
   const [showAddDebtModal, setShowAddDebtModal] = useState(false);
   const [showAddAssetModal, setShowAddAssetModal] = useState(false);
   const [editingAsset, setEditingAsset] = useState<AssetItem | null>(null);
+  const [addAssetSourceType, setAddAssetSourceType] = useState<'new' | 'from_pocket'>('new');
+  const [selectedPocketForAsset, setSelectedPocketForAsset] = useState<string>('');
+  const [selectPocketDropdownOpen, setSelectPocketDropdownOpen] = useState(false);
   const [assetCategoryDropdownOpen, setAssetCategoryDropdownOpen] = useState(false);
   const [assetPocketDropdownOpen, setAssetPocketDropdownOpen] = useState(false);
   const [showAddBudgetModal, setShowAddBudgetModal] = useState(false);
@@ -373,8 +377,9 @@ export const WalletView: React.FC = () => {
         setAssetCategoryDropdownOpen(false);
         return true;
       }
-      if (assetPocketDropdownOpen) {
+      if (assetPocketDropdownOpen || selectPocketDropdownOpen) {
         setAssetPocketDropdownOpen(false);
+        setSelectPocketDropdownOpen(false);
         return true;
       }
       if (showAddAssetModal || editingAsset) {
@@ -382,6 +387,7 @@ export const WalletView: React.FC = () => {
         setEditingAsset(null);
         setAssetCategoryDropdownOpen(false);
         setAssetPocketDropdownOpen(false);
+        setSelectPocketDropdownOpen(false);
         return true;
       }
       if (showAddBudgetModal || editingBudget) {
@@ -479,17 +485,24 @@ export const WalletView: React.FC = () => {
 
   // Calculations for Net Worth & Metrics
   const totalPocketsBalance = pockets.reduce((sum, p) => sum + p.balance, 0);
-  const totalAssetsValue = assets.reduce((sum, a) => sum + a.currentValue, 0);
-  const totalAssetsPurchase = assets.reduce((sum, a) => sum + a.purchasePrice, 0);
+  const liquidPockets = pockets.filter((p) => !p.isAsset);
+  const assetPockets = pockets.filter((p) => p.isAsset);
+  const liquidPocketsBalance = liquidPockets.reduce((sum, p) => sum + p.balance, 0);
+  const assetPocketsBalance = assetPockets.reduce((sum, p) => sum + p.balance, 0);
+  const manualAssetsValue = assets.reduce((sum, a) => sum + a.currentValue, 0);
+  const manualAssetsPurchase = assets.reduce((sum, a) => sum + a.purchasePrice, 0);
+  const totalAssetsValue = manualAssetsValue + assetPocketsBalance;
+  const totalAssetsPurchase = manualAssetsPurchase + assetPocketsBalance;
   const assetGain = totalAssetsValue - totalAssetsPurchase;
   const assetGainPercent = totalAssetsPurchase > 0 ? ((assetGain / totalAssetsPurchase) * 100).toFixed(1) : '0';
+  const totalAssetItemsCount = assets.length + assetPockets.length;
 
   const activeDebts = debts.filter((d) => d.status !== 'paid_off');
   const totalDebtsRemaining = activeDebts.reduce((sum, d) => sum + d.remainingAmount, 0);
   const totalDebtsOriginal = debts.reduce((sum, d) => sum + d.totalAmount, 0);
   const totalDebtsPaid = totalDebtsOriginal - totalDebtsRemaining;
 
-  const netWorth = totalPocketsBalance + totalAssetsValue - totalDebtsRemaining;
+  const netWorth = liquidPocketsBalance + totalAssetsValue - totalDebtsRemaining;
 
   const now = new Date();
   const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -850,7 +863,7 @@ export const WalletView: React.FC = () => {
                     {language === 'id' ? 'Kantong' : 'Pockets'}
                   </div>
                   <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {formatCurrency(totalPocketsBalance)}
+                    {formatCurrency(liquidPocketsBalance)}
                   </div>
                 </div>
 
@@ -917,7 +930,7 @@ export const WalletView: React.FC = () => {
                   <TrendingUp className="w-5 h-5 stroke-[2]" />
                 </div>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white">
-                  {assets.length} Item
+                  {totalAssetItemsCount} Item
                 </span>
               </div>
               <div>
@@ -1550,7 +1563,7 @@ export const WalletView: React.FC = () => {
                       };
                     }).filter((group) => group.items.length > 0);
 
-                    if (assets.length === 0) {
+                    if (assets.length === 0 && assetPockets.length === 0) {
                       return (
                         <div className="py-12 px-6 rounded-[24px] bg-white dark:bg-[#141824] shadow-sm text-center flex flex-col items-center justify-center">
                           <div className="w-14 h-14 rounded-2xl bg-[#635BFF]/10 text-[#635BFF] flex items-center justify-center mb-3">
@@ -1561,13 +1574,14 @@ export const WalletView: React.FC = () => {
                           </h4>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-[260px]">
                             {language === 'id'
-                              ? 'Mulai catat portofolio emas, saham, kendaraan, atau properti Anda untuk memantau kekayaan.'
-                              : 'Start tracking your precious metals, stocks, vehicles, or property to monitor your wealth.'}
+                              ? 'Mulai catat portofolio emas, saham, kendaraan, properti, atau jadikan kantong sebagai aset.'
+                              : 'Start tracking precious metals, stocks, vehicles, property, or convert pockets to assets.'}
                           </p>
                           <button
                             type="button"
                             onClick={() => {
                               setEditingAsset(null);
+                              setAddAssetSourceType('new');
                               setNewAssetName('');
                               setNewAssetCategory('investment');
                               setNewAssetPurchasePrice('');
@@ -1577,6 +1591,7 @@ export const WalletView: React.FC = () => {
                               setNewAssetError(null);
                               setAssetCategoryDropdownOpen(false);
                               setAssetPocketDropdownOpen(false);
+                              setSelectPocketDropdownOpen(false);
                               setShowAddAssetModal(true);
                             }}
                             className="mt-4 px-4 py-2 rounded-xl bg-[#635BFF] text-white text-xs font-bold shadow-sm hover:bg-[#564EE6] active:scale-95 transition-all cursor-pointer"
@@ -1589,6 +1604,105 @@ export const WalletView: React.FC = () => {
 
                     return (
                       <div className="space-y-3">
+                        {/* 1. Kantong yang Berstatus Aset */}
+                        {assetPockets.length > 0 && (
+                          <div className="rounded-[20px] bg-white dark:bg-[#141824] shadow-sm overflow-hidden transition-all duration-200 border border-slate-100/60 dark:border-slate-800/40">
+                            {/* Accordion Header */}
+                            <button
+                              type="button"
+                              onClick={() => toggleAssetCategory('pocket_assets')}
+                              className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-50/70 dark:hover:bg-[#181E2E]/60 transition-colors cursor-pointer"
+                            >
+                              <div className="flex items-center space-x-3 min-w-0 pr-2">
+                                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 bg-amber-500/10 text-amber-500 dark:text-amber-400">
+                                  <WalletCards className="w-5 h-5 stroke-[2.2]" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center space-x-2">
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                      {language === 'id' ? 'Aset Kantong & Simpanan' : 'Pocket Assets & Savings'}
+                                    </h3>
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                                      {assetPockets.length} Kantong
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                                    {language === 'id' ? 'Total Nilai' : 'Total Value'}:{' '}
+                                    <span className="font-extrabold text-slate-900 dark:text-white">
+                                      {formatCurrency(assetPocketsBalance)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center space-x-2 flex-shrink-0">
+                                <div
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition-transform duration-200 transform-gpu ${
+                                    expandedAssetCategories['pocket_assets'] !== false ? 'rotate-180 text-[#635BFF] dark:text-[#827CFF]' : ''
+                                  }`}
+                                >
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </div>
+                            </button>
+
+                            {/* Accordion Collapsible Items */}
+                            <AnimatePresence initial={false}>
+                              {expandedAssetCategories['pocket_assets'] !== false && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.22 }}
+                                  className="overflow-hidden border-t border-slate-100 dark:border-slate-800/80"
+                                >
+                                  <div className="p-3 space-y-2 bg-slate-50/50 dark:bg-[#0F131D]/40">
+                                    {assetPockets.map((pkt) => (
+                                      <div
+                                        key={pkt.id}
+                                        onClick={() => setSelectedPocket(pkt)}
+                                        className="p-3.5 rounded-[16px] bg-white dark:bg-[#141824] shadow-xs hover:shadow-sm border border-slate-100/90 dark:border-slate-800/60 transition-all cursor-pointer flex items-center justify-between group"
+                                      >
+                                        <div className="flex items-center space-x-3 min-w-0 pr-3">
+                                          <div
+                                            className="w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-xs"
+                                            style={{ backgroundColor: pkt.color }}
+                                          >
+                                            <WalletCards className="w-4 h-4" />
+                                          </div>
+                                          <div className="min-w-0">
+                                            <div className="flex items-center space-x-2">
+                                              <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                                {pkt.name}
+                                              </h4>
+                                              <span className="text-[9px] font-extrabold uppercase bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded shadow-xs">
+                                                Aset
+                                              </span>
+                                            </div>
+                                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                              Target: {formatCurrency(pkt.targetAmount)} • {language === 'id' ? 'Klik untuk kelola' : 'Click to manage'}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="text-right flex-shrink-0">
+                                          <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                                            {formatCurrency(pkt.balance)}
+                                          </div>
+                                          <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                                            {language === 'id' ? 'Saldo Kas Aset' : 'Cash Asset'}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+
+                        {/* 2. Aset Fisik & Investasi Reguler */}
                         {groupedAssets.map((group) => {
                           const isExpanded = expandedAssetCategories[group.id] !== false;
                           const CatIcon = group.icon;
@@ -2257,6 +2371,196 @@ export const WalletView: React.FC = () => {
                   ? language === 'id' ? 'Edit Data Aset' : 'Edit Asset'
                   : language === 'id' ? 'Tambah Aset Baru' : 'Add New Asset'}
               </h3>
+
+              {/* Mode Selector: Aset Manual vs Dari Kantong */}
+              {!editingAsset && (
+                <div className="flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 mb-4 border border-slate-200/60 dark:border-slate-700/60">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddAssetSourceType('new');
+                      setNewAssetError(null);
+                    }}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      addAssetSourceType === 'new'
+                        ? 'bg-white dark:bg-[#1C2233] text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {language === 'id' ? 'Aset Manual' : 'Manual Asset'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddAssetSourceType('from_pocket');
+                      setNewAssetError(null);
+                      const available = pockets.filter((p) => !p.isAsset);
+                      if (available.length > 0 && !selectedPocketForAsset) {
+                        setSelectedPocketForAsset(available[0].id);
+                      }
+                    }}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      addAssetSourceType === 'from_pocket'
+                        ? 'bg-white dark:bg-[#1C2233] text-[#635BFF] dark:text-[#827CFF] shadow-xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {language === 'id' ? 'Dari Kantong Saya' : 'From My Pocket'}
+                  </button>
+                </div>
+              )}
+
+              {!editingAsset && addAssetSourceType === 'from_pocket' ? (
+                <div className="space-y-4">
+                  {/* Select Pocket Dropdown */}
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 dark:text-slate-300 block mb-1">
+                      {language === 'id' ? 'Pilih Kantong untuk Dijadikan Aset' : 'Select Pocket to Convert to Asset'}
+                    </label>
+
+                    {(() => {
+                      const availablePockets = pockets.filter((p) => !p.isAsset);
+                      if (availablePockets.length === 0) {
+                        return (
+                          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400">
+                            {language === 'id'
+                              ? 'Semua kantong Anda saat ini sudah berlabel aset atau belum ada kantong.'
+                              : 'All your pockets are already labeled as assets or no pockets exist.'}
+                          </div>
+                        );
+                      }
+
+                      const currentSelected = availablePockets.find((p) => p.id === selectedPocketForAsset) || availablePockets[0];
+
+                      return (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setSelectPocketDropdownOpen(!selectPocketDropdownOpen)}
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 transition-all cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                              <div
+                                className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                                style={{ backgroundColor: currentSelected?.color || '#635BFF' }}
+                              >
+                                <WalletCards className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0 text-left">
+                                <span className="text-sm font-semibold text-slate-900 dark:text-white block truncate">
+                                  {currentSelected?.name}
+                                </span>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-normal">
+                                  Saldo: {formatCurrency(currentSelected?.balance || 0)}
+                                </span>
+                              </div>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${selectPocketDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          <AnimatePresence>
+                            {selectPocketDropdownOpen && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-40"
+                                  onClick={() => setSelectPocketDropdownOpen(false)}
+                                />
+                                <motion.div
+                                  initial={{ opacity: 0, y: -4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -4 }}
+                                  className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-xl p-1.5 shadow-2xl z-50 max-h-56 overflow-y-auto scrollbar-none"
+                                >
+                                  {availablePockets.map((pkt) => {
+                                    const isChosen = pkt.id === currentSelected?.id;
+                                    return (
+                                      <button
+                                        key={pkt.id}
+                                        type="button"
+                                        onClick={() => {
+                                          setSelectedPocketForAsset(pkt.id);
+                                          setSelectPocketDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left transition-colors cursor-pointer ${
+                                          isChosen ? 'bg-[#635BFF]/10 text-[#635BFF]' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                                        }`}
+                                      >
+                                        <div className="flex items-center space-x-2.5 min-w-0">
+                                          <div
+                                            className="w-6 h-6 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                                            style={{ backgroundColor: pkt.color }}
+                                          >
+                                            <WalletCards className="w-3.5 h-3.5" />
+                                          </div>
+                                          <div className="min-w-0">
+                                            <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                                              {pkt.name}
+                                            </span>
+                                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                                              {formatCurrency(pkt.balance)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        {isChosen && <Check className="w-4 h-4 text-[#635BFF]" />}
+                                      </button>
+                                    );
+                                  })}
+                                </motion.div>
+                              </>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Informational Callout */}
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-200/80 dark:border-slate-800 flex items-start space-x-3">
+                    <TrendingUp className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {language === 'id'
+                        ? 'Kantong yang dipilih akan otomatis dimasukkan ke dalam Portofolio Aset & Total Kekayaan, dan saldonya tidak lagi dihitung di Total Saldo Tersedia di Beranda.'
+                        : 'Selected pocket will be categorized as an Asset in your portfolio, and its balance excluded from available home balance.'}
+                    </p>
+                  </div>
+
+                  {/* Action Buttons for from_pocket */}
+                  <div className="flex items-center space-x-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAddAssetModal(false);
+                        setSelectedPocketForAsset('');
+                        setSelectPocketDropdownOpen(false);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/20 active:scale-95 transition-all cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pockets.filter((p) => !p.isAsset).length === 0}
+                      onClick={() => {
+                        const targetPktId = selectedPocketForAsset || pockets.filter((p) => !p.isAsset)[0]?.id;
+                        if (!targetPktId) return;
+                        const targetPkt = pockets.find((p) => p.id === targetPktId);
+                        updatePocket(targetPktId, { isAsset: true });
+                        setShowAddAssetModal(false);
+                        setSelectedPocketForAsset('');
+                        setToastMessage(
+                          language === 'id'
+                            ? `Kantong "${targetPkt?.name}" berhasil dijadikan sebagai Aset!`
+                            : `Pocket "${targetPkt?.name}" converted to Asset!`
+                        );
+                        setTimeout(() => setToastMessage(null), 2400);
+                      }}
+                      className="flex-1 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {language === 'id' ? 'Jadikan Aset' : 'Convert to Asset'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
               <form onSubmit={handleSaveAsset} className="space-y-3.5">
                 {newAssetError && (
                   <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-500 dark:text-rose-400 text-xs font-medium text-center">
@@ -2565,6 +2869,7 @@ export const WalletView: React.FC = () => {
                   </button>
                 </div>
               </form>
+              )}
             </motion.div>
           </div>
         )}

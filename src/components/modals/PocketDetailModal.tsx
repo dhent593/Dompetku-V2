@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Check,
   Pipette,
+  TrendingUp,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useAuth } from '@/context/AuthContext';
@@ -61,6 +62,7 @@ export const PocketDetailModal: React.FC = () => {
   const [editTarget, setEditTarget] = useState('');
   const [editColor, setEditColor] = useState('#635BFF');
   const [editIcon, setEditIcon] = useState('Shield');
+  const [editIsAsset, setEditIsAsset] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
@@ -70,6 +72,7 @@ export const PocketDetailModal: React.FC = () => {
       setEditTarget(formatNumberInput(selectedPocket.targetAmount));
       setEditColor(selectedPocket.color);
       setEditIcon(selectedPocket.iconName || 'Shield');
+      setEditIsAsset(Boolean(selectedPocket.isAsset));
       setMode('view');
       setShowDeleteConfirm(false);
       setFeedbackMsg(null);
@@ -80,6 +83,21 @@ export const PocketDetailModal: React.FC = () => {
       }
     }
   }, [selectedPocket, pockets]);
+
+  const handleToggleAsset = () => {
+    if (!selectedPocket) return;
+    const nextState = !selectedPocket.isAsset;
+    updatePocket(selectedPocket.id, {
+      isAsset: nextState,
+    });
+    setFeedbackMsg({
+      text: nextState
+        ? (language === 'id' ? 'Kantong dilabeli sebagai Aset (masuk ke Portofolio Aset)' : 'Pocket labeled as Asset')
+        : (language === 'id' ? 'Label aset dilepas (masuk ke Saldo Tersedia)' : 'Asset label removed'),
+      isError: false,
+    });
+    setTimeout(() => setFeedbackMsg(null), 2500);
+  };
 
   if (!selectedPocket) return null;
 
@@ -174,6 +192,7 @@ export const PocketDetailModal: React.FC = () => {
       targetAmount: targetNum,
       color: editColor,
       iconName: editIcon,
+      isAsset: editIsAsset,
     });
 
     setFeedbackMsg({ text: 'Perubahan kantong berhasil disimpan', isError: false });
@@ -298,6 +317,51 @@ export const PocketDetailModal: React.FC = () => {
                 <ArrowRightLeft className="w-4 h-4 text-[#635BFF] group-hover:scale-110 transition-transform stroke-[2.2]" />
                 <span className="tracking-wide">{t('move_funds_pocket')}</span>
               </button>
+
+              {/* Asset Classification Toggle Card */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#111520] border border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    selectedPocket.isAsset
+                      ? 'bg-amber-400/20 text-amber-500 dark:text-amber-400'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}>
+                    <TrendingUp className="w-4 h-4 stroke-[2.2]" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {language === 'id' ? 'Labeli sebagai Aset' : 'Label as Asset'}
+                      </span>
+                      {selectedPocket.isAsset && (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-400 text-slate-900 shadow-xs">
+                          {language === 'id' ? 'Aset' : 'Asset'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-[#7B88A6] mt-0.5 leading-tight">
+                      {selectedPocket.isAsset
+                        ? (language === 'id' ? 'Masuk ke Portofolio Aset & tidak dihitung di saldo beranda' : 'Included in Assets, excluded from home balance')
+                        : (language === 'id' ? 'Dihitung sebagai Saldo Tersedia di beranda' : 'Counted in available balance on home')}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleToggleAsset}
+                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
+                    selectedPocket.isAsset ? 'bg-[#635BFF]' : 'bg-slate-300 dark:bg-slate-700'
+                  }`}
+                  aria-label="Toggle Asset Status"
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white absolute top-0.5 transition-transform shadow-xs ${
+                      selectedPocket.isAsset ? 'translate-x-[22px]' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
+              </div>
 
               {/* Bottom Actions: Edit & Delete */}
               {showDeleteConfirm ? (
@@ -636,6 +700,42 @@ export const PocketDetailModal: React.FC = () => {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Edit Mode: Asset Toggle Card */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] flex items-center justify-between">
+                <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    editIsAsset
+                      ? 'bg-amber-400/20 text-amber-500 dark:text-amber-400'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                  }`}>
+                    <TrendingUp className="w-3.5 h-3.5 stroke-[2.2]" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                      {language === 'id' ? 'Labeli sebagai Aset' : 'Label as Asset'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] block leading-tight">
+                      {language === 'id' ? 'Masuk ke Portofolio Aset, keluar dari Saldo Tersedia' : 'In Asset Portfolio, out of available balance'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setEditIsAsset(!editIsAsset)}
+                  className={`w-10 h-5.5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
+                    editIsAsset ? 'bg-[#635BFF]' : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+                  aria-label="Toggle Asset in Edit Mode"
+                >
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full bg-white absolute top-0.5 transition-transform shadow-xs ${
+                      editIsAsset ? 'translate-x-[18px]' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
               </div>
 
               <div className="flex items-center space-x-2 pt-2">

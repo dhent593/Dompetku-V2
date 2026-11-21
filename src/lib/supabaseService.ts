@@ -92,6 +92,7 @@ export class SupabaseService {
       color: p.color,
       iconName: p.icon_name,
       createdAt: new Date(p.created_at).getTime(),
+      isAsset: Boolean(p.is_asset),
     }));
   }
 
@@ -100,21 +101,36 @@ export class SupabaseService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data, error } = await supabase
+    const basePayload = {
+      user_id: user.id,
+      name: pocket.name,
+      balance: pocket.balance,
+      target_amount: pocket.targetAmount,
+      color: pocket.color,
+      icon_name: pocket.iconName,
+    };
+
+    let result = await supabase
       .from('pockets')
       .insert({
-        user_id: user.id,
-        name: pocket.name,
-        balance: pocket.balance,
-        target_amount: pocket.targetAmount,
-        color: pocket.color,
-        icon_name: pocket.iconName,
+        ...basePayload,
+        is_asset: pocket.isAsset ?? false,
       })
       .select()
       .single();
 
-    if (error || !data) return null;
+    // Fallback if is_asset column does not exist yet in Supabase
+    if (result.error && (result.error.message?.includes('is_asset') || result.error.code === '42703')) {
+      result = await supabase
+        .from('pockets')
+        .insert(basePayload)
+        .select()
+        .single();
+    }
 
+    if (result.error || !result.data) return null;
+
+    const data = result.data;
     return {
       id: data.id,
       name: data.name,
@@ -123,6 +139,7 @@ export class SupabaseService {
       color: data.color,
       iconName: data.icon_name,
       createdAt: new Date(data.created_at).getTime(),
+      isAsset: Boolean(data.is_asset ?? pocket.isAsset),
     };
   }
 
@@ -134,11 +151,22 @@ export class SupabaseService {
     if (updates.targetAmount !== undefined) payload.target_amount = updates.targetAmount;
     if (updates.color !== undefined) payload.color = updates.color;
     if (updates.iconName !== undefined) payload.icon_name = updates.iconName;
+    if (updates.isAsset !== undefined) payload.is_asset = updates.isAsset;
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('pockets')
       .update(payload)
       .eq('id', id);
+
+    // Fallback if is_asset column does not exist yet in Supabase
+    if (error && (error.message?.includes('is_asset') || error.code === '42703') && payload.is_asset !== undefined) {
+      delete payload.is_asset;
+      const retry = await supabase
+        .from('pockets')
+        .update(payload)
+        .eq('id', id);
+      error = retry.error;
+    }
 
     return !error;
   }

@@ -193,7 +193,8 @@ class DataService {
           const user: UserProfile = JSON.parse(stored);
           const pockets = this.getPockets();
           const sumPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
-          user.balance = sumPockets;
+          const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
+          user.balance = liquidPockets;
           user.totalBalance = sumPockets;
           return user;
         }
@@ -273,10 +274,11 @@ class DataService {
       }
     }
 
-    // Recalculate user balance as the sum of all pockets
+    // Recalculate user balance as the sum of all liquid pockets
     const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
@@ -338,10 +340,11 @@ class DataService {
 
     this.savePockets(pockets);
 
-    // Recalculate user balance as the sum of all pockets
+    // Recalculate user balance as the sum of all liquid pockets
     const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
@@ -374,10 +377,11 @@ class DataService {
       }
     }
 
-    // Recalculate user balance as the sum of all pockets
+    // Recalculate user balance as the sum of all liquid pockets
     const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
@@ -501,8 +505,9 @@ class DataService {
     this.savePockets(updated);
 
     const totalPockets = updated.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = updated.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
@@ -544,8 +549,9 @@ class DataService {
     this.savePockets(pockets);
 
     const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 
@@ -558,8 +564,9 @@ class DataService {
     this.savePockets(remaining);
 
     const totalPockets = remaining.reduce((sum, p) => sum + p.balance, 0);
+    const liquidPockets = remaining.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
     const user = this.getUser();
-    user.balance = totalPockets;
+    user.balance = liquidPockets;
     user.totalBalance = totalPockets;
     this.saveUser(user);
 

@@ -181,9 +181,16 @@ const ReorderablePocketCard: React.FC<PocketCardProps> = ({
           <div className="w-7 h-7 rounded-[10px] pocket-card-badge flex items-center justify-center shadow-xs">
             {renderPocketIcon(pocket.iconName)}
           </div>
-          <span className="text-[10px] font-bold pocket-card-badge px-2 py-0.5 rounded-full">
-            {progressPercent}%
-          </span>
+          <div className="flex items-center space-x-1.5">
+            {pocket.isAsset && (
+              <span className="text-[9px] font-extrabold uppercase tracking-wide bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full shadow-xs flex items-center">
+                Aset
+              </span>
+            )}
+            <span className="text-[10px] font-bold pocket-card-badge px-2 py-0.5 rounded-full">
+              {progressPercent}%
+            </span>
+          </div>
         </div>
 
         <h3 className="text-sm font-bold text-white tracking-tight truncate mt-2.5">
@@ -244,7 +251,9 @@ export const HomeView: React.FC = () => {
     .filter((tx) => tx.type === 'expense')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const totalPocketBalance = pockets.reduce((sum, p) => sum + p.balance, 0);
+  const availablePocketBalance = pockets
+    .filter((p) => !p.isAsset)
+    .reduce((sum, p) => sum + p.balance, 0);
 
   const renderTxIcon = (tx: Transaction) => {
     switch (tx.category) {
@@ -335,7 +344,7 @@ export const HomeView: React.FC = () => {
               suppressHydrationWarning
               className="text-3xl sm:text-[38px] font-extrabold text-white tracking-tight tabular-nums font-sans"
             >
-              {Math.abs(Math.round(totalPocketBalance)).toLocaleString('id-ID')}
+              {Math.abs(Math.round(availablePocketBalance)).toLocaleString('id-ID')}
             </span>
           </div>
 

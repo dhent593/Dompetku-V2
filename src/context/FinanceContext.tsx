@@ -184,10 +184,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       dataService.saveNotes(sbNotes || []);
       dataService.saveWishlists(sbWishlists || []);
 
-      // Ensure user profile balance strictly matches sum of active pockets
+      // Ensure user profile balance strictly matches sum of active liquid pockets
       const totalPocketsBalance = activePockets.reduce((sum, p) => sum + p.balance, 0);
+      const liquidPocketsBalance = activePockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
       const curUser = dataService.getUser();
-      curUser.balance = totalPocketsBalance;
+      curUser.balance = liquidPocketsBalance;
       curUser.totalBalance = totalPocketsBalance;
       dataService.saveUser(curUser);
       updateUser(curUser);

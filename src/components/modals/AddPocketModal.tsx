@@ -17,6 +17,7 @@ import {
   Check,
   AlertCircle,
   Pipette,
+  TrendingUp,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useAuth } from '@/context/AuthContext';
@@ -48,6 +49,7 @@ export const AddPocketModal: React.FC = () => {
   const [initialDeposit, setInitialDeposit] = useState('');
   const [selectedColor, setSelectedColor] = useState('#635BFF');
   const [selectedIcon, setSelectedIcon] = useState('Shield');
+  const [isAsset, setIsAsset] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isOpen = activeModal === 'addPocket';
@@ -86,6 +88,7 @@ export const AddPocketModal: React.FC = () => {
       targetAmount: targetNum,
       color: selectedColor,
       iconName: selectedIcon,
+      isAsset,
     });
 
     // Reset & close
@@ -94,6 +97,7 @@ export const AddPocketModal: React.FC = () => {
     setInitialDeposit('');
     setSelectedColor('#635BFF');
     setSelectedIcon('Shield');
+    setIsAsset(false);
     setError(null);
     setActiveModal(null);
   };
@@ -314,6 +318,42 @@ export const AddPocketModal: React.FC = () => {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Asset Classification Toggle Card */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] flex items-center justify-between">
+                <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    isAsset
+                      ? 'bg-amber-400/20 text-amber-500 dark:text-amber-400'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                  }`}>
+                    <TrendingUp className="w-3.5 h-3.5 stroke-[2.2]" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                      {language === 'id' ? 'Labeli sebagai Aset' : 'Label as Asset'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 dark:text-[#7B88A6] block leading-tight">
+                      {language === 'id' ? 'Masuk ke Portofolio Aset, keluar dari Saldo Tersedia' : 'In Asset Portfolio, out of available balance'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAsset(!isAsset)}
+                  className={`w-10 h-5.5 rounded-full transition-colors relative cursor-pointer flex-shrink-0 ${
+                    isAsset ? 'bg-[#635BFF]' : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+                  aria-label="Toggle Asset"
+                >
+                  <div
+                    className={`w-4.5 h-4.5 rounded-full bg-white absolute top-0.5 transition-transform shadow-xs ${
+                      isAsset ? 'translate-x-[18px]' : 'translate-x-0.5'
+                    }`}
+                  />
+                </button>
               </div>
 
               {error && (

@@ -82,6 +82,7 @@ export interface Pocket {
   iconName: string;
   createdAt: number;
   order?: number;
+  isAsset?: boolean;
 }
 
 export interface DebtPaymentRecord {
