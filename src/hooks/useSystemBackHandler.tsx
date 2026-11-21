@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 
 export type BackHandlerFn = () => boolean;
 
@@ -144,34 +143,4 @@ export function useSystemBackHandler({
   return { showExitToast };
 }
 
-/**
- * Clean, modern floating toast informing the user to press back once more to exit.
- */
-export const ExitConfirmToast: React.FC<{
-  show: boolean;
-  language?: 'id' | 'en';
-}> = ({ show, language = 'id' }) => {
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          key="exit-toast"
-          initial={{ opacity: 0, y: 20, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 15, scale: 0.94 }}
-          transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-          className="fixed bottom-20 inset-x-0 mx-auto w-max max-w-[85vw] z-50 pointer-events-none"
-        >
-          <div className="bg-slate-900/90 dark:bg-[#1E2435]/95 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl backdrop-blur-md border border-white/10 flex items-center space-x-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#635BFF] animate-pulse" />
-            <span>
-              {language === 'id'
-                ? 'Tekan sekali lagi untuk keluar'
-                : 'Press back again to exit'}
-            </span>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+export { ExitConfirmToast } from '@/components/common/ExitConfirmToast';

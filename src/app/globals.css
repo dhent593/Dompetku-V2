@@ -292,6 +292,11 @@ html:not(.dark) {
 .bg-red-600 *,
 .bg-emerald-600,
 .bg-emerald-600 *,
+.toast-capsule,
+.toast-capsule *,
+.toast-capsule span,
+.toast-capsule p,
+.toast-capsule svg,
 .\!text-white,
 .\!text-white * {
   color: #FFFFFF !important;

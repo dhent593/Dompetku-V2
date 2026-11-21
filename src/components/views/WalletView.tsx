@@ -779,22 +779,24 @@ export const WalletView: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 relative select-none">
-      {/* Toast Notification Notification */}
+      {/* Toast Notification (Modern Floating Capsule) */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            initial={{ opacity: 0, y: -16, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -16, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed top-5 inset-x-0 mx-auto max-w-sm z-50 px-4 py-3 bg-[#111520] dark:bg-[#1E2435] text-white rounded-2xl shadow-2xl flex items-center space-x-3 pointer-events-none"
+            exit={{ opacity: 0, y: -12, scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 32 }}
+            className="fixed top-5 inset-x-0 mx-auto w-max max-w-[90vw] z-50 pointer-events-none select-none flex justify-center"
           >
-            <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
-              <Check className="w-4 h-4 stroke-[2.5]" />
+            <div className="toast-capsule bg-[#0F172A]/95 dark:bg-[#161B26]/95 text-white text-[12.5px] font-semibold px-4.5 py-2.5 rounded-full shadow-[0_12px_32px_rgba(15,23,42,0.28)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.6)] backdrop-blur-xl border border-white/10 dark:border-white/10 flex items-center space-x-2.5 transition-colors">
+              <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+              <p className="text-white tracking-tight leading-none">
+                {toastMessage}
+              </p>
             </div>
-            <p className="text-xs font-semibold tracking-tight text-white leading-tight">
-              {toastMessage}
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
