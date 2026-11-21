@@ -53,7 +53,7 @@ export default function RootLayout({
                 const savedTheme = localStorage.getItem('mypocket_theme');
                 const isLight = savedTheme === 'light';
                 const schemeValue = isLight ? 'light' : 'dark';
-                const themeColor = isLight ? '#FFFFFF' : '#07090F';
+                const themeColor = isLight ? '#F1F5F9' : '#07090F';
                 
                 if (isLight) {
                   document.documentElement.classList.remove('dark');
