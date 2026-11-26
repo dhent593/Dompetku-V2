@@ -323,10 +323,18 @@ export const TransactionsView: React.FC = () => {
 
                         <div
                           className={`text-sm font-bold tracking-tight ${
-                            tx.type === 'income' ? 'text-[#10B981]' : 'text-slate-900 dark:text-white'
+                            tx.category === 'transfer'
+                              ? 'text-slate-600 dark:text-slate-300'
+                              : tx.type === 'income'
+                              ? 'text-[#10B981]'
+                              : 'text-slate-900 dark:text-white'
                           }`}
                         >
-                          {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
+                          {tx.category === 'transfer'
+                            ? formatCurrency(tx.amount)
+                            : tx.type === 'income'
+                            ? `+${formatCurrency(tx.amount)}`
+                            : `-${formatCurrency(tx.amount)}`}
                         </div>
                       </div>
                     ))}

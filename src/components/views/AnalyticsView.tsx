@@ -94,16 +94,16 @@ export const AnalyticsView: React.FC = () => {
 
   const currentMonthTx = transactions.filter((tx) => tx.date.startsWith(currentMonthStr));
   const totalMonthExpense = currentMonthTx
-    .filter((tx) => tx.type === 'expense')
+    .filter((tx) => tx.type === 'expense' && tx.category !== 'transfer')
     .reduce((sum, tx) => sum + tx.amount, 0);
   const totalMonthIncome = currentMonthTx
-    .filter((tx) => tx.type === 'income')
+    .filter((tx) => tx.type === 'income' && tx.category !== 'transfer')
     .reduce((sum, tx) => sum + tx.amount, 0);
   const netCashflow = totalMonthIncome - totalMonthExpense;
 
-  // Breakdown by category for activeType
+  // Breakdown by category for activeType (exclude transfer so category breakdown is pure expenses/income)
   const filteredTypeTx = currentMonthTx.filter((tx) =>
-    activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income'
+    (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income') && tx.category !== 'transfer'
   );
 
   const categoryAggregated: Record<string, { total: number; count: number }> = {};
@@ -242,16 +242,14 @@ export const AnalyticsView: React.FC = () => {
       <div className="flex items-center justify-between pt-1 relative">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
           {timeFilter === 'monthly'
-            ? language === 'id'
-              ? 'Maret, 2023'
-              : 'March, 2023'
+            ? now.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })
             : timeFilter === 'weekly'
             ? language === 'id'
               ? 'Minggu Ini'
               : 'This Week'
             : language === 'id'
-            ? 'Tahun 2023'
-            : 'Year 2023'}
+            ? `Tahun ${now.getFullYear()}`
+            : `Year ${now.getFullYear()}`}
         </h2>
 
         <div className="relative">

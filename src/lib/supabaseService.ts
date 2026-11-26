@@ -286,12 +286,75 @@ export class SupabaseService {
     };
   }
 
+  static async updateTransaction(
+    id: string,
+    updates: Partial<Omit<Transaction, 'id'>>
+  ): Promise<Transaction | null> {
+    if (!this.isConfigured()) return null;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+    if (!isUuid) return null;
+
+    const payload: Record<string, any> = {};
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.amount !== undefined) payload.amount = updates.amount;
+    if (updates.type !== undefined) payload.type = updates.type;
+    if (updates.date !== undefined) payload.date = updates.date;
+    if (updates.dateGroup !== undefined) payload.date_group = updates.dateGroup;
+    if (updates.time !== undefined) payload.time = updates.time;
+    if (updates.timestamp !== undefined) payload.timestamp = updates.timestamp;
+    if (updates.iconName !== undefined) payload.icon_name = updates.iconName;
+    if (updates.cardNumber !== undefined) payload.card_number = updates.cardNumber;
+    if (updates.recipient !== undefined) payload.recipient = updates.recipient;
+    if (updates.note !== undefined) payload.note = updates.note;
+    if (updates.pocketId !== undefined) payload.pocket_id = updates.pocketId || null;
+    if (updates.pocketName !== undefined) payload.pocket_name = updates.pocketName;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(payload)
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      title: data.title,
+      category: data.category,
+      amount: Number(data.amount),
+      type: data.type,
+      date: data.date,
+      dateGroup: data.date_group,
+      time: data.time,
+      timestamp: Number(data.timestamp),
+      iconName: data.icon_name,
+      cardNumber: data.card_number,
+      recipient: data.recipient,
+      note: data.note,
+      pocketId: data.pocket_id,
+      pocketName: data.pocket_name,
+    };
+  }
+
   static async deleteTransaction(id: string): Promise<boolean> {
     if (!this.isConfigured()) return false;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+    if (!isUuid) return false;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
     const { error } = await supabase
       .from('transactions')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
     return !error;
   }
@@ -866,20 +929,6 @@ export class SupabaseService {
         balance: 0,
         total_balance: 0,
       }).eq('id', user.id);
-
-      // Re-provision starter pockets
-      const starterList = [
-        { name: 'Mandiri', balance: 0, target_amount: 10000000, color: '#635BFF', icon_name: 'WalletCards' },
-        { name: 'BRI', balance: 0, target_amount: 5000000, color: '#0284C7', icon_name: 'Building2' },
-        { name: 'ShoppePay', balance: 0, target_amount: 2000000, color: '#EA580C', icon_name: 'Smartphone' },
-      ];
-
-      for (const sp of starterList) {
-        await supabase.from('pockets').insert({
-          user_id: user.id,
-          ...sp,
-        });
-      }
 
       return true;
     } catch (err) {

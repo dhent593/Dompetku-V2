@@ -2,35 +2,7 @@ import { Transaction, UserProfile, CategorySummary, PaymentCard, Pocket, DebtIte
 import { INITIAL_USER, INITIAL_TRANSACTIONS, INITIAL_CARDS, INITIAL_POCKETS, INITIAL_DEBTS, INITIAL_ASSETS, INITIAL_BUDGETS, INITIAL_NOTES, INITIAL_WISHLISTS } from './dummyData';
 import { computeTxDateGroup, getLocalDateString } from './utils';
 
-export const STARTER_POCKETS: Pocket[] = [
-  {
-    id: 'pkt_mandiri',
-    name: 'Mandiri',
-    balance: 0,
-    targetAmount: 10000000,
-    color: '#635BFF',
-    iconName: 'WalletCards',
-    createdAt: 1700000000000,
-  },
-  {
-    id: 'pkt_bri',
-    name: 'BRI',
-    balance: 0,
-    targetAmount: 5000000,
-    color: '#0284C7',
-    iconName: 'Building2',
-    createdAt: 1700000000001,
-  },
-  {
-    id: 'pkt_shoppepay',
-    name: 'ShoppePay',
-    balance: 0,
-    targetAmount: 2000000,
-    color: '#EA580C',
-    iconName: 'Smartphone',
-    createdAt: 1700000000002,
-  },
-];
+export const STARTER_POCKETS: Pocket[] = [];
 
 export const EMPTY_USER: UserProfile = {
   id: '',
@@ -624,20 +596,43 @@ class DataService {
     return true;
   }
 
-  transferBetweenPockets(fromPocketId: string, toPocketId: string, amount: number): boolean {
-    if (fromPocketId === toPocketId || amount <= 0) return false;
+  transferBetweenPockets(fromPocketId: string, toPocketId: string, amount: number): Transaction | null {
+    if (fromPocketId === toPocketId || amount <= 0) return null;
     const pockets = this.getPockets();
     const sourcePocket = pockets.find((p) => p.id === fromPocketId);
     const destPocket = pockets.find((p) => p.id === toPocketId);
 
-    if (!sourcePocket || !destPocket) return false;
-    if (sourcePocket.balance < amount) return false;
+    if (!sourcePocket || !destPocket) return null;
+    if (sourcePocket.balance < amount) return null;
 
     sourcePocket.balance -= amount;
     destPocket.balance += amount;
 
     this.savePockets(pockets);
-    return true;
+
+    // Record neutral fund transfer transaction
+    const localDate = getLocalDateString();
+    const tx: Transaction = {
+      id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      title: `Pindah Dana: ${sourcePocket.name} → ${destPocket.name}`,
+      category: 'transfer',
+      amount,
+      type: 'expense',
+      date: localDate,
+      dateGroup: computeTxDateGroup(localDate),
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(),
+      iconName: 'ArrowRightLeft',
+      note: `Pindah dana dari ${sourcePocket.name} ke ${destPocket.name}`,
+      pocketId: sourcePocket.id,
+      pocketName: sourcePocket.name,
+    };
+
+    const transactions = this.getTransactions();
+    transactions.unshift(tx);
+    this.saveTransactions(transactions);
+
+    return tx;
   }
 
   // --- Debts & Installments (CRUD + Pay via Pocket) ---

@@ -415,7 +415,7 @@ CREATE TRIGGER set_wishlists_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- 1. Insert Profile
+    -- 1. Insert Profile (pockets start empty with 0 items)
     INSERT INTO public.profiles (id, email, name, avatar_url)
     VALUES (
         NEW.id,
@@ -423,13 +423,6 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
         COALESCE(NEW.raw_user_meta_data->>'avatar_url', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80')
     );
-
-    -- 2. Provision Default Starter Pockets (Mandiri, BRI, ShoppePay) with 0 balance
-    INSERT INTO public.pockets (user_id, name, balance, target_amount, color, icon_name)
-    VALUES 
-        (NEW.id, 'Mandiri', 0, 10000000, '#635BFF', 'WalletCards'),
-        (NEW.id, 'BRI', 0, 5000000, '#0284C7', 'Building2'),
-        (NEW.id, 'ShoppePay', 0, 2000000, '#EA580C', 'Smartphone');
 
     RETURN NEW;
 END;

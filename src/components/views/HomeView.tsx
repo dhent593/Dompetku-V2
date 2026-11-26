@@ -243,12 +243,19 @@ export const HomeView: React.FC = () => {
   }, [language]);
 
   // Dynamic monthly income and expense
-  const thisMonthIncome = transactions
-    .filter((tx) => tx.type === 'income')
+  const now = new Date();
+  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  const thisMonthTransactions = transactions.filter((tx) =>
+    tx.date ? tx.date.startsWith(currentMonthStr) : true
+  );
+
+  const thisMonthIncome = thisMonthTransactions
+    .filter((tx) => tx.type === 'income' && tx.category !== 'transfer')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const thisMonthExpense = transactions
-    .filter((tx) => tx.type === 'expense')
+  const thisMonthExpense = thisMonthTransactions
+    .filter((tx) => tx.type === 'expense' && tx.category !== 'transfer')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const availablePocketBalance = pockets
@@ -487,10 +494,18 @@ export const HomeView: React.FC = () => {
 
               <div
                 className={`text-sm font-bold tracking-tight ${
-                  tx.type === 'income' ? 'text-[#10B981]' : 'text-slate-900 dark:text-white'
+                  tx.category === 'transfer'
+                    ? 'text-slate-600 dark:text-slate-300'
+                    : tx.type === 'income'
+                    ? 'text-[#10B981]'
+                    : 'text-slate-900 dark:text-white'
                 }`}
               >
-                {tx.type === 'income' ? `+${formatCurrency(tx.amount)}` : `-${formatCurrency(tx.amount)}`}
+                {tx.category === 'transfer'
+                  ? formatCurrency(tx.amount)
+                  : tx.type === 'income'
+                  ? `+${formatCurrency(tx.amount)}`
+                  : `-${formatCurrency(tx.amount)}`}
               </div>
             </div>
           ))}

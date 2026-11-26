@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Transaction, CategorySummary, NavTab, PaymentCard, Pocket, DebtItem, AssetItem, CategoryBudget, NoteItem, WishlistItem } from '@/types';
-import { dataService, STARTER_POCKETS } from '@/lib/dataService';
+import { dataService } from '@/lib/dataService';
 import { computeTxDateGroup, getLocalDateString } from '@/lib/utils';
 import {
   CATEGORY_SUMMARIES,
@@ -335,7 +335,19 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         note: tx.note,
         pocketId: newTx.pocketId,
         pocketName: newTx.pocketName,
-      }).catch(console.error);
+      })
+        .then((createdSbTx) => {
+          if (createdSbTx) {
+            const allTx = dataService.getTransactions();
+            const target = allTx.find((t) => t.id === newTx.id);
+            if (target) {
+              target.id = createdSbTx.id;
+              dataService.saveTransactions(allTx);
+              setTransactions([...allTx]);
+            }
+          }
+        })
+        .catch(console.error);
 
       // Immediately sync the updated pocket's balance to Supabase
       if (newTx.pocketId) {
@@ -361,6 +373,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       setPockets(updatedPockets);
       updateUser(dataService.getUser());
       if (isSupabaseConfigured) {
+        SupabaseService.updateTransaction(id, updates).catch(console.error);
         const affectedPocketIds = new Set<string>();
         if (prevTx?.pocketId) affectedPocketIds.add(prevTx.pocketId);
         if (updated.pocketId) affectedPocketIds.add(updated.pocketId);
@@ -543,10 +556,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const transferBetweenPockets = (fromPocketId: string, toPocketId: string, amount: number): boolean => {
-    const ok = dataService.transferBetweenPockets(fromPocketId, toPocketId, amount);
-    if (ok) {
+    const tx = dataService.transferBetweenPockets(fromPocketId, toPocketId, amount);
+    if (tx) {
       const updatedPockets = dataService.getPockets();
       setPockets(updatedPockets);
+      const updatedTransactions = dataService.getTransactions();
+      setTransactions(updatedTransactions);
       const updatedSelected = updatedPockets.find((p) => p.id === fromPocketId) || null;
       setSelectedPocket(updatedSelected);
       if (isSupabaseConfigured) {
@@ -554,9 +569,37 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const p2 = updatedPockets.find((p) => p.id === toPocketId);
         if (p1) SupabaseService.updatePocket(fromPocketId, { balance: p1.balance }).catch(console.error);
         if (p2) SupabaseService.updatePocket(toPocketId, { balance: p2.balance }).catch(console.error);
+
+        SupabaseService.createTransaction({
+          title: tx.title,
+          category: tx.category,
+          amount: tx.amount,
+          type: tx.type,
+          date: tx.date,
+          dateGroup: tx.dateGroup,
+          time: tx.time,
+          timestamp: tx.timestamp,
+          iconName: tx.iconName,
+          note: tx.note,
+          pocketId: tx.pocketId,
+          pocketName: tx.pocketName,
+        })
+          .then((sbTx) => {
+            if (sbTx) {
+              const allTx = dataService.getTransactions();
+              const target = allTx.find((t) => t.id === tx.id);
+              if (target) {
+                target.id = sbTx.id;
+                dataService.saveTransactions(allTx);
+                setTransactions([...allTx]);
+              }
+            }
+          })
+          .catch(console.error);
       }
+      return true;
     }
-    return ok;
+    return false;
   };
 
   const transferMoney = (recipient: string, amount: number, note?: string): boolean => {

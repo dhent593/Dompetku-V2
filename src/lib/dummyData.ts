@@ -65,6 +65,12 @@ export const INITIAL_CARDS: PaymentCard[] = [
   },
 ];
 
+const getIsoDateAgo = (daysAgo: number = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().split('T')[0];
+};
+
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
     id: 'tx_01',
@@ -72,7 +78,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'shopping',
     amount: 36,
     type: 'expense',
-    date: '2023-04-19',
+    date: getIsoDateAgo(0),
     dateGroup: 'TODAY',
     time: '01:15 PM',
     timestamp: Date.now() - 3600000 * 3,
@@ -86,7 +92,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'salary',
     amount: 2500,
     type: 'income',
-    date: '2023-04-19',
+    date: getIsoDateAgo(0),
     dateGroup: 'TODAY',
     time: '09:00 AM',
     timestamp: Date.now() - 3600000 * 7,
@@ -99,7 +105,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'bill',
     amount: 44,
     type: 'expense',
-    date: '2023-04-18',
+    date: getIsoDateAgo(1),
     dateGroup: 'YESTERDAY',
     time: '11:30 AM',
     timestamp: Date.now() - 3600000 * 28,
@@ -113,7 +119,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'travel',
     amount: 126,
     type: 'expense',
-    date: '2023-04-17',
+    date: getIsoDateAgo(2),
     dateGroup: 'EARLIER THIS WEEK',
     time: '04:20 PM',
     timestamp: Date.now() - 3600000 * 52,
@@ -126,7 +132,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'investment',
     amount: 115,
     type: 'expense',
-    date: '2023-04-16',
+    date: getIsoDateAgo(3),
     dateGroup: 'EARLIER THIS WEEK',
     time: '10:00 AM',
     timestamp: Date.now() - 3600000 * 76,
@@ -139,7 +145,7 @@ export const INITIAL_TRANSACTIONS: Transaction[] = [
     category: 'food',
     amount: 157,
     type: 'expense',
-    date: '2023-04-15',
+    date: getIsoDateAgo(4),
     dateGroup: 'EARLIER THIS WEEK',
     time: '07:45 PM',
     timestamp: Date.now() - 3600000 * 100,

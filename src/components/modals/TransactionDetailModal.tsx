@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { formatCurrency, formatNumberInput, parseNumberInput, formatTxDateTime } from '@/lib/utils';
+import { formatCurrency, formatNumberInput, parseNumberInput, formatTxDateTime, computeTxDateGroup } from '@/lib/utils';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -30,6 +30,7 @@ export const TransactionDetailModal: React.FC = () => {
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Transaction['category']>('shopping');
   const [editPocketId, setEditPocketId] = useState<string>('main');
+  const [date, setDate] = useState('');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export const TransactionDetailModal: React.FC = () => {
       setType(selectedTransaction.type);
       setCategory(selectedTransaction.category);
       setEditPocketId(selectedTransaction.pocketId || (pockets.length > 0 ? pockets[0].id : ''));
+      setDate(selectedTransaction.date || new Date().toISOString().split('T')[0]);
       setNote(selectedTransaction.note || '');
       setIsEditing(false);
       setShowDeleteConfirm(false);
@@ -53,12 +55,16 @@ export const TransactionDetailModal: React.FC = () => {
     const num = parseNumberInput(amount);
     if (!title.trim() || isNaN(num) || num <= 0) return;
 
+    const updatedDate = date || selectedTransaction.date || new Date().toISOString().split('T')[0];
+
     updateTransaction(selectedTransaction.id, {
       title: title.trim(),
       amount: num,
       type,
       category,
       pocketId: editPocketId || (pockets.length > 0 ? pockets[0].id : undefined),
+      date: updatedDate,
+      dateGroup: computeTxDateGroup(updatedDate),
       note: note.trim(),
     });
 
@@ -139,12 +145,16 @@ export const TransactionDetailModal: React.FC = () => {
                   </span>
                   <div
                     className={`text-2xl font-black mt-1 tracking-tight ${
-                      selectedTransaction.type === 'income'
+                      selectedTransaction.category === 'transfer'
+                        ? 'text-slate-800 dark:text-slate-100'
+                        : selectedTransaction.type === 'income'
                         ? 'text-[#10B981]'
                         : 'text-slate-900 dark:text-white'
                     }`}
                   >
-                    {selectedTransaction.type === 'income'
+                    {selectedTransaction.category === 'transfer'
+                      ? formatCurrency(selectedTransaction.amount)
+                      : selectedTransaction.type === 'income'
                       ? `+${formatCurrency(selectedTransaction.amount)}`
                       : `-${formatCurrency(selectedTransaction.amount)}`}
                   </div>
@@ -325,6 +335,19 @@ export const TransactionDetailModal: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                    {language === 'id' ? 'Tanggal Transaksi' : 'Transaction Date'}
+                  </label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
+                    required
+                  />
                 </div>
 
                 <div>
