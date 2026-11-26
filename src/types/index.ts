@@ -57,6 +57,8 @@ export interface UserProfile {
   totalBalance: number;
   isOnline: boolean;
   biometricEnabled: boolean;
+  pinEnabled?: boolean;
+  pinCreated?: boolean;
   mPinHash: string; // simulated hash (default PIN: "1234")
 }
 

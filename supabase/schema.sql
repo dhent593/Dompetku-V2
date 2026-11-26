@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     total_balance NUMERIC(15, 2) NOT NULL DEFAULT 0,
     is_online BOOLEAN NOT NULL DEFAULT true,
     biometric_enabled BOOLEAN NOT NULL DEFAULT true,
-    mpin_hash TEXT DEFAULT '1234',
+    pin_enabled BOOLEAN NOT NULL DEFAULT false,
+    pin_created BOOLEAN NOT NULL DEFAULT false,
+    mpin_hash TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );

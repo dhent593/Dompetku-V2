@@ -11,6 +11,8 @@ export const INITIAL_USER: UserProfile = {
   totalBalance: 14482.00,
   isOnline: true,
   biometricEnabled: true,
+  pinEnabled: true,
+  pinCreated: true,
   mPinHash: '1234', // default demo PIN
 };
 

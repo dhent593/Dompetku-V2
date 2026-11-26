@@ -15,7 +15,9 @@ export const EMPTY_USER: UserProfile = {
   totalBalance: 0,
   isOnline: false,
   biometricEnabled: false,
-  mPinHash: '1234',
+  pinEnabled: false,
+  pinCreated: false,
+  mPinHash: '',
 };
 
 const STORAGE_KEYS = {
@@ -164,6 +166,13 @@ class DataService {
         const stored = localStorage.getItem(STORAGE_KEYS.USER);
         if (stored) {
           const user: UserProfile = JSON.parse(stored);
+          const isDemo = user.email === 'smith@example.com';
+          // Sanitize lingering dummy PIN for non-demo users who haven't explicitly created one
+          if (!isDemo && !user.pinCreated) {
+            user.mPinHash = '';
+            user.pinEnabled = false;
+            user.pinCreated = false;
+          }
           const pockets = this.getPockets();
           const sumPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
           const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);

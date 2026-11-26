@@ -27,6 +27,7 @@ interface AuthContextType {
   unlockWithPin: (pinToTest?: string) => boolean;
   unlockWithBiometrics: () => Promise<boolean>;
   lockApp: () => void;
+  setPinLockEnabled: (enabled: boolean) => void;
   updateUser: (updated: Partial<UserProfile>) => void;
   logout: () => void;
 }
@@ -63,6 +64,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [pinLockoutUntil]);
 
+  // Helper to determine if app should be locked on startup
+  const checkAndLockUser = (targetUser: UserProfile) => {
+    const isDemo = targetUser.email === 'smith@example.com';
+    const hasPin = isDemo || Boolean(targetUser.pinCreated && targetUser.mPinHash && targetUser.mPinHash.trim().length === 4);
+    const isPinActive = targetUser.pinEnabled === true && hasPin;
+    if (isPinActive) {
+      setIsLocked(true);
+      dataService.setAppLocked(true);
+    } else {
+      setIsLocked(false);
+      dataService.setAppLocked(false);
+    }
+  };
+
   useEffect(() => {
     // If Supabase is configured, listen to active session
     if (isSupabaseConfigured) {
@@ -75,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (profile) {
               setUser(profile);
               dataService.saveUser(profile);
+              checkAndLockUser(profile);
             } else {
               const fallback: UserProfile = {
                 ...EMPTY_USER,
@@ -84,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               };
               setUser(fallback);
               dataService.saveUser(fallback);
+              checkAndLockUser(fallback);
             }
           } else {
             // If no Supabase session, check stored auth state
@@ -92,8 +109,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const initialUser = dataService.getUser();
               setUser(initialUser);
               setIsLoggedIn(true);
+              checkAndLockUser(initialUser);
             } else {
               setIsLoggedIn(false);
+              setIsLocked(false);
               setUser(EMPTY_USER);
             }
           }
@@ -110,9 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (profile) {
             setUser(profile);
             dataService.saveUser(profile);
+            checkAndLockUser(profile);
           }
         } else if (event === 'SIGNED_OUT') {
           setIsLoggedIn(false);
+          setIsLocked(false);
           dataService.setAuthState(false);
           setUser(EMPTY_USER);
         }
@@ -124,11 +145,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       const storedAuth = dataService.getAuthState();
       if (storedAuth) {
-        setUser(dataService.getUser());
+        const initialUser = dataService.getUser();
+        setUser(initialUser);
         setIsLoggedIn(true);
+        checkAndLockUser(initialUser);
       } else {
         setUser(EMPTY_USER);
         setIsLoggedIn(false);
+        setIsLocked(false);
       }
       setIsAuthLoading(false);
     }
@@ -170,7 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const isDemo = user.email === 'smith@example.com';
-    const isValid = pinToTest === user.mPinHash || (isDemo && pinToTest === '1234');
+    const isValid = (user.pinCreated && pinToTest === user.mPinHash) || (isDemo && (pinToTest === user.mPinHash || pinToTest === '1234'));
 
     if (isValid) {
       setIsLocked(false);
@@ -214,6 +238,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setBiometricLoading(true);
     setPinError(null);
     try {
+      // 1. Try WebAuthn platform authenticator if available on device
+      if (typeof window !== 'undefined' && window.PublicKeyCredential) {
+        try {
+          const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          if (available) {
+            const challenge = new Uint8Array(32);
+            window.crypto.getRandomValues(challenge);
+            await navigator.credentials.get({
+              publicKey: {
+                challenge,
+                timeout: 60000,
+                userVerification: 'preferred',
+                rpId: window.location.hostname || undefined,
+              },
+            });
+            setIsLocked(false);
+            setIsLoggedIn(true);
+            dataService.setAuthState(true);
+            dataService.setAppLocked(false);
+            setPinInput('');
+            return true;
+          }
+        } catch (webAuthnErr: any) {
+          if (webAuthnErr?.name === 'NotAllowedError') {
+            setPinError('Verifikasi sidik jari dibatalkan.');
+            return false;
+          }
+        }
+      }
+
+      // 2. Simulation fallback for smooth experience
       await new Promise((resolve) => setTimeout(resolve, 800));
       setIsLocked(false);
       setIsLoggedIn(true);
@@ -222,7 +277,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setPinInput('');
       return true;
     } catch {
-      setPinError('Biometric verification failed');
+      setPinError('Verifikasi biometrik gagal.');
       return false;
     } finally {
       setBiometricLoading(false);
@@ -431,6 +486,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dataService.setAppLocked(true);
   };
 
+  const setPinLockEnabled = (enabled: boolean) => {
+    updateUser({ pinEnabled: enabled });
+  };
+
   const updateUser = (updated: Partial<UserProfile>) => {
     setUser((prev) => {
       const next = { ...prev, ...updated };
@@ -478,6 +537,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         unlockWithPin,
         unlockWithBiometrics,
         lockApp,
+        setPinLockEnabled,
         updateUser,
         logout,
       }}

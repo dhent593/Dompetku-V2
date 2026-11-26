@@ -36,6 +36,9 @@ export class SupabaseService {
 
     if (error || !data) return null;
 
+    const isDemo = (data.email || user.email) === 'smith@example.com';
+    const hasExplicitPin = isDemo || Boolean(data.pin_created || (data.mpin_hash && data.mpin_hash !== '1234'));
+
     return {
       id: data.id,
       name: data.name,
@@ -46,8 +49,10 @@ export class SupabaseService {
       balance: Number(data.balance),
       totalBalance: Number(data.total_balance),
       isOnline: data.is_online,
-      biometricEnabled: data.biometric_enabled,
-      mPinHash: data.mpin_hash || '1234',
+      biometricEnabled: Boolean(data.biometric_enabled),
+      pinEnabled: isDemo ? Boolean(data.pin_enabled ?? true) : Boolean(data.pin_enabled && hasExplicitPin),
+      pinCreated: hasExplicitPin,
+      mPinHash: isDemo ? '1234' : (hasExplicitPin ? data.mpin_hash : ''),
     };
   }
 
@@ -60,6 +65,8 @@ export class SupabaseService {
     if (updates.name !== undefined) payload.name = updates.name;
     if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
     if (updates.biometricEnabled !== undefined) payload.biometric_enabled = updates.biometricEnabled;
+    if (updates.pinEnabled !== undefined) payload.pin_enabled = updates.pinEnabled;
+    if (updates.pinCreated !== undefined) payload.pin_created = updates.pinCreated;
     if (updates.mPinHash !== undefined) payload.mpin_hash = updates.mPinHash;
     if (updates.balance !== undefined) payload.balance = updates.balance;
     if (updates.totalBalance !== undefined) payload.total_balance = updates.totalBalance;
