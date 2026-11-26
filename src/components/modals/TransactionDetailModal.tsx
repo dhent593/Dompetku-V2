@@ -15,6 +15,7 @@ import {
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency, formatNumberInput, parseNumberInput, formatTxDateTime, computeTxDateGroup } from '@/lib/utils';
+import { dataService } from '@/lib/dataService';
 import { Transaction } from '@/types';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 
@@ -30,6 +31,7 @@ export const TransactionDetailModal: React.FC = () => {
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [category, setCategory] = useState<Transaction['category']>('shopping');
   const [editPocketId, setEditPocketId] = useState<string>('main');
+  const [editDestPocketId, setEditDestPocketId] = useState<string>('');
   const [date, setDate] = useState('');
   const [note, setNote] = useState('');
 
@@ -40,14 +42,28 @@ export const TransactionDetailModal: React.FC = () => {
       setType(selectedTransaction.type);
       setCategory(selectedTransaction.category);
       setEditPocketId(selectedTransaction.pocketId || (pockets.length > 0 ? pockets[0].id : ''));
+
+      const transferInfo = selectedTransaction.category === 'transfer'
+        ? dataService.resolveTransferPockets(selectedTransaction, pockets)
+        : { sourcePocket: undefined, destPocket: undefined };
+
+      const defaultDest = transferInfo.destPocket
+        ? transferInfo.destPocket.id
+        : pockets.find((p) => p.id !== selectedTransaction.pocketId)?.id || '';
+
+      setEditDestPocketId(defaultDest);
       setDate(selectedTransaction.date || new Date().toISOString().split('T')[0]);
       setNote(selectedTransaction.note || '');
       setIsEditing(false);
       setShowDeleteConfirm(false);
     }
-  }, [selectedTransaction]);
+  }, [selectedTransaction, pockets]);
 
   const isOpen = selectedTransaction !== null;
+
+  const currentTransferInfo = selectedTransaction && selectedTransaction.category === 'transfer'
+    ? dataService.resolveTransferPockets(selectedTransaction, pockets)
+    : { sourcePocket: undefined, destPocket: undefined };
 
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,13 +72,24 @@ export const TransactionDetailModal: React.FC = () => {
     if (!title.trim() || isNaN(num) || num <= 0) return;
 
     const updatedDate = date || selectedTransaction.date || new Date().toISOString().split('T')[0];
+    const isTransfer = category === 'transfer';
+    let finalTitle = title.trim();
+
+    if (isTransfer) {
+      const src = pockets.find((p) => p.id === editPocketId);
+      const dst = pockets.find((p) => p.id === editDestPocketId);
+      if (src && dst && (!title || title.startsWith('Pindah Dana'))) {
+        finalTitle = `Pindah Dana: ${src.name} → ${dst.name}`;
+      }
+    }
 
     updateTransaction(selectedTransaction.id, {
-      title: title.trim(),
+      title: finalTitle,
       amount: num,
-      type,
+      type: isTransfer ? 'expense' : type,
       category,
       pocketId: editPocketId || (pockets.length > 0 ? pockets[0].id : undefined),
+      recipient: isTransfer ? editDestPocketId : undefined,
       date: updatedDate,
       dateGroup: computeTxDateGroup(updatedDate),
       note: note.trim(),
@@ -175,29 +202,53 @@ export const TransactionDetailModal: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
-                    <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
-                      <Wallet className="w-3.5 h-3.5 text-[#635BFF]" />
-                      <span>
-                        {selectedTransaction.type === 'income'
-                          ? language === 'id'
-                            ? 'Kantong Tujuan'
-                            : 'Target Pocket'
-                          : language === 'id'
-                          ? 'Kantong Digunakan'
-                          : 'Pocket Used'}
+                  {selectedTransaction.category === 'transfer' ? (
+                    <>
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
+                        <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
+                          <Wallet className="w-3.5 h-3.5 text-[#635BFF]" />
+                          <span>{language === 'id' ? 'Kantong Asal' : 'Source Pocket'}</span>
+                        </span>
+                        <span className="font-semibold text-slate-800 dark:text-white">
+                          Kantong {currentTransferInfo.sourcePocket?.name || selectedTransaction.pocketName || 'Asal'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
+                        <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
+                          <Wallet className="w-3.5 h-3.5 text-[#10B981]" />
+                          <span>{language === 'id' ? 'Kantong Tujuan' : 'Destination Pocket'}</span>
+                        </span>
+                        <span className="font-semibold text-slate-800 dark:text-white">
+                          Kantong {currentTransferInfo.destPocket?.name || 'Tujuan'}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
+                      <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
+                        <Wallet className="w-3.5 h-3.5 text-[#635BFF]" />
+                        <span>
+                          {selectedTransaction.type === 'income'
+                            ? language === 'id'
+                              ? 'Kantong Tujuan'
+                              : 'Target Pocket'
+                            : language === 'id'
+                            ? 'Kantong Digunakan'
+                            : 'Pocket Used'}
+                        </span>
                       </span>
-                    </span>
-                    <span className="font-semibold text-slate-800 dark:text-white">
-                      {selectedTransaction.pocketName
-                        ? `Kantong ${selectedTransaction.pocketName}`
-                        : pockets.find((p) => p.id === selectedTransaction.pocketId)?.name
-                        ? `Kantong ${pockets.find((p) => p.id === selectedTransaction.pocketId)?.name}`
-                        : pockets[0]
-                        ? `Kantong ${pockets[0].name}`
-                        : 'Kantong'}
-                    </span>
-                  </div>
+                      <span className="font-semibold text-slate-800 dark:text-white">
+                        {selectedTransaction.pocketName
+                          ? `Kantong ${selectedTransaction.pocketName}`
+                          : pockets.find((p) => p.id === selectedTransaction.pocketId)?.name
+                          ? `Kantong ${pockets.find((p) => p.id === selectedTransaction.pocketId)?.name}`
+                          : pockets[0]
+                          ? `Kantong ${pockets[0].name}`
+                          : 'Kantong'}
+                      </span>
+                    </div>
+                  )}
 
                   {selectedTransaction.note && (
                     <div className="flex flex-col p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60 space-y-1">
@@ -268,30 +319,32 @@ export const TransactionDetailModal: React.FC = () => {
             ) : (
               /* Edit Form */
               <form onSubmit={handleSaveEdit} className="flex flex-col space-y-3 pt-4">
-                <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setType('expense')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      type === 'expense'
-                        ? 'bg-[#F43F5E] text-white shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
-                    }`}
-                  >
-                    {t('expense_type')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setType('income')}
-                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                      type === 'income'
-                        ? 'bg-[#10B981] text-white shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
-                    }`}
-                  >
-                    {t('income_type')}
-                  </button>
-                </div>
+                {category !== 'transfer' && (
+                  <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setType('expense')}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        type === 'expense'
+                          ? 'bg-[#F43F5E] text-white shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
+                      }`}
+                    >
+                      {t('expense_type')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setType('income')}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        type === 'income'
+                          ? 'bg-[#10B981] text-white shadow-sm'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
+                      }`}
+                    >
+                      {t('income_type')}
+                    </button>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
@@ -350,28 +403,75 @@ export const TransactionDetailModal: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
-                    {type === 'income'
-                      ? language === 'id'
-                        ? 'Kantong Tujuan'
-                        : 'Target Pocket'
-                      : language === 'id'
-                      ? 'Kantong Digunakan'
-                      : 'Pocket Used'}
-                  </label>
-                  <select
-                    value={editPocketId}
-                    onChange={(e) => setEditPocketId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
-                  >
-                    {pockets.map((pkt) => (
-                      <option key={pkt.id} value={pkt.id}>
-                        Kantong {pkt.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {category === 'transfer' ? (
+                  <>
+                    <div>
+                      <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                        {language === 'id' ? 'Kantong Asal' : 'Source Pocket'}
+                      </label>
+                      <select
+                        value={editPocketId}
+                        onChange={(e) => {
+                          const newSource = e.target.value;
+                          setEditPocketId(newSource);
+                          if (editDestPocketId === newSource) {
+                            const other = pockets.find((p) => p.id !== newSource);
+                            if (other) setEditDestPocketId(other.id);
+                          }
+                        }}
+                        className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
+                      >
+                        {pockets.map((pkt) => (
+                          <option key={pkt.id} value={pkt.id}>
+                            Kantong {pkt.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                        {language === 'id' ? 'Kantong Tujuan' : 'Destination Pocket'}
+                      </label>
+                      <select
+                        value={editDestPocketId}
+                        onChange={(e) => setEditDestPocketId(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
+                      >
+                        {pockets
+                          .filter((p) => p.id !== editPocketId)
+                          .map((pkt) => (
+                            <option key={pkt.id} value={pkt.id}>
+                              Kantong {pkt.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">
+                      {type === 'income'
+                        ? language === 'id'
+                          ? 'Kantong Tujuan'
+                          : 'Target Pocket'
+                        : language === 'id'
+                        ? 'Kantong Digunakan'
+                        : 'Pocket Used'}
+                    </label>
+                    <select
+                      value={editPocketId}
+                      onChange={(e) => setEditPocketId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors"
+                    >
+                      {pockets.map((pkt) => (
+                        <option key={pkt.id} value={pkt.id}>
+                          Kantong {pkt.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1">

@@ -471,7 +471,13 @@ export const HomeView: React.FC = () => {
 
         {/* Scrollable Transaction Cards List ONLY (Aligned directly to navbar border with unclipped shadow) */}
         <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-2.5 pb-6 sm:pb-8 -mx-2 px-2 pt-1">
-          {transactions.map((tx) => (
+          {[...transactions]
+            .sort((a, b) => {
+              const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+              const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+              return timeB - timeA;
+            })
+            .map((tx) => (
             <div
               key={tx.id}
               onClick={() => setSelectedTransaction(tx)}

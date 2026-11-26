@@ -215,27 +215,34 @@ export class SupabaseService {
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
-      .order('date', { ascending: false });
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error || !data) return [];
 
-    return data.map((t) => ({
-      id: t.id,
-      title: t.title,
-      category: t.category,
-      amount: Number(t.amount),
-      type: t.type,
-      date: t.date,
-      dateGroup: t.date_group || 'TODAY',
-      time: t.time || '12:00 PM',
-      timestamp: t.timestamp ? Number(t.timestamp) : new Date(t.created_at).getTime(),
-      iconName: t.icon_name,
-      cardNumber: t.card_number,
-      recipient: t.recipient,
-      note: t.note,
-      pocketId: t.pocket_id,
-      pocketName: t.pocket_name,
-    }));
+    return data
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        category: t.category,
+        amount: Number(t.amount),
+        type: t.type,
+        date: t.date,
+        dateGroup: t.date_group || 'TODAY',
+        time: t.time || '12:00 PM',
+        timestamp: t.timestamp ? Number(t.timestamp) : new Date(t.created_at).getTime(),
+        iconName: t.icon_name,
+        cardNumber: t.card_number,
+        recipient: t.recipient,
+        note: t.note,
+        pocketId: t.pocket_id,
+        pocketName: t.pocket_name,
+      }))
+      .sort((a, b) => {
+        const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+        const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+        return timeB - timeA;
+      });
   }
 
   static async createTransaction(tx: Omit<Transaction, 'id'>): Promise<Transaction | null> {

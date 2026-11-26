@@ -199,18 +199,30 @@ class DataService {
       const stored = localStorage.getItem(this.getKey(STORAGE_KEYS.TRANSACTIONS));
       if (stored) {
         const parsed: Transaction[] = JSON.parse(stored);
-        return parsed.map((t) => ({
-          ...t,
-          dateGroup: computeTxDateGroup(t.date),
-        }));
+        return parsed
+          .map((t) => ({
+            ...t,
+            dateGroup: computeTxDateGroup(t.date),
+          }))
+          .sort((a, b) => {
+            const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+            const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+            return timeB - timeA;
+          });
       }
     } catch (e) {
       console.error('Failed to load transactions from storage', e);
     }
-    return (this.isDemoUser() ? INITIAL_TRANSACTIONS : []).map((t) => ({
-      ...t,
-      dateGroup: computeTxDateGroup(t.date),
-    }));
+    return (this.isDemoUser() ? INITIAL_TRANSACTIONS : [])
+      .map((t) => ({
+        ...t,
+        dateGroup: computeTxDateGroup(t.date),
+      }))
+      .sort((a, b) => {
+        const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+        const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+        return timeB - timeA;
+      });
   }
 
   saveTransactions(transactions: Transaction[]): void {
@@ -268,6 +280,46 @@ class DataService {
     return created;
   }
 
+  // Helper to resolve source and destination pockets for a transfer transaction
+  resolveTransferPockets(
+    tx: Transaction,
+    pockets: Pocket[]
+  ): { sourcePocket: Pocket | undefined; destPocket: Pocket | undefined } {
+    const sourcePocket = pockets.find((p) => p.id === tx.pocketId);
+    let destPocket: Pocket | undefined;
+
+    // 1. Check if tx.recipient is set and matches pocket id or pocket name
+    if (tx.recipient) {
+      destPocket = pockets.find((p) => p.id === tx.recipient || p.name.toLowerCase() === tx.recipient?.toLowerCase());
+    }
+
+    // 2. Fallback: Parse target pocket name from title (e.g. "Pindah Dana: Mandiri → BRI" or "->")
+    if (!destPocket && tx.title) {
+      let destName: string | undefined;
+      if (tx.title.includes('→')) {
+        destName = tx.title.split('→')[1]?.trim();
+      } else if (tx.title.includes('->')) {
+        destName = tx.title.split('->')[1]?.trim();
+      } else if (tx.title.includes(' ke ')) {
+        destName = tx.title.split(' ke ')[1]?.trim();
+      }
+      if (destName) {
+        destPocket = pockets.find((p) => p.name.toLowerCase() === destName?.toLowerCase());
+      }
+    }
+
+    // 3. Fallback: Parse from note (e.g. "Pindah dana dari Mandiri ke BRI")
+    if (!destPocket && tx.note) {
+      const match = tx.note.match(/ke\s+([^,]+)$/i);
+      if (match && match[1]) {
+        const destName = match[1].trim();
+        destPocket = pockets.find((p) => p.name.toLowerCase() === destName.toLowerCase());
+      }
+    }
+
+    return { sourcePocket, destPocket };
+  }
+
   // UPDATE
   updateTransaction(id: string, updates: Partial<Omit<Transaction, 'id' | 'timestamp'>>): Transaction | null {
     const transactions = this.getTransactions();
@@ -277,6 +329,59 @@ class DataService {
     const existing = transactions[index];
     const pockets = this.getPockets();
 
+    if (existing.category === 'transfer') {
+      // 1. Revert old transfer from both pockets
+      const { sourcePocket: oldSource, destPocket: oldDest } = this.resolveTransferPockets(existing, pockets);
+      if (oldSource) {
+        oldSource.balance += existing.amount;
+      }
+      if (oldDest) {
+        oldDest.balance = Math.max(0, oldDest.balance - existing.amount);
+      }
+
+      // 2. Apply new transfer to both pockets
+      const updatedTx: Transaction = {
+        ...existing,
+        ...updates,
+      };
+
+      const newAmount = updatedTx.amount;
+      const newSourceId = updatedTx.pocketId || (oldSource ? oldSource.id : undefined);
+      const newDestId = updatedTx.recipient || (oldDest ? oldDest.id : undefined);
+
+      const newSource = pockets.find((p) => p.id === newSourceId);
+      const newDest = pockets.find((p) => p.id === newDestId);
+
+      if (newSource) {
+        newSource.balance = Math.max(0, newSource.balance - newAmount);
+        updatedTx.pocketId = newSource.id;
+        updatedTx.pocketName = newSource.name;
+      }
+      if (newDest) {
+        newDest.balance += newAmount;
+        updatedTx.recipient = newDest.id;
+      }
+
+      if (newSource && newDest && (!updates.title || updates.title.startsWith('Pindah Dana'))) {
+        updatedTx.title = `Pindah Dana: ${newSource.name} → ${newDest.name}`;
+      }
+
+      this.savePockets(pockets);
+
+      const totalPockets = pockets.reduce((sum, p) => sum + p.balance, 0);
+      const liquidPockets = pockets.filter((p) => !p.isAsset).reduce((sum, p) => sum + p.balance, 0);
+      const user = this.getUser();
+      user.balance = liquidPockets;
+      user.totalBalance = totalPockets;
+      this.saveUser(user);
+
+      transactions[index] = updatedTx;
+      this.saveTransactions(transactions);
+
+      return updatedTx;
+    }
+
+    // Normal non-transfer transaction update
     // Revert old transaction on old pocket
     if (existing.pocketId) {
       const pkt = pockets.find((p) => p.id === existing.pocketId);
@@ -335,9 +440,19 @@ class DataService {
     const remaining = transactions.filter((t) => t.id !== id);
     this.saveTransactions(remaining);
 
-    // Revert balance on pocket
+    // Revert balance on pockets
     const pockets = this.getPockets();
-    if (target.pocketId) {
+    if (target.category === 'transfer') {
+      // Bidirectional reversal for internal pocket transfers
+      const { sourcePocket, destPocket } = this.resolveTransferPockets(target, pockets);
+      if (sourcePocket) {
+        sourcePocket.balance += target.amount; // Refund to source pocket
+      }
+      if (destPocket) {
+        destPocket.balance = Math.max(0, destPocket.balance - target.amount); // Deduct from destination pocket
+      }
+      this.savePockets(pockets);
+    } else if (target.pocketId) {
       const pkt = pockets.find((p) => p.id === target.pocketId);
       if (pkt) {
         if (target.type === 'income') {
@@ -626,6 +741,7 @@ class DataService {
       note: `Pindah dana dari ${sourcePocket.name} ke ${destPocket.name}`,
       pocketId: sourcePocket.id,
       pocketName: sourcePocket.name,
+      recipient: destPocket.id,
     };
 
     const transactions = this.getTransactions();

@@ -160,17 +160,6 @@ export const PocketDetailModal: React.FC = () => {
 
     transferBetweenPockets(selectedPocket.id, targetPocketId, num);
 
-    import('canvas-confetti')
-      .then((mod) => {
-        const confetti = mod.default;
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.6 },
-        });
-      })
-      .catch(() => {});
-
     setFeedbackMsg({ text: `Berhasil memindahkan ${formatCurrency(num)}`, isError: false });
     setAmountInput('');
     setTimeout(() => {

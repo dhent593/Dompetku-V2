@@ -163,10 +163,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       // If pockets fetched from Supabase, use them directly without forcing starter pockets
       const activePockets = sbPockets || [];
       setPockets(activePockets);
-      const mappedSbTx = (sbTx || []).map((t) => ({
-        ...t,
-        dateGroup: computeTxDateGroup(t.date),
-      }));
+      const mappedSbTx = (sbTx || [])
+        .map((t) => ({
+          ...t,
+          dateGroup: computeTxDateGroup(t.date),
+        }))
+        .sort((a, b) => {
+          const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+          const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+          return timeB - timeA;
+        });
       setTransactions(mappedSbTx);
       setCards(sbCards || []);
       setDebts(sbDebts || []);
@@ -366,6 +372,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     updates: Partial<Omit<Transaction, 'id' | 'timestamp'>>
   ): Transaction | null => {
     const prevTx = dataService.getTransactions().find((t) => t.id === id);
+    const prevPockets = dataService.getPockets();
+    const oldTransferPockets = prevTx && prevTx.category === 'transfer'
+      ? dataService.resolveTransferPockets(prevTx, prevPockets)
+      : { sourcePocket: undefined, destPocket: undefined };
+
     const updated = dataService.updateTransaction(id, updates);
     if (updated) {
       const updatedPockets = dataService.getPockets();
@@ -377,6 +388,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const affectedPocketIds = new Set<string>();
         if (prevTx?.pocketId) affectedPocketIds.add(prevTx.pocketId);
         if (updated.pocketId) affectedPocketIds.add(updated.pocketId);
+        if (oldTransferPockets.sourcePocket?.id) affectedPocketIds.add(oldTransferPockets.sourcePocket.id);
+        if (oldTransferPockets.destPocket?.id) affectedPocketIds.add(oldTransferPockets.destPocket.id);
+        if (updated.recipient) affectedPocketIds.add(updated.recipient);
+
         affectedPocketIds.forEach((pktId) => {
           const pkt = updatedPockets.find((p) => p.id === pktId);
           if (pkt) {
@@ -390,6 +405,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTransaction = (id: string): boolean => {
     const existingTx = dataService.getTransactions().find((t) => t.id === id);
+    const prevPockets = dataService.getPockets();
+    const transferPockets = existingTx && existingTx.category === 'transfer'
+      ? dataService.resolveTransferPockets(existingTx, prevPockets)
+      : { sourcePocket: undefined, destPocket: undefined };
+
     const ok = dataService.deleteTransaction(id);
     if (ok) {
       const updatedPockets = dataService.getPockets();
@@ -398,12 +418,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       updateUser(dataService.getUser());
       if (isSupabaseConfigured) {
         SupabaseService.deleteTransaction(id).catch(console.error);
-        if (existingTx?.pocketId) {
-          const pkt = updatedPockets.find((p) => p.id === existingTx.pocketId);
+        const affectedPocketIds = new Set<string>();
+        if (existingTx?.pocketId) affectedPocketIds.add(existingTx.pocketId);
+        if (transferPockets.sourcePocket?.id) affectedPocketIds.add(transferPockets.sourcePocket.id);
+        if (transferPockets.destPocket?.id) affectedPocketIds.add(transferPockets.destPocket.id);
+
+        affectedPocketIds.forEach((pktId) => {
+          const pkt = updatedPockets.find((p) => p.id === pktId);
           if (pkt) {
-            SupabaseService.updatePocket(existingTx.pocketId, { balance: pkt.balance }).catch(console.error);
+            SupabaseService.updatePocket(pktId, { balance: pkt.balance }).catch(console.error);
           }
-        }
+        });
       }
     }
     return ok;
@@ -583,6 +608,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           note: tx.note,
           pocketId: tx.pocketId,
           pocketName: tx.pocketName,
+          recipient: tx.recipient,
         })
           .then((sbTx) => {
             if (sbTx) {
@@ -869,16 +895,22 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const filteredTransactions = transactions.filter((tx) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      tx.title.toLowerCase().includes(query) ||
-      tx.category.toLowerCase().includes(query) ||
-      (tx.note && tx.note.toLowerCase().includes(query)) ||
-      tx.amount.toString().includes(query)
-    );
-  });
+  const filteredTransactions = transactions
+    .filter((tx) => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        tx.title.toLowerCase().includes(query) ||
+        tx.category.toLowerCase().includes(query) ||
+        (tx.note && tx.note.toLowerCase().includes(query)) ||
+        tx.amount.toString().includes(query)
+      );
+    })
+    .sort((a, b) => {
+      const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+      const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+      return timeB - timeA;
+    });
 
   return (
     <FinanceContext.Provider

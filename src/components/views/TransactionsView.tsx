@@ -108,6 +108,10 @@ export const TransactionsView: React.FC = () => {
     }
 
     return true;
+  }).sort((a, b) => {
+    const timeA = a.timestamp || (a.date ? new Date(`${a.date} ${a.time || '00:00'}`).getTime() : 0);
+    const timeB = b.timestamp || (b.date ? new Date(`${b.date} ${b.time || '00:00'}`).getTime() : 0);
+    return timeB - timeA;
   });
 
   const grouped = finalFiltered.reduce((acc, tx) => {

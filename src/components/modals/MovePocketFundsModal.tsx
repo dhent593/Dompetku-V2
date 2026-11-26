@@ -25,7 +25,6 @@ import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { snappyGelVariants, snappyBackdropVariants } from '@/lib/animationConfig';
 import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils';
-import confetti from 'canvas-confetti';
 
 export const MovePocketFundsModal: React.FC = () => {
   const { activeModal, setActiveModal, pockets, transferBetweenPockets } = useFinance();
@@ -110,14 +109,6 @@ export const MovePocketFundsModal: React.FC = () => {
     }
 
     transferBetweenPockets(sourcePocket.id, destPocket.id, num);
-
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 },
-      });
-    } catch (err) {}
 
     setFeedbackMsg(`Berhasil memindahkan ${formatCurrency(num)} ke ${destPocket.name}`);
     setAmount('');
