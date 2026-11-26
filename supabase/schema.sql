@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.pockets (
     target_amount NUMERIC(15, 2) NOT NULL DEFAULT 0,
     color TEXT NOT NULL DEFAULT '#635BFF',
     icon_name TEXT NOT NULL DEFAULT 'WalletCards',
+    is_asset BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
@@ -69,7 +70,8 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     title TEXT NOT NULL,
     category TEXT NOT NULL CHECK (category IN (
         'shopping', 'bill', 'salary', 'travel', 'investment', 
-        'food', 'entertainment', 'transfer', 'other'
+        'food', 'entertainment', 'health', 'education', 'family', 
+        'gift', 'transfer', 'other'
     )),
     amount NUMERIC(15, 2) NOT NULL CHECK (amount >= 0),
     type TEXT NOT NULL CHECK (type IN ('income', 'expense')),

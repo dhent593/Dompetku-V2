@@ -87,12 +87,15 @@ interface FinanceContextType {
   deleteCategoryBudget: (category: Transaction['category']) => boolean;
   filteredTransactions: Transaction[];
   resetData: () => void;
+  balanceCardColor: string;
+  setBalanceCardColor: (color: string) => void;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const { user, updateUser } = useAuth();
+  const [balanceCardColor, setBalanceCardColorState] = useState<string>(() => dataService.getBalanceCardColor());
   const [transactions, setTransactions] = useState<Transaction[]>(() => dataService.getTransactions());
   const [cards, setCards] = useState<PaymentCard[]>(() => dataService.getCards());
   const [pockets, setPockets] = useState<Pocket[]>(() => dataService.getPockets());
@@ -140,6 +143,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return handled;
   }, [activeTab]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  const setBalanceCardColor = useCallback((color: string) => {
+    setBalanceCardColorState(color);
+    dataService.saveBalanceCardColor(color);
+  }, []);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -242,6 +250,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     const loadedWishlists = dataService.getWishlists();
     setWishlists(loadedWishlists !== null && loadedWishlists !== undefined ? loadedWishlists : (isDemo ? INITIAL_WISHLISTS : []));
+
+    setBalanceCardColorState(dataService.getBalanceCardColor());
 
     // 2. Fetch from Supabase if user is signed in
     syncFromSupabase();
@@ -893,6 +903,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       dataService.saveWishlists([]);
       updateUser({ balance: 0, totalBalance: 0 });
     }
+    setBalanceCardColorState('default');
   };
 
   const filteredTransactions = transactions
@@ -971,6 +982,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         deleteCategoryBudget,
         filteredTransactions,
         resetData,
+        balanceCardColor,
+        setBalanceCardColor,
       }}
     >
       {children}

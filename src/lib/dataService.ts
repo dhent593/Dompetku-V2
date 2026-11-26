@@ -31,6 +31,7 @@ const STORAGE_KEYS = {
   WISHLISTS: 'mypocket_wishlists_v1',
   IS_LOGGED_IN: 'mypocket_auth_status_v1',
   IS_LOCKED: 'mypocket_is_locked_v1',
+  BALANCE_CARD_COLOR: 'mypocket_balance_card_color_v1',
 };
 
 export function hashCredential(pass: string): string {
@@ -1100,6 +1101,26 @@ class DataService {
     return true;
   }
 
+  // --- Balance Card Color Theme ---
+  getBalanceCardColor(): string {
+    if (!this.isBrowser()) return 'default';
+    try {
+      const color = localStorage.getItem(this.getKey(STORAGE_KEYS.BALANCE_CARD_COLOR));
+      return color || 'default';
+    } catch {
+      return 'default';
+    }
+  }
+
+  saveBalanceCardColor(color: string): void {
+    if (!this.isBrowser()) return;
+    try {
+      localStorage.setItem(this.getKey(STORAGE_KEYS.BALANCE_CARD_COLOR), color);
+    } catch (e) {
+      console.error('Failed to save balance card color', e);
+    }
+  }
+
   // --- Reset & Clear Methods ---
   clearUserData(email?: string): void {
     if (!this.isBrowser()) return;
@@ -1114,6 +1135,7 @@ class DataService {
       localStorage.removeItem(`${STORAGE_KEYS.BUDGETS}_${safeEmail}`);
       localStorage.removeItem(`${STORAGE_KEYS.NOTES}_${safeEmail}`);
       localStorage.removeItem(`${STORAGE_KEYS.WISHLISTS}_${safeEmail}`);
+      localStorage.removeItem(`${STORAGE_KEYS.BALANCE_CARD_COLOR}_${safeEmail}`);
     } else {
       this.resetToDefaults();
     }
@@ -1130,6 +1152,7 @@ class DataService {
     localStorage.removeItem(STORAGE_KEYS.BUDGETS);
     localStorage.removeItem(STORAGE_KEYS.NOTES);
     localStorage.removeItem(STORAGE_KEYS.WISHLISTS);
+    localStorage.removeItem(STORAGE_KEYS.BALANCE_CARD_COLOR);
     localStorage.removeItem(STORAGE_KEYS.IS_LOGGED_IN);
     sessionStorage.removeItem(STORAGE_KEYS.IS_LOCKED);
   }

@@ -22,6 +22,7 @@ import {
   Utensils,
   Plus,
   Check,
+  Palette,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useFinance } from '@/context/FinanceContext';
@@ -227,6 +228,7 @@ export const HomeView: React.FC = () => {
     setActiveModal,
     setSelectedTransaction,
     reorderPockets,
+    balanceCardColor,
   } = useFinance();
   const { language, t } = useLanguage();
   const [liveDate, setLiveDate] = useState<string>('');
@@ -307,6 +309,7 @@ export const HomeView: React.FC = () => {
   };
 
   const displayTransactions = transactions.slice(0, 3);
+  const isDefaultCardColor = !balanceCardColor || balanceCardColor === 'default';
 
   return (
     <div className="flex flex-col h-full text-slate-900 dark:text-white w-full min-h-0 space-y-4">
@@ -327,19 +330,41 @@ export const HomeView: React.FC = () => {
       </div>
 
       {/* 2. Main Balance Solid Card (Fixed) */}
-      <div className="relative overflow-hidden rounded-[24px] p-5 sm:p-6 text-white bg-[#0F172A] dark:bg-[#635BFF] shadow-lg shadow-slate-900/10 dark:shadow-[#635BFF]/20 flex-shrink-0 transition-colors duration-200">
+      <div
+        onClick={() => setActiveModal('customizeBalanceCard')}
+        className={`relative overflow-hidden rounded-[24px] p-5 sm:p-6 text-white shadow-lg flex-shrink-0 cursor-pointer active:scale-[0.99] transition-all duration-200 group ${
+          isDefaultCardColor
+            ? 'bg-[#0F172A] dark:bg-[#635BFF] shadow-slate-900/10 dark:shadow-[#635BFF]/20'
+            : 'shadow-slate-900/15'
+        }`}
+        style={!isDefaultCardColor ? { background: balanceCardColor } : undefined}
+        title={language === 'id' ? 'Klik untuk ubah warna kartu' : 'Click to customize card color'}
+      >
         <div className="relative z-10 flex flex-col justify-between space-y-3.5">
-          {/* Card Top: Label & Live Date */}
+          {/* Card Top: Label & Live Date & Palette Icon */}
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/80 font-medium tracking-wide">
               {t('total_balance_available')}
             </span>
-            <span
-              suppressHydrationWarning
-              className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full"
-            >
-              {liveDate || (language === 'id' ? 'Hari ini' : 'Today')}
-            </span>
+            <div className="flex items-center space-x-1.5">
+              <span
+                suppressHydrationWarning
+                className="text-[11px] font-medium text-white/90 tracking-wide bg-white/15 px-2.5 py-0.5 rounded-full"
+              >
+                {liveDate || (language === 'id' ? 'Hari ini' : 'Today')}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveModal('customizeBalanceCard');
+                }}
+                className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/25 transition-all cursor-pointer"
+                title={language === 'id' ? 'Ubah warna kartu' : 'Customize card color'}
+              >
+                <Palette className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
           {/* Card Middle: Big Balance with Proportional Typography */}
@@ -357,7 +382,10 @@ export const HomeView: React.FC = () => {
 
           {/* Card Bottom: Rincian Pemasukan & Pengeluaran Bulan Ini (Click to see Analytics) */}
           <div
-            onClick={() => setActiveTab('analytics')}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveTab('analytics');
+            }}
             className="pt-3 border-t border-white/15 flex items-center justify-between text-xs cursor-pointer hover:bg-white/5 -mx-6 -mb-6 px-6 pb-4 pt-3 transition-colors group"
             title={language === 'id' ? 'Lihat Analisis Keuangan' : 'View Financial Analytics'}
           >

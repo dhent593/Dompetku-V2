@@ -1865,30 +1865,64 @@ export const WalletView: React.FC = () => {
 
                 {/* Sub-view Content */}
                 <div className="flex-1 overflow-y-auto scrollbar-none min-h-0 space-y-3.5 pr-0.5">
-                  {/* Summary Card (Borderless & Light Mode Friendly) */}
-                  <div className="p-4 rounded-[20px] bg-white dark:bg-[#141824] shadow-sm">
+                  {/* Summary Card (Hero Solid Card - Distinct from Child Cards) */}
+                  <div className="relative overflow-hidden rounded-[24px] p-5 text-white bg-[#0F172A] dark:bg-[#635BFF] shadow-lg shadow-slate-900/10 dark:shadow-[#635BFF]/20 transition-all duration-200">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-slate-500 dark:text-[#8C98B3] uppercase">
+                      <span className="text-[11px] font-semibold text-white/80 uppercase tracking-wider">
                         {language === 'id' ? 'Pemakaian Budget Bulan Ini' : 'Monthly Budget Usage'}
                       </span>
-                      <span className={`text-xs font-bold ${budgetPercent > 90 ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                        {budgetPercent}% Terpakai
+                      <span
+                        className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full transition-colors ${
+                          budgetPercent >= 100
+                            ? 'bg-rose-500/20 text-rose-200'
+                            : budgetPercent >= 80
+                            ? 'bg-amber-500/20 text-amber-200'
+                            : 'bg-white/12 text-white/80'
+                        }`}
+                      >
+                        {budgetPercent}% {language === 'id' ? 'Terpakai' : 'Spent'}
                       </span>
                     </div>
-                    <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+
+                    <div className="text-3xl font-black text-white tracking-tight mt-2 tabular-nums">
                       {formatCurrency(currentMonthSpent)}
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+
+                    <div className="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all ${
-                          budgetPercent > 90 ? 'bg-rose-500' : 'bg-emerald-500'
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          budgetPercent >= 100
+                            ? 'bg-rose-400/90'
+                            : budgetPercent >= 80
+                            ? 'bg-amber-300/90'
+                            : 'bg-emerald-400/80'
                         }`}
-                        style={{ width: `${budgetPercent}%` }}
+                        style={{ width: `${Math.min(100, budgetPercent)}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between mt-3 text-xs text-slate-500 dark:text-slate-400">
-                      <span>Total Limit: {formatCurrency(totalBudgetLimit)}</span>
-                      <span>Sisa: {formatCurrency(Math.max(0, totalBudgetLimit - currentMonthSpent))}</span>
+
+                    <div className="flex items-center justify-between mt-3.5 pt-3 border-t border-white/15 text-xs text-white/85">
+                      <div>
+                        <span className="text-[10px] text-white/70 block font-medium">
+                          {language === 'id' ? 'Total Limit' : 'Total Limit'}
+                        </span>
+                        <span className="font-bold text-white tracking-tight text-xs sm:text-[13px]">
+                          {formatCurrency(totalBudgetLimit)}
+                        </span>
+                      </div>
+                      <div className="h-6 w-px bg-white/15" />
+                      <div className="text-right">
+                        <span className="text-[10px] text-white/70 block font-medium">
+                          {language === 'id' ? 'Sisa Budget' : 'Remaining Budget'}
+                        </span>
+                        <span
+                          className={`font-bold tracking-tight text-xs sm:text-[13px] ${
+                            totalBudgetLimit - currentMonthSpent >= 0 ? 'text-emerald-300/90' : 'text-rose-300'
+                          }`}
+                        >
+                          {formatCurrency(Math.max(0, totalBudgetLimit - currentMonthSpent))}
+                        </span>
+                      </div>
                     </div>
                   </div>
 

@@ -115,35 +115,57 @@ export const MonthlyBudgetModal: React.FC = () => {
             </button>
           </div>
 
-          {/* Overall Budget Progress Card */}
-          <div className="my-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#111520]">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-slate-500 dark:text-[#7B88A6] font-medium">
-                {language === 'id' ? 'Pengeluaran Bulan Ini' : 'This Month Spent'}
+          {/* Overall Budget Progress Card (Hero Solid Card) */}
+          <div className="my-4 relative overflow-hidden rounded-[22px] p-5 text-white bg-[#0F172A] dark:bg-[#635BFF] shadow-lg shadow-slate-900/10 dark:shadow-[#635BFF]/20 transition-all">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-white/80 uppercase tracking-wider">
+                {language === 'id' ? 'Pemakaian Budget Bulan Ini' : 'This Month Spent'}
               </span>
-              <span className="font-bold text-slate-900 dark:text-white">
-                {formatCurrency(totalActualSpent)} / {formatCurrency(totalBudgetLimit)}
+              <span
+                className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full transition-colors ${
+                  totalPercent >= 100
+                    ? 'bg-rose-500/20 text-rose-200'
+                    : totalPercent >= 80
+                    ? 'bg-amber-500/20 text-amber-200'
+                    : 'bg-white/12 text-white/80'
+                }`}
+              >
+                {totalPercent}% {language === 'id' ? 'Terpakai' : 'Spent'}
               </span>
+            </div>
+
+            <div className="text-2xl font-black text-white tracking-tight mt-1.5 tabular-nums">
+              {formatCurrency(totalActualSpent)}
             </div>
 
             {/* Main Progress Bar */}
-            <div className="w-full h-2.5 bg-slate-200 dark:bg-[#1E2435] rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-white/10 h-1.5 rounded-full mt-3 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
-                  totalPercent > 90 ? 'bg-red-500' : totalPercent > 70 ? 'bg-amber-500' : 'bg-[#10B981]'
+                  totalPercent >= 100 ? 'bg-rose-400/90' : totalPercent >= 80 ? 'bg-amber-300/90' : 'bg-emerald-400/80'
                 }`}
-                style={{ width: `${totalPercent}%` }}
+                style={{ width: `${Math.min(100, totalPercent)}%` }}
               />
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#7B88A6] mt-2 font-medium">
-              <span>{totalPercent}% {language === 'id' ? 'terpakai' : 'spent'}</span>
-              <span>
-                {language === 'id' ? 'Sisa Budget:' : 'Remaining:'}{' '}
-                <strong className={totalRemaining > 0 ? 'text-emerald-600 dark:text-[#10B981]' : 'text-red-500'}>
+            <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-white/15 text-xs text-white/85">
+              <div>
+                <span className="text-[10px] text-white/70 block font-medium">
+                  {language === 'id' ? 'Total Limit' : 'Total Limit'}
+                </span>
+                <span className="font-bold text-white tracking-tight">
+                  {formatCurrency(totalBudgetLimit)}
+                </span>
+              </div>
+              <div className="h-5 w-px bg-white/15" />
+              <div className="text-right">
+                <span className="text-[10px] text-white/70 block font-medium">
+                  {language === 'id' ? 'Sisa Budget' : 'Remaining'}
+                </span>
+                <span className={`font-bold tracking-tight ${totalRemaining > 0 ? 'text-emerald-300/90' : 'text-rose-300'}`}>
                   {formatCurrency(totalRemaining)}
-                </strong>
-              </span>
+                </span>
+              </div>
             </div>
           </div>
 

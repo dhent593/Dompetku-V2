@@ -31,6 +31,7 @@ import { DebtManagementModal } from '@/components/modals/DebtManagementModal';
 import { AssetManagementModal } from '@/components/modals/AssetManagementModal';
 import { MonthlyBudgetModal } from '@/components/modals/MonthlyBudgetModal';
 import { ResetDatabaseModal } from '@/components/modals/ResetDatabaseModal';
+import { CustomizeCardModal } from '@/components/modals/CustomizeCardModal';
 
 export default function App() {
   const { isLoggedIn, isAuthLoading } = useAuth();
@@ -158,6 +159,7 @@ export default function App() {
       <AssetManagementModal />
       <MonthlyBudgetModal />
       <ResetDatabaseModal />
+      <CustomizeCardModal />
 
       {/* Security Overlay / mPIN Lock Screen */}
       <LockScreen />
