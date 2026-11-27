@@ -721,7 +721,13 @@ class DataService {
     return true;
   }
 
-  transferBetweenPockets(fromPocketId: string, toPocketId: string, amount: number): Transaction | null {
+  transferBetweenPockets(
+    fromPocketId: string,
+    toPocketId: string,
+    amount: number,
+    customNote?: string,
+    customDate?: string
+  ): Transaction | null {
     if (fromPocketId === toPocketId || amount <= 0) return null;
     const pockets = this.getPockets();
     const sourcePocket = pockets.find((p) => p.id === fromPocketId);
@@ -736,7 +742,7 @@ class DataService {
     this.savePockets(pockets);
 
     // Record neutral fund transfer transaction
-    const localDate = getLocalDateString();
+    const localDate = customDate || getLocalDateString();
     const tx: Transaction = {
       id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       title: `Pindah Dana: ${sourcePocket.name} → ${destPocket.name}`,
@@ -748,7 +754,7 @@ class DataService {
       time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       timestamp: Date.now(),
       iconName: 'ArrowRightLeft',
-      note: `Pindah dana dari ${sourcePocket.name} ke ${destPocket.name}`,
+      note: customNote?.trim() ? customNote.trim() : `Pindah dana dari ${sourcePocket.name} ke ${destPocket.name}`,
       pocketId: sourcePocket.id,
       pocketName: sourcePocket.name,
       recipient: destPocket.id,

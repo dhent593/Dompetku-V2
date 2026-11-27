@@ -73,7 +73,13 @@ interface FinanceContextType {
   reorderPockets: (newPockets: Pocket[]) => void;
   transferToPocket: (pocketId: string, amount: number) => boolean;
   withdrawFromPocket: (pocketId: string, amount: number) => boolean;
-  transferBetweenPockets: (fromPocketId: string, toPocketId: string, amount: number) => boolean;
+  transferBetweenPockets: (
+    fromPocketId: string,
+    toPocketId: string,
+    amount: number,
+    note?: string,
+    date?: string
+  ) => boolean;
   transferMoney: (recipient: string, amount: number, note?: string) => boolean;
   withdrawMoney: (amount: number, bankName?: string) => boolean;
   addDebt: (debt: Omit<DebtItem, 'id' | 'createdAt'>) => DebtItem;
@@ -590,8 +596,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return ok;
   };
 
-  const transferBetweenPockets = (fromPocketId: string, toPocketId: string, amount: number): boolean => {
-    const tx = dataService.transferBetweenPockets(fromPocketId, toPocketId, amount);
+  const transferBetweenPockets = (
+    fromPocketId: string,
+    toPocketId: string,
+    amount: number,
+    note?: string,
+    date?: string
+  ): boolean => {
+    const tx = dataService.transferBetweenPockets(fromPocketId, toPocketId, amount, note, date);
     if (tx) {
       const updatedPockets = dataService.getPockets();
       setPockets(updatedPockets);

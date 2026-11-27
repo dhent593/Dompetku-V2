@@ -4,22 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
-  ArrowRightLeft,
-  ArrowDown,
-  Check,
   AlertCircle,
   CheckCircle2,
-  Wallet,
-  Landmark,
-  Shield,
-  Plane,
-  Smartphone,
-  Heart,
-  ShoppingBag,
-  Car,
-  Home,
-  Briefcase,
+  Calendar,
   ChevronDown,
+  Wallet,
 } from 'lucide-react';
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -28,13 +17,15 @@ import { formatCurrency, formatNumberInput, parseNumberInput } from '@/lib/utils
 
 export const MovePocketFundsModal: React.FC = () => {
   const { activeModal, setActiveModal, pockets, transferBetweenPockets } = useFinance();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const isOpen = activeModal === 'movePocketFunds';
 
   const [sourcePocketId, setSourcePocketId] = useState<string>('');
   const [destPocketId, setDestPocketId] = useState<string>('');
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
@@ -46,6 +37,8 @@ export const MovePocketFundsModal: React.FC = () => {
       setSourcePocketId(p1);
       setDestPocketId(p2);
       setAmount('');
+      setDate(new Date().toISOString().split('T')[0]);
+      setNote('');
       setError(null);
       setFeedbackMsg(null);
     }
@@ -63,31 +56,6 @@ export const MovePocketFundsModal: React.FC = () => {
     }
   };
 
-  const renderIcon = (name: string) => {
-    switch (name) {
-      case 'Wallet':
-        return <Wallet className="w-4 h-4" />;
-      case 'Landmark':
-        return <Landmark className="w-4 h-4" />;
-      case 'Plane':
-        return <Plane className="w-4 h-4" />;
-      case 'Smartphone':
-        return <Smartphone className="w-4 h-4" />;
-      case 'Heart':
-        return <Heart className="w-4 h-4" />;
-      case 'ShoppingBag':
-        return <ShoppingBag className="w-4 h-4" />;
-      case 'Car':
-        return <Car className="w-4 h-4" />;
-      case 'Home':
-        return <Home className="w-4 h-4" />;
-      case 'Briefcase':
-        return <Briefcase className="w-4 h-4" />;
-      default:
-        return <Shield className="w-4 h-4" />;
-    }
-  };
-
   const sourcePocket = pockets.find((p) => p.id === sourcePocketId);
   const destPocket = pockets.find((p) => p.id === destPocketId);
   const availableDestPockets = pockets.filter((p) => p.id !== sourcePocketId);
@@ -95,27 +63,36 @@ export const MovePocketFundsModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sourcePocket || !destPocket) {
-      setError('Pilih kantong asal dan tujuan yang valid');
+      setError(language === 'id' ? 'Pilih kantong asal dan tujuan yang valid' : 'Select valid source and destination pockets');
       return;
     }
     const num = parseNumberInput(amount);
     if (isNaN(num) || num <= 0) {
-      setError('Nominal transfer harus lebih besar dari 0');
+      setError(language === 'id' ? 'Nominal transfer harus lebih besar dari 0' : 'Transfer amount must be greater than 0');
       return;
     }
     if (num > sourcePocket.balance) {
-      setError(`Saldo ${sourcePocket.name} tidak cukup (${formatCurrency(sourcePocket.balance)})`);
+      setError(
+        language === 'id'
+          ? `Saldo ${sourcePocket.name} tidak cukup (${formatCurrency(sourcePocket.balance)})`
+          : `Insufficient balance in ${sourcePocket.name} (${formatCurrency(sourcePocket.balance)})`
+      );
       return;
     }
 
-    transferBetweenPockets(sourcePocket.id, destPocket.id, num);
+    transferBetweenPockets(sourcePocket.id, destPocket.id, num, note.trim(), date);
 
-    setFeedbackMsg(`Berhasil memindahkan ${formatCurrency(num)} ke ${destPocket.name}`);
+    setFeedbackMsg(
+      language === 'id'
+        ? `Berhasil memindahkan ${formatCurrency(num)} ke ${destPocket.name}`
+        : `Successfully moved ${formatCurrency(num)} to ${destPocket.name}`
+    );
     setAmount('');
+    setNote('');
     setTimeout(() => {
       setActiveModal(null);
       setFeedbackMsg(null);
-    }, 1400);
+    }, 1200);
   };
 
   return (
@@ -128,7 +105,7 @@ export const MovePocketFundsModal: React.FC = () => {
           animate="animate"
           exit="exit"
           onClick={() => setActiveModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-[2px]"
         >
           <motion.div
             key="movefunds-modal"
@@ -137,24 +114,17 @@ export const MovePocketFundsModal: React.FC = () => {
             animate="animate"
             exit="exit"
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-[24px] bg-white dark:bg-[#141824] p-6 shadow-2xl text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto transform-gpu will-change-transform"
+            className="w-full max-w-sm rounded-[28px] bg-white dark:bg-[#121622] p-6 shadow-2xl border border-slate-200/80 dark:border-[#222A3E] text-slate-900 dark:text-white relative max-h-[92vh] overflow-y-auto scrollbar-none transform-gpu will-change-transform"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between pb-4">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#635BFF] flex items-center justify-center text-white shadow-sm">
-                  <ArrowRightLeft className="w-4 h-4 stroke-[2.2]" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-                    {t('record_move_title')}
-                  </h3>
-                  <span className="text-[11px] text-slate-500 dark:text-[#7B88A6]">Antar Kantong</span>
-                </div>
-              </div>
+            {/* Header: Bersih & Minimalis */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-[#1E2538]">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                {t('record_move_title')}
+              </h3>
               <button
+                type="button"
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
@@ -175,155 +145,130 @@ export const MovePocketFundsModal: React.FC = () => {
                   onClick={() => setActiveModal('addPocket')}
                   className="py-2.5 px-5 rounded-xl bg-[#635BFF] hover:bg-[#564EE6] text-white text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
                 >
-                  {t('add_pocket_btn')} Baru
+                  + {t('add_pocket_btn')}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col space-y-3.5 pt-4">
-                {/* 1. Kantong Asal (A) */}
+                {/* 1. Dari Kantong */}
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">
-                      {t('source_pocket_label')}
-                    </label>
-                    {sourcePocket && (
-                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-[#10B981]">
-                        Saldo: {formatCurrency(sourcePocket.balance)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative flex items-center">
-                    {sourcePocket && (
-                      <div
-                        className="absolute left-3 w-6 h-6 rounded-lg flex items-center justify-center text-white pointer-events-none z-10 flex-shrink-0"
-                        style={{ backgroundColor: sourcePocket.color }}
-                      >
-                        {renderIcon(sourcePocket.iconName)}
-                      </div>
-                    )}
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    {t('from_pocket')}
+                  </label>
+                  <div className="relative">
                     <select
                       value={sourcePocketId}
                       onChange={(e) => handleSourceChange(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl pl-11 pr-8 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] transition-colors appearance-none cursor-pointer"
+                      className="w-full appearance-none bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-2xl px-4 py-3 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer pr-10"
                     >
                       {pockets.map((p) => (
                         <option
                           key={p.id}
                           value={p.id}
-                          className="dark:bg-[#141824] text-slate-900 dark:text-white"
+                          className="bg-white dark:bg-[#141824] text-slate-900 dark:text-white py-1.5"
                         >
-                          {p.name} — {formatCurrency(p.balance)}
+                          {p.name} — Saldo: {formatCurrency(p.balance)}
                         </option>
                       ))}
                     </select>
-                    <div className="absolute right-3 pointer-events-none text-slate-400 dark:text-slate-500">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                       <ChevronDown className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
 
-                {/* Arrow Divider Indicator */}
-                <div className="flex items-center justify-center my-0.5">
-                  <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-[#1C2233] flex items-center justify-center text-[#635BFF] shadow-xs">
-                    <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </div>
-                </div>
-
-                {/* 2. Kantong Tujuan (B) */}
+                {/* 2. Ke Kantong */}
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium">
-                      {t('dest_pocket_label_modal')}
-                    </label>
-                    {destPocket && (
-                      <span className="text-[11px] font-medium text-slate-500 dark:text-[#7B88A6]">
-                        Saldo: {formatCurrency(destPocket.balance)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative flex items-center">
-                    {destPocket && (
-                      <div
-                        className="absolute left-3 w-6 h-6 rounded-lg flex items-center justify-center text-white pointer-events-none z-10 flex-shrink-0"
-                        style={{ backgroundColor: destPocket.color }}
-                      >
-                        {renderIcon(destPocket.iconName)}
-                      </div>
-                    )}
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    {t('to_pocket')}
+                  </label>
+                  <div className="relative">
                     <select
                       value={destPocketId}
                       onChange={(e) => {
                         setDestPocketId(e.target.value);
                         setError(null);
                       }}
-                      className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl pl-11 pr-8 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#10B981] transition-colors appearance-none cursor-pointer"
+                      className="w-full appearance-none bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-2xl px-4 py-3 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer pr-10"
                     >
                       {availableDestPockets.map((p) => (
                         <option
                           key={p.id}
                           value={p.id}
-                          className="dark:bg-[#141824] text-slate-900 dark:text-white"
+                          className="bg-white dark:bg-[#141824] text-slate-900 dark:text-white py-1.5"
                         >
-                          {p.name} — {formatCurrency(p.balance)}
+                          {p.name} — Saldo: {formatCurrency(p.balance)}
                         </option>
                       ))}
                     </select>
-                    <div className="absolute right-3 pointer-events-none text-slate-400 dark:text-slate-500">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                       <ChevronDown className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
 
-                {/* 3. Nominal Input */}
-                <div className="pt-1">
-                  <label className="text-xs text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
-                    {t('amount_label')}
+                {/* 3. Nominal Transfer */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    {t('transfer_amount')}
+                  </label>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-4 text-xs font-bold text-slate-400 dark:text-slate-500 select-none">
+                      Rp
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={amount}
+                      onChange={(e) => {
+                        setAmount(formatNumberInput(e.target.value));
+                        setError(null);
+                      }}
+                      placeholder="0"
+                      className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-2xl pl-11 pr-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#556380] focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Tanggal Transaksi */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    {t('transfer_date')}
+                  </label>
+                  <div className="relative flex items-center">
+                    <Calendar className="w-4 h-4 text-slate-400 absolute left-4 pointer-events-none" />
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-2xl pl-11 pr-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors cursor-pointer"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Keterangan (Opsional) */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    {t('notes_optional')}
                   </label>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    value={amount}
-                    onChange={(e) => {
-                      setAmount(formatNumberInput(e.target.value));
-                      setError(null);
-                    }}
-                    placeholder="0"
-                    className="w-full bg-slate-50 dark:bg-[#1C2233] border border-slate-200 dark:border-[#273047] rounded-xl px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-[#635BFF] focus:bg-white transition-colors"
-                    required
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={
+                      language === 'id'
+                        ? 'e.g. Alokasi dana tabungan'
+                        : 'e.g. Savings allocation'
+                    }
+                    className="w-full bg-slate-50 dark:bg-[#181E2E] border border-slate-200 dark:border-[#273047] rounded-2xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-[#556380] focus:outline-none focus:border-[#635BFF] focus:bg-white dark:focus:bg-[#1C2336] transition-colors"
                   />
-
-                  {/* Quick percentage chips */}
-                  {sourcePocket && sourcePocket.balance > 0 && (
-                    <div className="flex items-center space-x-1.5 mt-2">
-                      {[0.25, 0.5, 0.75].map((fraction) => {
-                        const calculated = Math.floor(sourcePocket.balance * fraction);
-                        return (
-                          <button
-                            key={fraction}
-                            type="button"
-                            onClick={() =>
-                              setAmount(calculated > 0 ? formatNumberInput(calculated) : '0')
-                            }
-                            className="flex-1 text-[11px] font-medium py-1 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#8E9BB8] hover:text-slate-900 dark:hover:text-white cursor-pointer text-center transition-colors"
-                          >
-                            {fraction * 100}%
-                          </button>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        onClick={() => setAmount(formatNumberInput(sourcePocket.balance))}
-                        className="flex-1 text-[11px] font-semibold py-1 px-1.5 rounded-lg bg-slate-100 dark:bg-[#1C2233] text-[#635BFF] hover:text-white hover:bg-[#635BFF] cursor-pointer text-center transition-colors"
-                      >
-                        {t('all_balance')}
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 {/* Error message */}
                 {error && (
-                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-2.5 rounded-xl">
+                  <div className="flex items-center space-x-2 text-xs text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-950/40 p-3 rounded-2xl border border-red-200/60 dark:border-red-900/40">
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -331,33 +276,24 @@ export const MovePocketFundsModal: React.FC = () => {
 
                 {/* Feedback message */}
                 {feedbackMsg && (
-                  <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 p-2.5 rounded-xl">
+                  <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 p-3 rounded-2xl border border-emerald-200/60 dark:border-emerald-900/40">
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                     <span>{feedbackMsg}</span>
                   </div>
                 )}
 
-                {/* Actions */}
-                <div className="flex items-center space-x-2 pt-2">
-                  <button
-                    type="submit"
-                    disabled={!sourcePocket || sourcePocket.balance <= 0}
-                    className={`flex-1 py-3 rounded-xl text-white text-xs font-bold transition-all shadow-sm ${
-                      sourcePocket && sourcePocket.balance > 0
-                        ? 'bg-[#635BFF] hover:bg-[#564EE6] cursor-pointer active:scale-95'
-                        : 'bg-slate-300 dark:bg-[#273047] text-slate-500 dark:text-white/50 cursor-not-allowed'
-                    }`}
-                  >
-                    {t('confirm_move_funds')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveModal(null)}
-                    className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] text-slate-700 dark:text-[#7B88A6] hover:text-slate-900 dark:hover:text-white text-xs font-semibold cursor-pointer transition-colors"
-                  >
-                    {t('cancel')}
-                  </button>
-                </div>
+                {/* Tombol Simpan Data (Brand Primary #635BFF) */}
+                <button
+                  type="submit"
+                  disabled={!sourcePocket || sourcePocket.balance <= 0}
+                  className={`w-full py-3.5 rounded-2xl text-white text-xs font-bold tracking-wide transition-all shadow-md mt-1 ${
+                    sourcePocket && sourcePocket.balance > 0
+                      ? 'bg-[#635BFF] hover:bg-[#564EE6] cursor-pointer active:scale-[0.98]'
+                      : 'bg-slate-300 dark:bg-[#273047] text-slate-500 dark:text-white/50 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="text-white font-bold">{t('save_data')}</span>
+                </button>
               </form>
             )}
           </motion.div>

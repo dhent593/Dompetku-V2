@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import {
   ChevronLeft,
@@ -24,8 +24,39 @@ import {
 import { useFinance } from '@/context/FinanceContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
-import { CHART_DATA } from '@/lib/dummyData';
 import { TimeFilter, AnalyticType, Transaction } from '@/types';
+
+// Helper for smooth Catmull-Rom to Cubic Bezier curve conversion
+function getSplinePath(points: { x: number; y: number }[]): { linePath: string; areaPath: string } {
+  if (points.length === 0) return { linePath: '', areaPath: '' };
+  if (points.length === 1) {
+    return {
+      linePath: `M ${points[0].x} ${points[0].y}`,
+      areaPath: `M ${points[0].x} ${points[0].y} L ${points[0].x} 140 Z`,
+    };
+  }
+
+  let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? 0 : i - 1];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+
+  const linePath = d;
+  const areaPath = `${d} L ${points[points.length - 1].x.toFixed(1)} 140 L ${points[0].x.toFixed(1)} 140 Z`;
+
+  return { linePath, areaPath };
+}
 
 export const AnalyticsView: React.FC = () => {
   const { setActiveTab, transactions, setSelectedTransaction, budgets, setActiveModal } = useFinance();
@@ -38,8 +69,6 @@ export const AnalyticsView: React.FC = () => {
   const toggleCategory = (cat: string) => {
     setExpandedCategory((prev) => (prev === cat ? null : cat));
   };
-
-  const currentChart = CHART_DATA[timeFilter];
 
   // Helper for category icons
   const getCategoryIcon = (category: string) => {
@@ -89,38 +118,164 @@ export const AnalyticsView: React.FC = () => {
   };
 
   // Dynamic calculations from transactions
-  const now = new Date();
-  const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const now = React.useMemo(() => new Date(), []);
 
-  const currentMonthTx = transactions.filter((tx) => tx.date.startsWith(currentMonthStr));
-  const totalMonthExpense = currentMonthTx
-    .filter((tx) => tx.type === 'expense' && tx.category !== 'transfer')
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalMonthIncome = currentMonthTx
-    .filter((tx) => tx.type === 'income' && tx.category !== 'transfer')
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const netCashflow = totalMonthIncome - totalMonthExpense;
-
-  // Breakdown by category for activeType (exclude transfer so category breakdown is pure expenses/income)
-  const filteredTypeTx = currentMonthTx.filter((tx) =>
-    (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income') && tx.category !== 'transfer'
-  );
-
-  const categoryAggregated: Record<string, { total: number; count: number }> = {};
-  filteredTypeTx.forEach((tx) => {
-    if (!categoryAggregated[tx.category]) {
-      categoryAggregated[tx.category] = { total: 0, count: 0 };
+  // Periods generator based on timeFilter
+  const periods = React.useMemo(() => {
+    if (timeFilter === 'monthly') {
+      const list = [];
+      for (let i = 4; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const year = d.getFullYear();
+        const monthNum = String(d.getMonth() + 1).padStart(2, '0');
+        const key = `${year}-${monthNum}`;
+        const label = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short' });
+        const fullLabel = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' });
+        list.push({
+          key,
+          label,
+          fullLabel,
+          filterFn: (tx: Transaction) => tx.date.startsWith(key),
+        });
+      }
+      return list;
+    } else if (timeFilter === 'weekly') {
+      const dayOfWeek = now.getDay();
+      const distanceToMonday = (dayOfWeek + 6) % 7;
+      const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - distanceToMonday);
+      const list = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const label = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { weekday: 'short' });
+        const fullLabel = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        list.push({
+          key,
+          label,
+          fullLabel,
+          filterFn: (tx: Transaction) => tx.date === key,
+        });
+      }
+      return list;
+    } else {
+      // yearly
+      const currentYear = now.getFullYear();
+      const list = [];
+      for (let i = 4; i >= 0; i--) {
+        const yr = currentYear - i;
+        const key = `${yr}`;
+        list.push({
+          key,
+          label: `${yr}`,
+          fullLabel: language === 'id' ? `Tahun ${yr}` : `Year ${yr}`,
+          filterFn: (tx: Transaction) => tx.date.startsWith(key),
+        });
+      }
+      return list;
     }
-    categoryAggregated[tx.category].total += tx.amount;
-    categoryAggregated[tx.category].count += 1;
-  });
+  }, [timeFilter, language, now]);
+
+  // Selected period index (default to current period, e.g. last item or today)
+  const defaultIndex = React.useMemo(() => {
+    if (timeFilter === 'weekly') {
+      const dayOfWeek = now.getDay();
+      return (dayOfWeek + 6) % 7;
+    }
+    return periods.length - 1;
+  }, [timeFilter, periods.length, now]);
+
+  const [selectedIndex, setSelectedIndex] = useState<number>(defaultIndex);
+
+  // Keep selectedIndex in sync when timeFilter changes
+  useEffect(() => {
+    setSelectedIndex(defaultIndex);
+  }, [defaultIndex]);
+
+  const selectedPeriod = periods[selectedIndex] || periods[periods.length - 1];
+
+  // Aggregated amounts for the chart curve across all periods in view
+  const chartAmounts = React.useMemo(() => {
+    return periods.map((p) => {
+      return transactions
+        .filter(
+          (tx) =>
+            p.filterFn(tx) &&
+            (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income') &&
+            tx.category !== 'transfer'
+        )
+        .reduce((sum, tx) => sum + tx.amount, 0);
+    });
+  }, [periods, transactions, activeType]);
+
+  // Coordinate calculations
+  const maxVal = Math.max(...chartAmounts, 0);
+  const padX = 20;
+  const chartWidth = 340;
+  const stepX = (chartWidth - 2 * padX) / Math.max(periods.length - 1, 1);
+  const yBase = 115;
+  const yTop = 32;
+
+  const points = React.useMemo(() => {
+    return chartAmounts.map((amt, idx) => {
+      const x = padX + idx * stepX;
+      const y = maxVal === 0 ? yBase : yBase - (amt / maxVal) * (yBase - yTop);
+      return { x, y, amount: amt };
+    });
+  }, [chartAmounts, maxVal, stepX]);
+
+  const spline = React.useMemo(() => getSplinePath(points), [points]);
+  const activePoint = points[selectedIndex] || points[points.length - 1] || { x: 170, y: yBase, amount: 0 };
+  const pillPercent = Math.min(Math.max((activePoint.x / chartWidth) * 100, 16), 84);
+
+  // Current selected period transactions for cards & breakdowns
+  const selectedPeriodTx = React.useMemo(() => {
+    if (!selectedPeriod) return [];
+    return transactions.filter((tx) => selectedPeriod.filterFn(tx));
+  }, [transactions, selectedPeriod]);
+
+  const totalPeriodExpense = React.useMemo(() => {
+    return selectedPeriodTx
+      .filter((tx) => tx.type === 'expense' && tx.category !== 'transfer')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [selectedPeriodTx]);
+
+  const totalPeriodIncome = React.useMemo(() => {
+    return selectedPeriodTx
+      .filter((tx) => tx.type === 'income' && tx.category !== 'transfer')
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [selectedPeriodTx]);
+
+  const netCashflow = totalPeriodIncome - totalPeriodExpense;
+
+  // Breakdown by category for activeType in selected period
+  const filteredTypeTx = React.useMemo(() => {
+    return selectedPeriodTx.filter(
+      (tx) =>
+        (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income') &&
+        tx.category !== 'transfer'
+    );
+  }, [selectedPeriodTx, activeType]);
+
+  const categoryAggregated = React.useMemo(() => {
+    const agg: Record<string, { total: number; count: number }> = {};
+    filteredTypeTx.forEach((tx) => {
+      if (!agg[tx.category]) {
+        agg[tx.category] = { total: 0, count: 0 };
+      }
+      agg[tx.category].total += tx.amount;
+      agg[tx.category].count += 1;
+    });
+    return agg;
+  }, [filteredTypeTx]);
 
   // Breakdown by category directly from real transactions
-  const displayedCategories = Object.entries(categoryAggregated).map(([cat, data]) => ({
-    category: cat,
-    amount: data.total,
-    count: data.count,
-  }));
+  const displayedCategories = React.useMemo(() => {
+    return Object.entries(categoryAggregated).map(([cat, data]) => ({
+      category: cat,
+      amount: data.total,
+      count: data.count,
+    }));
+  }, [categoryAggregated]);
 
   const totalFilteredAmount = displayedCategories.reduce((sum, c) => sum + c.amount, 0);
 
@@ -138,7 +293,7 @@ export const AnalyticsView: React.FC = () => {
 
   // Helper to get transactions belonging to a category
   const getCategoryTransactions = (cat: string) => {
-    const currentMonthMatches = currentMonthTx.filter(
+    const currentMonthMatches = selectedPeriodTx.filter(
       (tx) =>
         tx.category === cat &&
         (activeType === 'expenses' ? tx.type === 'expense' : tx.type === 'income')
@@ -241,15 +396,7 @@ export const AnalyticsView: React.FC = () => {
         {/* 3. Month Header & Period Selector */}
       <div className="flex items-center justify-between pt-1 relative">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-          {timeFilter === 'monthly'
-            ? now.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' })
-            : timeFilter === 'weekly'
-            ? language === 'id'
-              ? 'Minggu Ini'
-              : 'This Week'
-            : language === 'id'
-            ? `Tahun ${now.getFullYear()}`
-            : `Year ${now.getFullYear()}`}
+          {selectedPeriod?.fullLabel || ''}
         </h2>
 
         <div className="relative">
@@ -303,12 +450,7 @@ export const AnalyticsView: React.FC = () => {
             <motion.path
               initial={false}
               animate={{
-                d:
-                  totalFilteredAmount === 0
-                    ? 'M 0 135 L 340 135 L 340 140 L 0 140 Z'
-                    : activeType === 'expenses'
-                    ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100 L 340 140 L 0 140 Z'
-                    : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50 L 340 140 L 0 140 Z',
+                d: spline.areaPath,
                 fill: activeType === 'expenses' ? 'url(#chartGradientExpense)' : 'url(#chartGradientIncome)',
               }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -318,85 +460,86 @@ export const AnalyticsView: React.FC = () => {
             <motion.path
               initial={false}
               animate={{
-                d:
-                  totalFilteredAmount === 0
-                    ? 'M 0 135 L 340 135'
-                    : activeType === 'expenses'
-                    ? 'M 0 100 C 40 95, 70 25, 95 25 C 130 25, 145 95, 180 95 C 220 95, 250 65, 290 65 C 320 65, 335 100, 340 100'
-                    : 'M 0 110 C 60 90, 100 25, 140 25 C 190 25, 240 70, 290 40 C 320 30, 335 50, 340 50',
+                d: spline.linePath,
                 stroke: activeType === 'expenses' ? '#635BFF' : '#10B981',
-                opacity: totalFilteredAmount === 0 ? 0.3 : 1,
+                opacity: maxVal === 0 ? 0.35 : 1,
               }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               fill="none"
-              strokeWidth={totalFilteredAmount === 0 ? 1.5 : 3}
+              strokeWidth={maxVal === 0 ? 1.5 : 3}
               strokeLinecap="round"
             />
 
             {/* Highlight Point */}
-            {totalFilteredAmount > 0 && (
-              <motion.circle
-                initial={false}
-                animate={{
-                  cx: activeType === 'expenses' ? 95 : 140,
-                  cy: 25,
-                  fill: activeType === 'expenses' ? '#635BFF' : '#10B981',
-                }}
-                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                r="5"
-                stroke="#FFFFFF"
-                strokeWidth="2"
-              />
-            )}
+            <motion.circle
+              initial={false}
+              animate={{
+                cx: activePoint.x,
+                cy: activePoint.y,
+                fill: activeType === 'expenses' ? '#635BFF' : '#10B981',
+              }}
+              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+              r="5"
+              stroke="#FFFFFF"
+              strokeWidth="2"
+            />
           </svg>
 
           {/* Floating Highlight Pill */}
-          {totalFilteredAmount > 0 && (
-            <motion.div
-              initial={false}
-              animate={{
-                left: activeType === 'expenses' ? '28%' : '41%',
-                backgroundColor: activeType === 'expenses' ? '#635BFF' : '#10B981',
-              }}
-              transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-              className="absolute top-[-10px] -translate-x-1/2 !text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none"
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={activeType}
-                  initial={{ opacity: 0, y: -4, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.9 }}
-                  transition={{ duration: 0.15 }}
-                  className="!text-white font-bold"
-                >
-                  {formatCurrency(totalFilteredAmount)}
-                </motion.span>
-              </AnimatePresence>
-            </motion.div>
-          )}
+          <motion.div
+            initial={false}
+            animate={{
+              left: `${pillPercent}%`,
+              top: `${Math.max(0, activePoint.y - 36)}px`,
+              backgroundColor: activeType === 'expenses' ? '#635BFF' : '#10B981',
+            }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+            className="absolute -translate-x-1/2 !text-white text-[11px] font-bold py-1 px-2.5 rounded-lg shadow-sm flex items-center space-x-1 pointer-events-none z-10"
+          >
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={`${activeType}-${selectedIndex}-${activePoint.amount}`}
+                initial={{ opacity: 0, y: -4, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.9 }}
+                transition={{ duration: 0.15 }}
+                className="!text-white font-bold"
+              >
+                {formatCurrency(activePoint.amount)}
+              </motion.span>
+            </AnimatePresence>
+          </motion.div>
         </div>
 
         {/* X-axis Labels */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#5D6B87] font-medium pt-3 px-1">
-          {currentChart.labels.map((lbl, idx) => (
-            <span
-              key={lbl}
-              className={`transition-colors ${
-                idx === currentChart.highlightIndex ? 'text-slate-900 dark:text-white font-semibold' : ''
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#5D6B87] font-medium pt-3 px-2">
+          {periods.map((p, idx) => (
+            <button
+              key={p.key}
+              type="button"
+              onClick={() => setSelectedIndex(idx)}
+              className={`transition-colors cursor-pointer text-center flex-1 py-1 ${
+                idx === selectedIndex
+                  ? 'text-slate-900 dark:text-white font-bold'
+                  : 'hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
-              {lbl}
-            </span>
+              <span className="block leading-none">{p.label}</span>
+              {idx === selectedIndex && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[#635BFF] dark:bg-white mx-auto mt-1 block" />
+              )}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* 5. Ringkasan Keuangan Bulan Ini (Monthly Financial Summary) */}
+      {/* 5. Ringkasan Keuangan Periode Terpilih */}
       <div className="p-4 rounded-2xl bg-white dark:bg-[#141824] shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1E2435]">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-            {language === 'id' ? 'Ringkasan Keuangan Bulan Ini' : 'Monthly Financial Summary'}
+            {language === 'id'
+              ? `Ringkasan Keuangan (${selectedPeriod?.fullLabel || 'Periode Ini'})`
+              : `Financial Summary (${selectedPeriod?.fullLabel || 'This Period'})`}
           </span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -432,7 +575,7 @@ export const AnalyticsView: React.FC = () => {
                 {language === 'id' ? 'Pemasukan' : 'Income'}
               </span>
               <span className="text-xs sm:text-sm font-extrabold text-emerald-600 dark:text-[#10B981]">
-                +{formatCurrency(totalMonthIncome)}
+                +{formatCurrency(totalPeriodIncome)}
               </span>
             </div>
           </button>
@@ -458,7 +601,7 @@ export const AnalyticsView: React.FC = () => {
                 {language === 'id' ? 'Pengeluaran' : 'Expense'}
               </span>
               <span className="text-xs sm:text-sm font-extrabold text-[#F43F5E]">
-                -{formatCurrency(totalMonthExpense)}
+                -{formatCurrency(totalPeriodExpense)}
               </span>
             </div>
           </button>

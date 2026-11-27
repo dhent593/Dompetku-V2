@@ -206,7 +206,7 @@ export const TransactionDetailModal: React.FC = () => {
                     <>
                       <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
                         <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
-                          <Wallet className="w-3.5 h-3.5 text-[#635BFF]" />
+                          <Wallet className="w-3.5 h-3.5" />
                           <span>{language === 'id' ? 'Kantong Asal' : 'Source Pocket'}</span>
                         </span>
                         <span className="font-semibold text-slate-800 dark:text-white">
@@ -216,7 +216,7 @@ export const TransactionDetailModal: React.FC = () => {
 
                       <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
                         <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
-                          <Wallet className="w-3.5 h-3.5 text-[#10B981]" />
+                          <Wallet className="w-3.5 h-3.5" />
                           <span>{language === 'id' ? 'Kantong Tujuan' : 'Destination Pocket'}</span>
                         </span>
                         <span className="font-semibold text-slate-800 dark:text-white">
@@ -227,7 +227,7 @@ export const TransactionDetailModal: React.FC = () => {
                   ) : (
                     <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#1C2233]/60">
                       <span className="text-slate-500 dark:text-[#7B88A6] flex items-center space-x-2">
-                        <Wallet className="w-3.5 h-3.5 text-[#635BFF]" />
+                        <Wallet className="w-3.5 h-3.5" />
                         <span>
                           {selectedTransaction.type === 'income'
                             ? language === 'id'
@@ -300,7 +300,7 @@ export const TransactionDetailModal: React.FC = () => {
                       onClick={() => setIsEditing(true)}
                       className="flex items-center justify-center space-x-2 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2233] dark:hover:bg-[#252E44] text-slate-800 dark:text-white text-xs font-semibold active:scale-95 transition-all cursor-pointer shadow-sm"
                     >
-                      <Edit3 className="w-3.5 h-3.5 text-[#635BFF]" />
+                      <Edit3 className="w-3.5 h-3.5 text-slate-500 dark:text-[#7B88A6]" />
                       <span>{t('edit_tx')}</span>
                     </motion.button>
 
@@ -320,29 +320,34 @@ export const TransactionDetailModal: React.FC = () => {
               /* Edit Form */
               <form onSubmit={handleSaveEdit} className="flex flex-col space-y-3 pt-4">
                 {category !== 'transfer' && (
-                  <div className="flex bg-slate-100 dark:bg-[#111520] p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => setType('expense')}
-                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        type === 'expense'
-                          ? 'bg-[#F43F5E] text-white shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
-                      }`}
-                    >
-                      {t('expense_type')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setType('income')}
-                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                        type === 'income'
-                          ? 'bg-[#10B981] text-white shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900 dark:text-[#7B88A6] dark:hover:text-white'
-                      }`}
-                    >
-                      {t('income_type')}
-                    </button>
+                  <div>
+                    <label className="text-[11px] text-slate-700 dark:text-[#7B88A6] font-medium block mb-1.5">
+                      {language === 'id' ? 'Tipe Transaksi' : 'Transaction Type'}
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setType('expense')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center space-x-1.5 active:scale-95 ${
+                          type === 'expense'
+                            ? 'bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-400 shadow-xs'
+                            : 'bg-slate-50 dark:bg-[#181E2E] border-slate-200 dark:border-[#273047] text-slate-500 dark:text-[#7B88A6] hover:bg-slate-100 dark:hover:bg-[#1F263B]'
+                        }`}
+                      >
+                        <span>{t('expense_type')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setType('income')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-center space-x-1.5 active:scale-95 ${
+                          type === 'income'
+                            ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                            : 'bg-slate-50 dark:bg-[#181E2E] border-slate-200 dark:border-[#273047] text-slate-500 dark:text-[#7B88A6] hover:bg-slate-100 dark:hover:bg-[#1F263B]'
+                        }`}
+                      >
+                        <span>{t('income_type')}</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
